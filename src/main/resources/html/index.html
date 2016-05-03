@@ -1,0 +1,88 @@
+<html>
+<head>
+<link rel="stylesheet" href="jquery-ui.css">
+<link rel="stylesheet" href="format.css">
+<link rel="stylesheet" type="text/css" href="datatables.min.css"/>
+
+<script type="text/javascript" src="datatables.min.js"></script>
+<script src="highcharts.js"></script>
+<script src="exporting.js"></script>
+<script src="data.js"></script>
+<script src="jquery-ui.js"></script>
+<script>
+
+function load(id) {
+	$("#hc"+id).highcharts({
+		title:{
+			text:data[id]['id']
+		},
+		chart: {
+			type:'line',
+			zoomType: 'x'
+		},
+    	xAxis: {
+             plotBands: data[id]["plotBands"]
+        },
+        yAxis: {
+        	//categories: speakers
+        },
+        plotOptions: {
+            series: {
+            	lineWidth:1
+                // connectNulls: false // by default
+            }
+        },
+        tooltip: {
+            crosshairs: true,
+            headerFormat:"",
+            useHTML:true,
+            pointFormat: "<div style=\"width:200px;max-width:300px; white-space:normal\"><span style=\"color:{point.color}\">{series.name}</span>: {point.name}</div>"
+        },
+        series:data[id]["data"]
+    });
+	var dramaData = data[id];
+
+	$("#tab"+id).append("<h2>Figure speech overview</h2><div><table width=\"100%\"></table></div>");
+
+	$("#tab"+id+" table").DataTable( {
+	        data: dramaData["data"].map(function(cur, ind, arr) {
+				return [
+					cur['name'],
+					cur['stats']['words'],
+					cur['stats']['utterances'],
+					Number(cur['stats']['meanUtteranceLength']).toFixed(2)
+				]
+			}),
+	        columns: [
+	            { title: "Figure" },
+	            { title: "Words" },
+	            { title: "Utterances" },
+	            { title: "Mean Utt. Length" }
+	        ]
+	    } );
+
+
+}
+
+$(function () {
+	for (index = 0; index < data.length; index++) {
+		$("#tabs ul").append("<li><a href=\"#tab"+index+"\">"+data[index]['id']+"</a></li>");
+		$("#tabs").append("<div id=\"tab"+index+"\"><h2>Figure presence chart</h2><div class=\"hc\" id=\"hc"+index+"\"></div></div>");
+		load(index);
+		$("#tab"+index).accordion({
+			header: "h2",
+			active:0
+		});
+	}
+	$("#tabs").tabs();
+});
+        
+</script>
+</head>
+<body>
+<div id="tabs"><ul></ul></div>
+
+
+
+</body>
+</html>
