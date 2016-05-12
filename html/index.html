@@ -30,21 +30,21 @@
 <script src="datatables.min.js"></script>
 <script src="highcharts.js"></script>
 <script src="exporting.js"></script>
-<script src="${DOCUMENTID}.js"></script>
+<script src="data/vndf.0.js"></script>
 <script src="jquery-ui.js"></script>
 <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
 <script src="script.js"></script>
 <script>
 	$(function() {
-		var title = data["displayId"]+": "+data["author"]+ " - " + data["title"] + "("+data["id"]+")"; 
+		var title = "test";//data["displayId"]+": "+data["meta"]["author"][0]["name"]+ " - " + data["meta"]["documentTitle"] + " ("+data["meta"]["id"]+")"; 
 		document.title = title;
 		$("#title").text(title);
-		loadChart();
-		loadTable();
+		loadChart(data);
+		loadTable(data);
 		if ("network" in data)
-			loadNetwork();
+			loadNetwork(data);
 		if ("field" in data)
-			loadFieldTable();
+			loadFieldTable(data);
 		$("#tabs").tabs();
 
 	});

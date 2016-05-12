@@ -1,13 +1,13 @@
 var colors = [ "#EEF", "#FEE", "#EFE" ];
 
-function loadChart() {
+function loadChart(data) {
 	$("#tabs ul").append("<li><a href=\"#hc\">Figure Presence Chart</a></li>");
 	$("#tabs").append("<div class=\"hc\" id=\"hc\"></div>");
 	var segments;
-	if ("seg2" in data["segments"]) {
-		segments = data["segments"]["seg2"];
+	if ("scs" in data) {
+		segments = data["scs"];
 	} else /* if ("seg1" in data["segments"]) */{
-		segments = data["segments"]["seg1"];
+		segments = data["acts"];
 	}
 	var pb = segments.map(function(cur, i, _) {
 		return {
@@ -15,7 +15,7 @@ function loadChart() {
 			to : cur["end"],
 			color : colors[i % 3],
 			label : {
-				text : cur["heading"],
+				text : cur["head"],
 				rotation : 270,
 				align : "center",
 				verticalAlign : "bottom",
@@ -50,11 +50,38 @@ function loadChart() {
 							useHTML : true,
 							pointFormat : "<div style=\"width:200px;max-width:300px; white-space:normal\"><span style=\"color:{point.color}\">{series.name}</span>: {point.name}</div>"
 						},
-						series : data["data"]
+						series : data["figures"].map(function(cur, index, _) {
+							var utterances = [];
+							if ("utt" in cur) 
+								for (var i = 0; i < cur["utt"].length; i++) {
+									var uttObj = data["utt"][cur["utt"][i]];
+									if (typeof(uttObj) == "undefined")
+										continue;
+									utterances.push({
+										x:uttObj["begin"],
+										y:index*0.01,
+										name:uttObj["s"][0]["txt"]
+									});
+									utterances.push({
+										x:uttObj["end"],
+										y:index*0.01,
+										name:uttObj["s"][0]["txt"]
+									});
+									utterances.push(null);
+								}
+						
+							// console.log(utterances);
+							return {
+								name:cur["Reference"],
+								data:utterances,
+								lineWidth:5,
+								visible:(cur["NumberOfWords"]>100)
+							};
+						})
 					});
 }
 
-function loadTable() {
+function loadTable(data) {
 	$("#tabs ul")
 			.append("<li><a href=\"#speech\">Figure Speech Table</a></li>");
 	$("#tabs")
@@ -62,12 +89,12 @@ function loadTable() {
 
 	$("#speech table").DataTable(
 			{
-				data : data["data"].map(function(cur, ind, arr) {
+				data : data["figures"].map(function(cur, ind, arr) {
 					return [
-							cur['name'],
-							cur['stats']['words'],
-							cur['stats']['utterances'],
-							Number(cur['stats']['meanUtteranceLength'])
+							cur['Reference'],
+							cur['NumberOfWords'],
+							cur['NumberOfUtterances'],
+							Number(cur['UtteranceLengthArithmeticMean'])
 									.toFixed(2) ]
 				}),
 				columns : [ {
@@ -82,7 +109,7 @@ function loadTable() {
 			});
 }
 
-function loadFieldTable() {
+function loadFieldTable(data) {
 	$("#tabs ul").append(
 			"<li><a href=\"#fields\">Figures and Semantic Fields</a></li>");
 	$("#tabs")
@@ -102,7 +129,7 @@ function loadFieldTable() {
 	});
 }
 
-function loadNetwork() {
+function loadNetwork(data) {
 	$("#tabs ul").append(
 			"<li><a href=\"#mentionnetwork\">Mention Network</a></li>");
 
