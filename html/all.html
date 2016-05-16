@@ -1,0 +1,77 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="stylesheet" href="jquery-ui.css">
+<link rel="stylesheet" href="format.css">
+<link rel="stylesheet" type="text/css" href="datatables.min.css" />
+<script src="datatables.min.js"></script>
+<script src="highcharts.js"></script>
+<script src="exporting.js"></script>
+<script src="data/all.js"></script>
+<script src="jquery-ui.js"></script>
+<script src="script-all.js"></script>
+<script>
+	$(function() {
+		draw();
+	});
+</script>
+<style>
+body {
+	padding:0;
+}
+#content {
+	position:relative;
+	left:200px;
+	width:calc(100% - 200px);
+	margin:0;
+	padding-left:3px;
+}
+#settings {
+	width:200px;
+	position:fixed;
+	background-color:#EEE;
+	top:0;
+	left:0;
+	height:100%;
+}
+
+</style>
+</head>
+<body>
+<div id="settings">
+	<h2>Settings</h2>
+	<div>
+		Select words to display:<br/>
+	<input type="checkbox" id="words_most_frequent" checked="checked">Most frequent words</br>
+	<input type="checkbox" id="words_entered" checked="checked">Words entered in textbox<br/>
+	<textarea id="words" cols="20" rows="10">
+liebe
+leidenschaft</textarea>
+</div>
+<select id="figuretype">
+<option value="romeo">Romeo</option>
+<option value="julia">Julia</option>
+<optgroup label="Familie Julia">
+<option value="eltern julia">Beide</option>
+<option value="vater julia">Vater</option>
+<option value="mutter julia">Mutter</option>
+</optgroup>
+<optgroup label="Familie Romeo">
+<option value="eltern romeo">Beide</option>
+<option value="vater romeo">Vater</option>
+<option value="mutter romeo">Mutter</option>
+</optgroup>
+</select>
+<select id="valuetype">
+<option value="rtf">Relative Frequency</option>
+<option value="tfidf">TF-IDF</option>
+</select>
+<br/>
+<a href="javascript:draw()">Update</a>
+</div>
+<div id="content">
+	<h1>Term Comparison</h1>
+	<div id="hc"></div>
+</div>
+</body>
+</html>
