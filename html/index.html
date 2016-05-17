@@ -29,33 +29,26 @@
 </style>
 <script src="datatables.min.js"></script>
 <script src="highcharts.js"></script>
+<script src="highcharts-more.js"></script>
 <script src="exporting.js"></script>
-<script src="data/vndf.0.js"></script>
+<script src="data/all.js"></script>
 <script src="jquery-ui.js"></script>
 <script src="d3.v3.min.js" charset="utf-8"></script>
 <script src="script.js"></script>
 <script>
 	$(function() {
-		var title = data["displayId"]+": "+data["meta"]["authors"][0]["Name"]+ " - " + data["meta"]["documentTitle"] + " ("+data["meta"]["documentId"]+")"; 
-		document.title = title;
-		$("#title").text(title);
-		loadChart(data);
-		loadTable(data);
-		if ("network" in data)
-			loadNetwork(data);
-		if ("fields" in data)
-			loadFieldTable(data);
-		$("#tabs").tabs();
-
++		init(data);
 	});
 </script>
 </head>
 <body>
-<h1 id="title"></h1>
+<div id="settings"></div>
+<div id="content">
+	<h1 id="title"></h1>
 	<div id="tabs">
 		<ul></ul>
 	</div>
-
+</div>
 
 
 </body>

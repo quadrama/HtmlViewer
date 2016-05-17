@@ -6,8 +6,11 @@ h1 {
 	margin:10px;
 }
 
+
+
 .hc {
-	padding:0;
+	width:95%;
+	margin:0;
 }
 
 #dramaselect {
@@ -36,5 +39,21 @@ h1 {
 #dramaselect li a:hover {
     background-color: #555;
     color: white;
+}
+
+#content {
+	position:relative;
+	left:200px;
+	width:calc(99% - 200px);
+	margin:0;
+	padding-left:3px;
+}
+#settings {
+	width:200px;
+	position:fixed;
+	background-color:#EEE;
+	top:0px;
+	left:0;
+	height:100%;
 }
 

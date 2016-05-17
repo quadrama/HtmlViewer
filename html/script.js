@@ -1,4 +1,5 @@
 var colors = [ "#EEF", "#FEE", "#EFE" ];
+var wordThreshold = 500;
 
 function loadChart(data) {
 	$("#tabs ul").append("<li><a href=\"#hc\">Figure Presence Chart</a></li>");
@@ -24,8 +25,7 @@ function loadChart(data) {
 		}
 	});
 
-	$("#hc")
-			.highcharts(
+	$("#hc").highcharts(
 					{
 						title : null,
 						chart : {
@@ -50,32 +50,35 @@ function loadChart(data) {
 							useHTML : true,
 							pointFormat : "<div style=\"width:200px;max-width:300px; white-space:normal\"><span style=\"color:{point.color}\">{series.name}</span>: {point.name}</div>"
 						},
-						series : data["figures"].map(function(cur, index, _) {
+						series : data["figures"].sort(function(a,b) {
+							return a["NumberOfWords"] - b["NumberOfWords"];
+						}).map(function(cur, index, _) {
 							var utterances = [];
 							if ("utt" in cur) 
 								for (var i = 0; i < cur["utt"].length; i++) {
 									var uttObj = data["utt"][cur["utt"][i]];
 									if (typeof(uttObj) == "undefined")
 										continue;
-									utterances.push({
-										x:uttObj["begin"],
-										y:index*0.01,
-										name:uttObj["s"][0]["txt"]
-									});
-									utterances.push({
-										x:uttObj["end"],
-										y:index*0.01,
-										name:uttObj["s"][0]["txt"]
-									});
+									if ("s" in uttObj)
+									for (sp of uttObj["s"]) {
+										utterances.push({
+											x:sp["begin"],
+											y:index*0.01,
+											name:sp["txt"]
+										});
+										utterances.push({
+											x:sp["end"],
+											y:index*0.01,
+											name:sp["txt"]
+										});
+									}
 									utterances.push(null);
 								}
-						
-							// console.log(utterances);
 							return {
 								name:cur["Reference"],
 								data:utterances,
 								lineWidth:5,
-								visible:(cur["NumberOfWords"]>100)
+								visible:(cur["NumberOfWords"]>wordThreshold)
 							};
 						})
 					});
@@ -87,64 +90,125 @@ function loadTable(data) {
 	$("#tabs")
 			.append("<div id=\"speech\"><table width=\"100%\"></table></div>");
 
-	$("#speech table").DataTable(
-			{
-				data : data["figures"].map(function(cur, ind, arr) {
-					return [
-							cur['Reference'],
-							cur['NumberOfWords'],
-							cur['NumberOfUtterances'],
-							Number(cur['UtteranceLengthArithmeticMean'])
-									.toFixed(2) ]
-				}),
-				columns : [ {
-					title : "Figure"
-				}, {
-					title : "Words"
-				}, {
-					title : "Utterances"
-				}, {
-					title : "Mean Utt. Length"
-				} ]
-			});
+	$("#speech table").DataTable({
+		data: data["figures"].map(function(cur, ind, arr) {
+			return [
+				cur['Reference'],
+				cur['NumberOfWords'],
+				cur['NumberOfUtterances'],
+				Number(cur['UtteranceLengthArithmeticMean'])
+					.toFixed(2) ]
+		}),
+		columns: [
+			{ title : "Figure" }, 
+			{ title : "Words" },
+			{ title : "Utterances" },
+			{ title : "Mean Utt. Length" }
+		],
+		pageLength:100,
+		retrieve: true
+	});
 }
 
 function loadFieldTable(data) {
 	$("#tabs ul").append("<li><a href=\"#fields\">Figures and Semantic Fields</a></li>");
-	$("#tabs").append("<div id=\"fields\"><table width=\"100%\"></table></div>");
-	var tableData = data["figures"].map(function(cur, ind, arr) {
+	$("#tabs").append("<div id=\"fields\"><h3>Chart</h3><div class=\"chart hc\"></div><h3>Table</h3><div><table width=\"100%\"></table></div></div>");
+	
+	
+	var tableData = data["figures"].filter(function(cur,_,_) {
+		return ("utt" in cur);
+	}).map(function(cur, ind, arr) {
 		var sum = {};
 		var arr = [];
-		for (field of Object.keys(data.fields)) {
+		for (field of Object.keys(data.fields).sort()) {
 			sum[field] = 0;
 		}
-		if ("utt" in cur) {
-			for (var i = 0; i < cur["utt"].length; i++) {
-				var currentUtterance = data["utt"][cur["utt"][i]]
-				for (speech of currentUtterance.s) {
-					if ("fields" in speech) {
-						for (fname of speech["fields"]) {
-							sum[fname]++;
-						}
+		for (var i = 0; i < cur["utt"].length; i++) {
+			var currentUtterance = data["utt"][cur["utt"][i]]
+			if ("s" in currentUtterance)
+			for (speech of currentUtterance.s) {
+				if ("fields" in speech) {
+					for (fname of speech["fields"]) {
+						sum[fname]++;
 					}
 				}
 			}
 		}
-		for (field of Object.keys(data.fields)) {
-			arr.push(sum[field]);
+		for (field of Object.keys(data.fields).sort()) {
+			arr.push((sum[field] / data["fields"][field]["Length"])/cur["NumberOfWords"]);
 		}
 		return [ cur['Reference'] ].concat(arr);
 	});
-	console.log(tableData);
 	var columns = [ {
-			title : "Figure"
-		} ].concat(Object.keys(data["fields"]).map(function(cur, _, _) {
-			return {title:cur};
-		}));
-		console.log(columns);
+		title: "Figure"
+	} ].concat(Object.keys(data["fields"]).map(function(cur, _, _) {
+		return {title:cur,width:"10%"};
+	}));
+		
+		
+	var series = data["figures"].filter(function(cur, _, _) {
+		return true;
+	}).map(function(cur, ind, arr) {
+			var sum = {};
+			var arr = [];
+			for (field of Object.keys(data.fields).sort()) {
+				sum[field] = 0;
+			}
+			if ("utt" in cur) {
+				for (var i = 0; i < cur["utt"].length; i++) {
+					var currentUtterance = data["utt"][cur["utt"][i]]
+					if ("s" in currentUtterance)
+					for (speech of currentUtterance.s) {
+						if ("fields" in speech) {
+							for (fname of speech["fields"]) {
+								sum[fname]++;
+							}
+						}
+					}
+				}
+			}
+			for (field of Object.keys(data.fields).sort()) {
+				arr.push((sum[field] / data["fields"][field]["Length"])/cur["NumberOfWords"]);
+			}
+			return {
+				name:cur["Reference"],
+				data:arr,
+				pointPlacement: 'on',
+				lineWidth:0.5,
+				visible:(cur["NumberOfWords"]>wordThreshold)
+			};
+		});
+	$("#fields .chart").highcharts({
+		chart: {
+			polar: true,
+			type: 'line'
+		},
+		title: {
+			text:null
+		},
+		pane:{
+			size:'90%'
+		},
+		xAxis:{
+			categories: Object.keys(data["fields"]).sort(),
+			lineWidth: 0
+		},
+		yAxis:{
+			gridLineInterpolation: 'polygon'
+		},
+		tooltip: {enabled:false},
+		series: series
+	});
+		
 	$("#fields table").DataTable({
+		retrieve: true,
 		data : tableData,
-		columns : columns
+		columns : columns,
+		pageLength:100
+	});
+	
+	$("#tabs #fields").accordion({
+		heightStyle: "content"
 	});
 	
 }
@@ -205,6 +269,46 @@ function loadNetwork(data) {
 			return "translate(" + d.x + "," + d.y + ")";
 		});
 	});
+}
+
+function load() {
+	var mydata = data[parseInt($("#docselect").val())];
+	
+	var title = mydata["meta"]["ReferenceDate"]+": "+mydata["meta"]["authors"][0]["Name"]+ " - " + mydata["meta"]["documentTitle"] + ("translators" in mydata["meta"]?" (trsl. "+mydata["meta"]["translators"][0]["Name"]+")":""); 
+	document.title = title;
+	$("#title").text(title);
+	loadChart(mydata);
+	loadTable(mydata);
+	if ("network" in mydata)
+		loadNetwork(mydata);
+	if ("fields" in mydata) {
+		loadFieldTable(mydata);
+	}
+	$("#tabs").tabs();
+}
+
+function clean() {
+	$("#fields table").DataTable().destroy();
+	$("#speech table").DataTable().destroy();
+	$("#tabs #fields").accordion("destroy");
+	$("#tabs").tabs("destroy");
+	$("#tabs").empty();
+	$("#tabs").append("<ul></ul>");
+}
+
+function init(data) {
+	$("#settings").append("<select id=\"docselect\"></select>");
+	data = data.sort(function (a,b) {
+		return a["meta"]["ReferenceDate"] - b["meta"]["ReferenceDate"];
+	});
+	for (var i = 0; i < data.length; i++) {
+		$("#docselect").append("<option value=\""+i+"\">"+data[i]["meta"]["DisplayId"]+"</option>");
+	}
+	$("#docselect").change(function(event) {
+		clean();
+		load();
+	});
+	load();
 }
 
 function dblclick(d) {
