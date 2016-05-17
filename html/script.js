@@ -110,23 +110,43 @@ function loadTable(data) {
 }
 
 function loadFieldTable(data) {
-	$("#tabs ul").append(
-			"<li><a href=\"#fields\">Figures and Semantic Fields</a></li>");
-	$("#tabs")
-			.append("<div id=\"fields\"><table width=\"100%\"></table></div>");
-
-	$("#fields table").DataTable({
-		data : data["field"]["figures"].map(function(cur, ind, arr) {
-			return [ cur['name'] ].concat(cur["fields"]);
-		}),
-		columns : [ {
-			title : "Figure"
-		} ].concat(data["field"]["fields"].map(function(cur, _, _) {
-			return {
-				title : cur
-			};
-		}))
+	$("#tabs ul").append("<li><a href=\"#fields\">Figures and Semantic Fields</a></li>");
+	$("#tabs").append("<div id=\"fields\"><table width=\"100%\"></table></div>");
+	var tableData = data["figures"].map(function(cur, ind, arr) {
+		var sum = {};
+		var arr = [];
+		for (field of Object.keys(data.fields)) {
+			sum[field] = 0;
+		}
+		if ("utt" in cur) {
+			for (var i = 0; i < cur["utt"].length; i++) {
+				var currentUtterance = data["utt"][cur["utt"][i]]
+				for (speech of currentUtterance.s) {
+					if ("fields" in speech) {
+						for (fname of speech["fields"]) {
+							sum[fname]++;
+						}
+					}
+				}
+			}
+		}
+		for (field of Object.keys(data.fields)) {
+			arr.push(sum[field]);
+		}
+		return [ cur['Reference'] ].concat(arr);
 	});
+	console.log(tableData);
+	var columns = [ {
+			title : "Figure"
+		} ].concat(Object.keys(data["fields"]).map(function(cur, _, _) {
+			return {title:cur};
+		}));
+		console.log(columns);
+	$("#fields table").DataTable({
+		data : tableData,
+		columns : columns
+	});
+	
 }
 
 function loadNetwork(data) {
