@@ -1,5 +1,6 @@
 var colors = [ "#EEF", "#FEE", "#EFE" ];
 var wordThreshold = 500;
+var ftypes = ["Polarity", "RJType", "Gender"];
 
 function loadChart(data) {
 	$("#tabs ul").append("<li><a href=\"#hc\">Figure Presence Chart</a></li>");
@@ -24,6 +25,7 @@ function loadChart(data) {
 			}
 		}
 	});
+	var figures = data["figures"];
 
 	$("#hc").highcharts(
 					{
@@ -50,7 +52,7 @@ function loadChart(data) {
 							useHTML : true,
 							pointFormat : "<div style=\"width:200px;max-width:300px; white-space:normal\"><span style=\"color:{point.color}\">{series.name}</span>: {point.name}</div>"
 						},
-						series : data["figures"].sort(function(a,b) {
+						series : figures.sort(function(a,b) {
 							return a["NumberOfWords"] - b["NumberOfWords"];
 						}).map(function(cur, index, _) {
 							var utterances = [];
@@ -288,16 +290,19 @@ function load() {
 }
 
 function clean() {
-	$("#fields table").DataTable().destroy();
-	$("#speech table").DataTable().destroy();
-	$("#tabs #fields").accordion("destroy");
-	$("#tabs").tabs("destroy");
+	try {
+		$("#fields table").DataTable().destroy();
+		$("#speech table").DataTable().destroy();
+		$("#tabs #fields").accordion("destroy");
+		$("#tabs").tabs("destroy");
+	} catch (err) {
+	
+	}
 	$("#tabs").empty();
 	$("#tabs").append("<ul></ul>");
 }
 
 function init(data) {
-	$("#settings").append("<select id=\"docselect\"></select>");
 	data = data.sort(function (a,b) {
 		return a["meta"]["ReferenceDate"] - b["meta"]["ReferenceDate"];
 	});
@@ -317,4 +322,108 @@ function dblclick(d) {
 
 function dragstart(d) {
 	d3.select(this).classed("fixed", d.fixed = true);
+}
+
+
+function load_aggregated_view(target, data, words, figureclass, figurevalue, ftype) {
+	var docs = [];
+	var sp = [];
+	for (var i = 0; i < data.length; i++) {
+		try {
+			if (data[i]["ftypes"][figureclass][figurevalue].length>0) {
+				docs.push(data[i]);
+			}
+		} catch (err) {
+			// console.error(err);
+		}
+	}
+	docs.sort(function(a,b) {
+		return parseInt(a.meta.ReferenceDate) - parseInt(b.meta.ReferenceDate);
+	});
+	console.log(docs);
+	var series = words.map(function(cur, index, _) {
+				return {
+					lineWidth:1,
+					marker:{radius:4},
+					name : cur,
+					data : docs.map(function(cur2, _, _) {
+						var figureIndices = cur2["ftypes"][figureclass][figurevalue];
+						var occ = 0;
+						var total = 0;
+						for (f of figureIndices) {
+							total += cur2["figures"][f]["NumberOfWords"];
+							try {
+								occ += cur2["figures"][f]["freq"][cur]["c"];
+							} catch (err) {
+								console.error(err);
+							}
+						}
+						var yvalue = 0;
+						try {
+							yvalue = occ / total;
+						} catch (err) {
+							// console.err;
+						} finally {
+						};
+						var ret = {
+							x:parseInt(cur2["meta"]["ReferenceDate"]),
+							y:yvalue,
+							name:cur2["meta"]["authors"][0]["Name"] + ": "+cur2["meta"]["documentTitle"]+("translators" in cur2["meta"]?" (transl.: "+cur2["meta"]["translators"][0]["Name"]+")":"")
+						};
+						return yvalue; // ret;
+					})
+				};
+			});
+			console.log(series);
+	$(target).highcharts(
+		{
+			chart: {
+				type: "line"
+			},
+			title : null,
+			series: series,
+			plotOptions: {
+				line: {
+					marker: {
+						enabled: true
+					}
+				}
+			},
+			tooltip:{
+				headerFormat:"<small>{point.key}</small><br/>"
+			},
+			xAxis: {
+				categories: docs.map(function(cur, _, _) {
+					return cur["meta"]["ReferenceDate"]+" "+cur["meta"]["authors"][0]["Name"] + ": "+cur["meta"]["documentTitle"]+("transl" in cur["meta"]?" (transl.: "+cur["meta"]["translators"][0]["Name"]+")":"");
+				})
+			}
+		}
+	);
+}
+
+function draw () {
+	clean();
+	var words = {};
+	var ft = $("#figuretype").val();
+	var vt = $("#valuetype").val();
+	if ($("#words_entered:checked").length>0) {
+		for (w of $("#words").val().split("\n")) {
+			words[w] = 1;
+		}
+	}
+	if ($("#words_most_frequent:checked").length>0) {
+		for (doc of data) {
+			if (ft in doc["figures"]) {
+				var array = Object.keys(doc["figures"][ft]["wordHash"]);
+				array.sort(function(a,b) {
+					return doc["figures"][ft]["wordHash"][b][vt] - doc["figures"][ft]["wordHash"][a][vt];
+				});
+				for (var i = 0; i < 2; i++) {
+					words[array[i]] = 1;
+				}
+			}
+		}
+	}
+	
+	load_aggregated_view("#tabs", data, Object.keys(words), "RJType", ft, vt);
 }

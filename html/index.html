@@ -31,7 +31,7 @@
 <script src="highcharts.js"></script>
 <script src="highcharts-more.js"></script>
 <script src="exporting.js"></script>
-<script src="data/all.js"></script>
+<script src="data/all-data.js"></script>
 <script src="jquery-ui.js"></script>
 <script src="d3.v3.min.js" charset="utf-8"></script>
 <script src="script.js"></script>
@@ -42,7 +42,48 @@
 </script>
 </head>
 <body>
-<div id="settings"></div>
+<div id="settings">
+<div>
+	<h3>Drama View</h3>
+	<div><select id="docselect"></select></div>
+</div>
+
+<div>
+	<h3>Corpus View</h3>
+			Select words to display:<br/>
+		<input type="checkbox" id="words_most_frequent" checked="checked">Most frequent words</br>
+		<input type="checkbox" id="words_entered" checked="checked">Words entered in textbox<br/>
+		<textarea id="words" cols="20" rows="10">liebe
+leidenschaft</textarea>
+	</div>
+	<div>
+	Figure type<br/>
+	<select id="figuretype">
+	<option value="romeo">Romeo</option>
+	<option value="julia">Julia</option>
+	<optgroup label="Familie Julia">
+	<option value="eltern julia">Beide</option>
+	<option value="vater julia">Vater</option>
+	<option value="mutter julia">Mutter</option>
+	</optgroup>
+	<optgroup label="Familie Romeo">
+	<option value="eltern romeo">Beide</option>
+	<option value="vater romeo">Vater</option>
+	<option value="mutter romeo">Mutter</option>
+	</optgroup>
+	</select>
+	</div>
+	
+	<div>Value type<br/>
+	<select id="valuetype">
+	<option value="rtf">Relative Frequency</option>
+	<option value="tfidf">TF-IDF</option>
+	</select>
+	</div>
+	<div><a href="javascript:draw()">Update</a></div>
+</div>
+	
+</div>
 <div id="content">
 	<h1 id="title"></h1>
 	<div id="tabs">
