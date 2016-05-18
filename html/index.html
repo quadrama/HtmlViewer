@@ -47,39 +47,30 @@
 	<h3>Drama View</h3>
 	<div><select id="docselect"></select></div>
 </div>
-
+<hr/>
 <div>
 	<h3>Corpus View</h3>
 			Select words to display:<br/>
-		<input type="checkbox" id="words_most_frequent" checked="checked">Most frequent words</br>
-		<input type="checkbox" id="words_entered" checked="checked">Words entered in textbox<br/>
-		<textarea id="words" cols="20" rows="10">liebe
-leidenschaft</textarea>
+		<div>
+			<input type="checkbox" id="words_most_frequent" checked="checked">Most frequent lemma+pos
+			<div style="margin-left:10px;">
+				<input type="checkbox" id="words_mf_nouns" checked="checked">include Nouns (NN)<br/>
+				<input type="checkbox" id="words_mf_verbs" checked="checked">include Verbs (VV)<br/>
+				<input type="checkbox" id="words_mf_adjectives" checked="checked">include Adjectives (ADJ)<br/>
+				<input type="checkbox" id="words_mf_everything">include Everything<br/>
+			</div>
+		</div>
+		<input type="checkbox" id="words_entered" checked="checked">These lemma+pos (lowercase):<br/>
+		<textarea id="words" cols="20" rows="10">liebe.NN
+leidenschaft.NN
+lieben.VV</textarea>
 	</div>
 	<div>
 	Figure type<br/>
 	<select id="figuretype">
-	<option value="romeo">Romeo</option>
-	<option value="julia">Julia</option>
-	<optgroup label="Familie Julia">
-	<option value="eltern julia">Beide</option>
-	<option value="vater julia">Vater</option>
-	<option value="mutter julia">Mutter</option>
-	</optgroup>
-	<optgroup label="Familie Romeo">
-	<option value="eltern romeo">Beide</option>
-	<option value="vater romeo">Vater</option>
-	<option value="mutter romeo">Mutter</option>
-	</optgroup>
 	</select>
 	</div>
 	
-	<div>Value type<br/>
-	<select id="valuetype">
-	<option value="rtf">Relative Frequency</option>
-	<option value="tfidf">TF-IDF</option>
-	</select>
-	</div>
 	<div><a href="javascript:draw()">Update</a></div>
 </div>
 	

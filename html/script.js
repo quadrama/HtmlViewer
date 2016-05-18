@@ -38,6 +38,7 @@ function loadChart(data) {
 							plotBands : pb
 						},
 						yAxis : {
+							max:figures.length
 						// categories: speakers
 						},
 						plotOptions : {
@@ -55,6 +56,7 @@ function loadChart(data) {
 						series : figures.sort(function(a,b) {
 							return a["NumberOfWords"] - b["NumberOfWords"];
 						}).map(function(cur, index, _) {
+							// console.log(cur);
 							var utterances = [];
 							if ("utt" in cur) 
 								for (var i = 0; i < cur["utt"].length; i++) {
@@ -65,23 +67,26 @@ function loadChart(data) {
 									for (sp of uttObj["s"]) {
 										utterances.push({
 											x:sp["begin"],
-											y:index*0.01,
+											y:index,
 											name:sp["txt"]
 										});
 										utterances.push({
 											x:sp["end"],
-											y:index*0.01,
+											y:index,
 											name:sp["txt"]
 										});
 									}
 									utterances.push(null);
 								}
-							return {
+							var r = {
 								name:cur["Reference"],
 								data:utterances,
-								lineWidth:5,
-								visible:(cur["NumberOfWords"]>wordThreshold)
+								lineWidth:3,
+								visible:(cur["NumberOfWords"]>wordThreshold),
+								turboThreshold:0
 							};
+							// console.log(r);
+							return r;
 						})
 					});
 }
@@ -278,7 +283,8 @@ function load() {
 	
 	var title = mydata["meta"]["ReferenceDate"]+": "+mydata["meta"]["authors"][0]["Name"]+ " - " + mydata["meta"]["documentTitle"] + ("translators" in mydata["meta"]?" (trsl. "+mydata["meta"]["translators"][0]["Name"]+")":""); 
 	document.title = title;
-	$("#title").text(title);
+	$("#title").text("Drama View");
+	$("#title").after("<h2>"+title+"</h2>");
 	loadChart(mydata);
 	loadTable(mydata);
 	if ("network" in mydata)
@@ -298,6 +304,7 @@ function clean() {
 	} catch (err) {
 	
 	}
+	$("#content h2").remove();
 	$("#tabs").empty();
 	$("#tabs").append("<ul></ul>");
 }
@@ -306,13 +313,30 @@ function init(data) {
 	data = data.sort(function (a,b) {
 		return a["meta"]["ReferenceDate"] - b["meta"]["ReferenceDate"];
 	});
+	var ftypes = {};
 	for (var i = 0; i < data.length; i++) {
 		$("#docselect").append("<option value=\""+i+"\">"+data[i]["meta"]["DisplayId"]+"</option>");
+		for (var ftype in data[i]["ftypes"]) {
+			if (!ftypes.hasOwnProperty(ftype))
+				ftypes[ftype] = new Object();
+			for (var fvalue in data[i]["ftypes"][ftype]) {
+				ftypes[ftype][fvalue] = 1;
+			}
+		}
 	}
+	// console.log(ftypes);
 	$("#docselect").change(function(event) {
 		clean();
 		load();
 	});
+	for (ftype in ftypes) {
+		var og = document.createElement("optgroup");
+		$(og).attr("label", ftype);
+		for (fvalue in ftypes[ftype])
+			$(og).append("<option value=\""+ftype+"."+fvalue+"\">"+fvalue+"</option>");
+		$("#figuretype").append(og);
+	}
+	
 	load();
 }
 
@@ -326,6 +350,7 @@ function dragstart(d) {
 
 
 function load_aggregated_view(target, data, words, figureclass, figurevalue, ftype) {
+	$("#title").text("Corpus Overview");
 	var docs = [];
 	var sp = [];
 	for (var i = 0; i < data.length; i++) {
@@ -337,10 +362,10 @@ function load_aggregated_view(target, data, words, figureclass, figurevalue, fty
 			// console.error(err);
 		}
 	}
-	docs.sort(function(a,b) {
+	docs = docs.sort(function(a,b) {
 		return parseInt(a.meta.ReferenceDate) - parseInt(b.meta.ReferenceDate);
 	});
-	console.log(docs);
+	// console.log(docs);
 	var series = words.map(function(cur, index, _) {
 				return {
 					lineWidth:1,
@@ -351,13 +376,14 @@ function load_aggregated_view(target, data, words, figureclass, figurevalue, fty
 						var occ = 0;
 						var total = 0;
 						for (f of figureIndices) {
-							total += cur2["figures"][f]["NumberOfWords"];
+							total += parseInt(cur2["figures"][f]["NumberOfWords"]);
 							try {
-								occ += cur2["figures"][f]["freq"][cur]["c"];
+								occ += parseInt(cur2["figures"][f]["freq"][cur]["c"]);
 							} catch (err) {
-								console.error(err);
+								// console.error(err);
 							}
 						}
+						//console.log(total);
 						var yvalue = 0;
 						try {
 							yvalue = occ / total;
@@ -365,16 +391,12 @@ function load_aggregated_view(target, data, words, figureclass, figurevalue, fty
 							// console.err;
 						} finally {
 						};
-						var ret = {
-							x:parseInt(cur2["meta"]["ReferenceDate"]),
-							y:yvalue,
-							name:cur2["meta"]["authors"][0]["Name"] + ": "+cur2["meta"]["documentTitle"]+("translators" in cur2["meta"]?" (transl.: "+cur2["meta"]["translators"][0]["Name"]+")":"")
-						};
+						// var ret = parseInt(cur2["meta"]["ReferenceDate"]);
 						return yvalue; // ret;
 					})
 				};
 			});
-			console.log(series);
+			// console.log(series);
 	$(target).highcharts(
 		{
 			chart: {
@@ -403,27 +425,51 @@ function load_aggregated_view(target, data, words, figureclass, figurevalue, fty
 
 function draw () {
 	clean();
+	var numWords = 2;
 	var words = {};
-	var ft = $("#figuretype").val();
+	var ft = $("#figuretype").val().split(".");
 	var vt = $("#valuetype").val();
 	if ($("#words_entered:checked").length>0) {
 		for (w of $("#words").val().split("\n")) {
 			words[w] = 1;
 		}
 	}
+	var posTags = [];
+	var useEveryPosTag = $("#words_mf_everything:checked").length>0;
+	if ($("#words_mf_nouns:checked").length>0) {
+		posTags.push("NN");
+	}
+	if ($("#words_mf_verbs:checked").length>0) {
+		posTags.push("VV");
+	}
+	if ($("#words_mf_adjectives:checked").length>0) {
+		posTags.push("ADJ");
+	}
 	if ($("#words_most_frequent:checked").length>0) {
 		for (doc of data) {
-			if (ft in doc["figures"]) {
-				var array = Object.keys(doc["figures"][ft]["wordHash"]);
-				array.sort(function(a,b) {
-					return doc["figures"][ft]["wordHash"][b][vt] - doc["figures"][ft]["wordHash"][a][vt];
-				});
-				for (var i = 0; i < 2; i++) {
-					words[array[i]] = 1;
+			var array = new Object();
+			try {
+				// console.log(ft);
+				for (figIndex of doc["ftypes"][ft[0]][ft[1]]) {
+					var figure = doc["figures"][figIndex];
+					for (word in figure["freq"]) {
+						var p = figure["freq"][word]["pos"]
+						if (useEveryPosTag || posTags.includes(p))
+							array[word] = figure["freq"][word]["c"];
+					}
 				}
+				var mfl = Object.keys(array).sort(function (a,b) {
+					return array[b] - array[a];
+				});
+				for (var i = 0; i < numWords; i++) {
+					words[mfl[i]] = 1;
+				}
+				// console.log(mfl);
+			} catch (err) {	
+				// console.error(err);
 			}
 		}
 	}
-	
-	load_aggregated_view("#tabs", data, Object.keys(words), "RJType", ft, vt);
+	// console.log(words);
+	load_aggregated_view("#tabs", data, Object.keys(words), ft[0], ft[1], vt);
 }

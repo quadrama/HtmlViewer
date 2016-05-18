@@ -1,10 +1,10 @@
-function load(target, data, words, figuretype, ftype) {
+function load(target, data, words, figureclass, figurevalue, ftype) {
 	var docs = [];
 	var sp = [];
-	for (var i = 0; i < data.docs.length; i++) {
+	for (var i = 0; i < data.length; i++) {
 		//console.log(data.docs[i]);
 		try {
-			if ("wordHash" in data.docs[i]["figures"][figuretype] && parseInt(data.docs[i]["document"]["ReferenceDate"]) > 0) {
+			if (data.docs[i]["ftypes"][figureclass][figurevalue].length>0) {
 				docs.push(data.docs[i]);
 			}
 		} catch (err) {}
@@ -19,18 +19,25 @@ function load(target, data, words, figuretype, ftype) {
 					marker:{radius:4},
 					name : cur,
 					data : docs.map(function(cur2, _, _) {
+						var figureIndices = cur2["ftypes"][figureclass][figurevalue];
+						var occ = 0;
+						var total = 0;
+						for (f of figureIndices) {
+							total += cur2["figures"][f]["NumberOfWords"];
+							occ += cur2["figures"][f]["freq"][cur]["c"];
+						}
 						// console.log(cur2.document);
 						var yvalue = 0;
 						try {
-							yvalue = parseFloat(cur2["figures"][figuretype]["wordHash"][cur][ftype]);
+							yvalue = occ / total;
 						} catch (err) {
 							// console.err;
 						} finally {
 						};
 						var ret = {
-							x:parseInt(cur2["document"]["ReferenceDate"]),
+							x:parseInt(cur2["meta"]["ReferenceDate"]),
 							y:yvalue,
-							name:cur2["author"]["Name"] + ": "+cur2["document"]["documentTitle"]+("transl" in cur2?" (transl.: "+cur2["transl"]["Name"]+")":"")
+							name:cur2["authors"][0]["Name"] + ": "+cur2["meta"]["documentTitle"]+("transl" in cur2?" (transl.: "+cur2["translators"][0]["Name"]+")":"")
 						};
 						return yvalue; // ret;
 					})
@@ -86,5 +93,5 @@ function draw () {
 		}
 	}
 	
-	load("#hc", data, Object.keys(words), ft, vt);
+	load("#content", data, Object.keys(words), ft, vt);
 }
