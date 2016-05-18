@@ -50,27 +50,31 @@
 <hr/>
 <div>
 	<h3>Corpus View</h3>
-			Select words to display:<br/>
-		<div>
-			<input type="checkbox" id="words_most_frequent" checked="checked">Most frequent lemma+pos
-			<div style="margin-left:10px;">
-				<input type="checkbox" id="words_mf_nouns" checked="checked">include Nouns (NN)<br/>
-				<input type="checkbox" id="words_mf_verbs" checked="checked">include Verbs (VV)<br/>
-				<input type="checkbox" id="words_mf_adjectives" checked="checked">include Adjectives (ADJ)<br/>
-				<input type="checkbox" id="words_mf_everything">include Everything<br/>
-			</div>
+	Select words to display:<br/>
+	<div>
+		<input type="checkbox" id="words_most_frequent" checked="checked" />Most frequent lemma+pos
+		<div style="margin-left:10px;">
+			<input type="checkbox" id="words_mf_nouns" checked="checked">include Nouns (NN)<br/>
+			<input type="checkbox" id="words_mf_verbs" checked="checked">include Verbs (VV)<br/>
+			<input type="checkbox" id="words_mf_adjectives" checked="checked">include Adjectives (ADJ)<br/>
+			<input type="checkbox" id="words_mf_everything">include Everything<br/>
 		</div>
+	</div>
+	<div>
 		<input type="checkbox" id="words_entered" checked="checked">These lemma+pos (lowercase):<br/>
 		<textarea id="words" cols="20" rows="10">liebe.NN
 leidenschaft.NN
 lieben.VV</textarea>
 	</div>
-	<div>
-	Figure type<br/>
-	<select id="figuretype">
-	</select>
+	<div id="wordfield">
+		<p>Word fields</p>
+		
 	</div>
-	
+	<div>
+		Figure type<br/>
+		<select id="figuretype"></select>
+	</div>
+</div>
 	<div><a href="javascript:draw()">Update</a></div>
 </div>
 	

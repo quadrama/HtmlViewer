@@ -314,6 +314,7 @@ function init(data) {
 		return a["meta"]["ReferenceDate"] - b["meta"]["ReferenceDate"];
 	});
 	var ftypes = {};
+	var wordfields = {};
 	for (var i = 0; i < data.length; i++) {
 		$("#docselect").append("<option value=\""+i+"\">"+data[i]["meta"]["DisplayId"]+"</option>");
 		for (var ftype in data[i]["ftypes"]) {
@@ -322,6 +323,9 @@ function init(data) {
 			for (var fvalue in data[i]["ftypes"][ftype]) {
 				ftypes[ftype][fvalue] = 1;
 			}
+		}
+		for (var wf in data[i]["fields"]){
+			wordfields[wf] = 1;
 		}
 	}
 	// console.log(ftypes);
@@ -336,6 +340,9 @@ function init(data) {
 			$(og).append("<option value=\""+ftype+"."+fvalue+"\">"+fvalue+"</option>");
 		$("#figuretype").append(og);
 	}
+	for (wf in wordfields) {
+		$("#wordfield").append("<input type=\"checkbox\" name=\"field\" value=\""+wf+"\" />"+wf+"<br/>");
+	}
 	
 	load();
 }
@@ -349,7 +356,8 @@ function dragstart(d) {
 }
 
 
-function load_aggregated_view(target, data, words, figureclass, figurevalue, ftype) {
+function load_aggregated_view(target, data, words, figureclass, figurevalue, ftype, fields) {
+	console.log(fields);
 	$("#title").text("Corpus Overview");
 	var docs = [];
 	var sp = [];
@@ -365,38 +373,72 @@ function load_aggregated_view(target, data, words, figureclass, figurevalue, fty
 	docs = docs.sort(function(a,b) {
 		return parseInt(a.meta.ReferenceDate) - parseInt(b.meta.ReferenceDate);
 	});
-	// console.log(docs);
+	console.log(docs);
 	var series = words.map(function(cur, index, _) {
-				return {
-					lineWidth:1,
-					marker:{radius:4},
-					name : cur,
-					data : docs.map(function(cur2, _, _) {
-						var figureIndices = cur2["ftypes"][figureclass][figurevalue];
-						var occ = 0;
-						var total = 0;
-						for (f of figureIndices) {
-							total += parseInt(cur2["figures"][f]["NumberOfWords"]);
-							try {
-								occ += parseInt(cur2["figures"][f]["freq"][cur]["c"]);
-							} catch (err) {
-								// console.error(err);
-							}
+		var d = docs.map(function(cur2, _, _) {
+			// console.log(cur2);
+			var figureIndices = cur2["ftypes"][figureclass][figurevalue];
+			var occ = 0;
+			var total = 0;
+			for (f of figureIndices) {
+				total += parseInt(cur2["figures"][f]["NumberOfWords"]);
+				try {
+					occ += parseInt(cur2["figures"][f]["freq"][cur]["c"]);
+				} catch (err) {
+					// console.error(err);
+				}
+			}
+			//console.log(total);
+			var yvalue = 0;
+			try {
+				if (total > 0) 
+					yvalue = occ / total;
+				else yvalue = 0;
+			} catch (err) {
+				// console.err;
+			} finally {
+			};
+			// var ret = parseInt(cur2["meta"]["ReferenceDate"]);
+			return yvalue; // ret;
+		});
+		// console.log(d);
+		return {
+			lineWidth:1,
+			marker:{radius:4},
+			name : cur,
+			data : d
+		};
+	}).concat(
+		fields.map(function(cur,_, _) {
+			var d = docs.map(function(cur2, _, _) {
+				var figureIndices = cur2["ftypes"][figureclass][figurevalue];
+				var occ = 0;
+				var total = 0;
+				for (var f of figureIndices) {
+					total += parseInt(cur2["figures"][f]["NumberOfWords"]);
+					if ("utt" in cur2["figures"][f])
+					for (var u of cur2["figures"][f]["utt"]) {
+						if (u in cur2["utt"] && "s" in cur2["utt"][u])
+						for (var s of cur2["utt"][u]["s"]) {
+							if ("fields" in s)
+							occ += s["fields"].filter(function(a) {
+								return a === cur;
+							}).length;
 						}
-						//console.log(total);
-						var yvalue = 0;
-						try {
-							yvalue = occ / total;
-						} catch (err) {
-							// console.err;
-						} finally {
-						};
-						// var ret = parseInt(cur2["meta"]["ReferenceDate"]);
-						return yvalue; // ret;
-					})
-				};
+					}
+				}
+				if (total == 0)
+					return 0;
+				return 93*(occ / total) / cur2["fields"][cur]["Length"];
 			});
-			// console.log(series);
+			return {
+				lineWidth:1,
+				marker:{radius:4},
+				name : cur,
+				data : d
+			}; 
+		}));
+	console.log(series);
 	$(target).highcharts(
 		{
 			chart: {
@@ -427,6 +469,12 @@ function draw () {
 	clean();
 	var numWords = 2;
 	var words = {};
+	var fields = {};
+	$("input[name='field']:checked").each(function(index, element) {
+		fields[$(element).val()] = 1;
+	});
+	
+	
 	var ft = $("#figuretype").val().split(".");
 	var vt = $("#valuetype").val();
 	if ($("#words_entered:checked").length>0) {
@@ -471,5 +519,5 @@ function draw () {
 		}
 	}
 	// console.log(words);
-	load_aggregated_view("#tabs", data, Object.keys(words), ft[0], ft[1], vt);
+	load_aggregated_view("#tabs", data, Object.keys(words), ft[0], ft[1], vt, Object.keys(fields));
 }
