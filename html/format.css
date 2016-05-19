@@ -70,6 +70,14 @@
 	font-size:large;
 }
 
+#text .toccontainer{
+	margin-bottom:20px;
+}
+
+.highlight {
+	background-color:yellow;
+}
+
 #settings {
 	width:200px;
 	position:fixed;

@@ -1,6 +1,8 @@
-var colors = [ "#EEF", "#FEE", "#EFE" ];
+var colors = [ "#EEF", "#FEE", "#EFE"]
+var strongcolors = ["#AAF", "#FAA", "#AFA", "#55F", "#F55", "#5F5" ];
 var wordThreshold = 500;
 var ftypes = ["Polarity", "RJType", "Gender"];
+var colorIndex = 0;
 
 function loadChart(data) {
 	$("#tabs > ul").append("<li><a href=\"#hc\">Figure Presence Chart</a></li>");
@@ -226,7 +228,19 @@ function loadText(data) {
 			"<li><a href=\"#text\">Text</a></li>");
 	$("#tabs").append("<div id=\"text\"></div>");
 	
-	$("#text").append("<div><p>Table of Contents</p><ul class=\"toc\"></ul></div>");
+	$("#text").append("<div class=\"toccontainer\"><p>Table of Contents</p><ul class=\"toc\"></ul><p>Dramatis Personae</p><ul class=\"dramatispersonae\"></ul></div>");
+	
+	for (var fIndex = 0; fIndex < data["figures"].length; fIndex++) {
+		var figure = data["figures"][fIndex];
+		$("ul.dramatispersonae").append("<li class=\"f"+fIndex+"\"><input type=\"checkbox\" name=\"highligh\" value=\"f"+fIndex+"\"\"/>"+figure["Reference"]+"</li>");
+	}
+	$("ul.dramatispersonae input[type='checkbox']").change(function(event) {
+		var val = $(event.target).val();
+		if ($(event.target).is(":checked"))
+			$("."+val).css("background-color",strongcolors[(colorIndex++)%strongcolors.length]);
+		else 
+			$("."+val).css("background-color","");
+	});
 	
 	var actIndex = 1;
 	var segment = document.createElement("div");
@@ -248,7 +262,7 @@ function loadText(data) {
 		var scenes = data["scs"].filter(function(a) {
 			return parseInt(a["begin"]) >= parseInt(act["begin"]) && parseInt(a["end"]) <= parseInt(act["end"]);
 		}).sort(function (a,b) {return parseInt(a["begin"])-parseInt(b["begin"])});
-		console.log(scenes);
+		// console.log(scenes);
 		for (scene of scenes) {
 			var sceneElement = document.createElement("div");
 			var anchor = "act"+actIndex+"_scene"+sceneIndex;
@@ -278,7 +292,8 @@ function loadText(data) {
 			$(segment).append(sceneElement);
 			$("#text ul.toc").append(actToc);
 		}
-		$("#text").append(segment);	
+		$("#text").append(segment);
+		$(".toccontainer").accordion({header:"p",heightStyle:"content",collapsible:true});
 	}
 	
 }
@@ -468,7 +483,8 @@ function load_aggregated_view(target, data, words, figureclass, figurevalue, fty
 			lineWidth:1,
 			marker:{radius:4},
 			name : cur,
-			data : d
+			data : d,
+			visible: ($("#everythingHidden:checked").length == 0)
 		};
 	}).concat(
 		fields.map(function(cur,_, _) {
@@ -497,13 +513,15 @@ function load_aggregated_view(target, data, words, figureclass, figurevalue, fty
 				lineWidth:1,
 				marker:{radius:4},
 				name : cur,
-				data : d
+				data : d,
+				visible: ($("#everythingHidden:checked").length == 0)
 			}; 
 		}));
-	console.log(series);
+	// console.log(series);
 	$(target).highcharts(
 		{
 			chart: {
+				height:"600",
 				type: "line"
 			},
 			title : {
@@ -531,7 +549,7 @@ function load_aggregated_view(target, data, words, figureclass, figurevalue, fty
 
 function draw () {
 	clean();
-	var numWords = 2;
+	var numWords = $("input#maxlemma").val();
 	var words = {};
 	var fields = {};
 	$("input[name='field']:checked").each(function(index, element) {
