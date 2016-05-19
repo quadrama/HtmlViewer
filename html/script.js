@@ -3,7 +3,7 @@ var wordThreshold = 500;
 var ftypes = ["Polarity", "RJType", "Gender"];
 
 function loadChart(data) {
-	$("#tabs ul").append("<li><a href=\"#hc\">Figure Presence Chart</a></li>");
+	$("#tabs > ul").append("<li><a href=\"#hc\">Figure Presence Chart</a></li>");
 	$("#tabs").append("<div class=\"hc\" id=\"hc\"></div>");
 	var segments;
 	if ("scs" in data) {
@@ -92,7 +92,7 @@ function loadChart(data) {
 }
 
 function loadTable(data) {
-	$("#tabs ul")
+	$("#tabs > ul")
 			.append("<li><a href=\"#speech\">Figure Speech Table</a></li>");
 	$("#tabs")
 			.append("<div id=\"speech\"><table width=\"100%\"></table></div>");
@@ -118,7 +118,7 @@ function loadTable(data) {
 }
 
 function loadFieldTable(data) {
-	$("#tabs ul").append("<li><a href=\"#fields\">Figures and Semantic Fields</a></li>");
+	$("#tabs > ul").append("<li><a href=\"#fields\">Figures and Semantic Fields</a></li>");
 	$("#tabs").append("<div id=\"fields\"><h3>Chart</h3><div class=\"chart hc\"></div><h3>Table</h3><div><table width=\"100%\"></table></div></div>");
 	
 	
@@ -220,8 +220,71 @@ function loadFieldTable(data) {
 	
 }
 
+function loadText(data) {
+	console.log(data);
+	$("#tabs > ul").append(
+			"<li><a href=\"#text\">Text</a></li>");
+	$("#tabs").append("<div id=\"text\"></div>");
+	
+	$("#text").append("<div><p>Table of Contents</p><ul class=\"toc\"></ul></div>");
+	
+	var actIndex = 1;
+	var segment = document.createElement("div");
+	for (act of data["acts"].sort(function(a,b) {return parseInt(a["begin"])-parseInt(b["begin"])})) {
+		console.log(act);
+		segment = document.createElement("div");
+		var anchor = "act"+actIndex;
+		var actToc = document.createElement("ul");
+		if ("head" in act) {
+			$("ul.toc").append("<li><a href=\"#"+anchor+"\">"+act["head"]+"</a></li>");
+			$(segment).append("<div class=\"actheading\"><a name=\"#"+anchor+"\">"+act["head"]+"</a></div>");
+			actIndex++;
+		} else {
+			$("ul.toc").append("<li><a href=\"#"+anchor+"\">"+actIndex+". Act</a></li>");
+			$(segment).append("<div class=\"actheading\"><a name=\"#"+anchor+"\">"+(actIndex++)+". Act</a></div>");
+		}
+		
+		var sceneIndex = 1;
+		var scenes = data["scs"].filter(function(a) {
+			return parseInt(a["begin"]) >= parseInt(act["begin"]) && parseInt(a["end"]) <= parseInt(act["end"]);
+		}).sort(function (a,b) {return parseInt(a["begin"])-parseInt(b["begin"])});
+		console.log(scenes);
+		for (scene of scenes) {
+			var sceneElement = document.createElement("div");
+			var anchor = "act"+actIndex+"_scene"+sceneIndex;
+			if ("head" in scene) {
+				$(actToc).append("<li><a href=\"#"+anchor+"\">"+scene["head"]+"</a></li>");
+				$(sceneElement).append("<div class=\"sceneheading\"><a name=\""+anchor+"\">"+scene["head"]+"</a></div>");
+				sceneIndex++;
+			} else {
+				$(actToc).append("<li><a href=\"#"+anchor+"\">"+sceneIndex+". Scene</a></li>");
+				$(sceneElement).append("<div class=\"sceneheading\"><a name=\""+anchor+"\">"+(sceneIndex++)+". Scene</a></div>");
+			}
+			for (u of data["utt"].filter(function (a) {
+				return a["begin"] >= scene["begin"] && a["end"] <= scene["end"];
+			})) {
+				var figure = data["figures"][u["f"]];
+				var utteranceElement = document.createElement("div");
+				$(utteranceElement).addClass("utterance");
+				$(utteranceElement).attr("data-begin", u["begin"]);
+				$(utteranceElement).attr("data-end", u["end"]);
+				$(utteranceElement).append("<div class=\"speaker f"+u["f"]+"\">"+figure["Reference"]+"</div>");
+				if ("s" in u)
+				for (s of u["s"]) {
+					$(utteranceElement).append("<div class=\"speech\">"+s["txt"]+"</div>");
+				}
+				$(sceneElement).append(utteranceElement);
+			}
+			$(segment).append(sceneElement);
+			$("#text ul.toc").append(actToc);
+		}
+		$("#text").append(segment);	
+	}
+	
+}
+
 function loadNetwork(data) {
-	$("#tabs ul").append(
+	$("#tabs > ul").append(
 			"<li><a href=\"#mentionnetwork\">Mention Network</a></li>");
 
 	$("#tabs").append(
@@ -285,6 +348,7 @@ function load() {
 	document.title = title;
 	$("#title").text("Drama View");
 	$("#title").after("<h2>"+title+"</h2>");
+	loadText(mydata);
 	loadChart(mydata);
 	loadTable(mydata);
 	if ("network" in mydata)
@@ -357,7 +421,6 @@ function dragstart(d) {
 
 
 function load_aggregated_view(target, data, words, figureclass, figurevalue, ftype, fields) {
-	console.log(fields);
 	$("#title").text("Corpus Overview");
 	var docs = [];
 	var sp = [];
@@ -373,10 +436,9 @@ function load_aggregated_view(target, data, words, figureclass, figurevalue, fty
 	docs = docs.sort(function(a,b) {
 		return parseInt(a.meta.ReferenceDate) - parseInt(b.meta.ReferenceDate);
 	});
-	console.log(docs);
+	// console.log(docs);
 	var series = words.map(function(cur, index, _) {
 		var d = docs.map(function(cur2, _, _) {
-			// console.log(cur2);
 			var figureIndices = cur2["ftypes"][figureclass][figurevalue];
 			var occ = 0;
 			var total = 0;
@@ -444,7 +506,9 @@ function load_aggregated_view(target, data, words, figureclass, figurevalue, fty
 			chart: {
 				type: "line"
 			},
-			title : null,
+			title : {
+				text: figureclass+": "+figurevalue
+			},
 			series: series,
 			plotOptions: {
 				line: {
