@@ -74,6 +74,10 @@
 	margin-bottom:20px;
 }
 
+#text .StageDirection {
+	font-style:italic;
+}
+
 .highlight {
 	background-color:yellow;
 }

@@ -65,18 +65,21 @@ function loadChart(data) {
 									var uttObj = data["utt"][cur["utt"][i]];
 									if (typeof(uttObj) == "undefined")
 										continue;
-									if ("s" in uttObj)
-									for (sp of uttObj["s"]) {
-										utterances.push({
-											x:sp["begin"],
-											y:index,
-											name:sp["txt"]
-										});
-										utterances.push({
-											x:sp["end"],
-											y:index,
-											name:sp["txt"]
-										});
+									if ("sd" in uttObj)
+									for (spi of uttObj["sd"]) {
+										var sp = data["tp"][spi];
+										if (sp["type"]=="Speech") {
+											utterances.push({
+												x:sp["begin"],
+												y:index,
+												name:sp["txt"]
+											});
+											utterances.push({
+												x:sp["end"],
+												y:index,
+												name:sp["txt"]
+											});
+										}
 									}
 									utterances.push(null);
 								}
@@ -136,8 +139,8 @@ function loadFieldTable(data) {
 			var currentUtterance = data["utt"][cur["utt"][i]]
 			if ("s" in currentUtterance)
 			for (speech of currentUtterance.s) {
-				if ("fields" in speech) {
-					for (fname of speech["fields"]) {
+				if ("fields" in data["tp"][speech]) {
+					for (fname of data["tp"][speech]["fields"]) {
 						sum[fname]++;
 					}
 				}
@@ -168,8 +171,8 @@ function loadFieldTable(data) {
 					var currentUtterance = data["utt"][cur["utt"][i]]
 					if ("s" in currentUtterance)
 					for (speech of currentUtterance.s) {
-						if ("fields" in speech) {
-							for (fname of speech["fields"]) {
+						if ("fields" in data["tp"][speech]) {
+							for (fname of data["tp"][speech]["fields"]) {
 								sum[fname]++;
 							}
 						}
@@ -232,7 +235,7 @@ function loadText(data) {
 	
 	for (var fIndex = 0; fIndex < data["figures"].length; fIndex++) {
 		var figure = data["figures"][fIndex];
-		$("ul.dramatispersonae").append("<li class=\"f"+fIndex+"\"><input type=\"checkbox\" name=\"highligh\" value=\"f"+fIndex+"\"\"/>"+figure["Reference"]+"</li>");
+		$("ul.dramatispersonae").append("<li class=\"f"+fIndex+"\"><input type=\"checkbox\" name=\"highligh\" value=\"f"+fIndex+"\"\"/>"+figure["txt"]+"</li>");
 	}
 	$("ul.dramatispersonae input[type='checkbox']").change(function(event) {
 		var val = $(event.target).val();
@@ -283,9 +286,10 @@ function loadText(data) {
 				$(utteranceElement).attr("data-begin", u["begin"]);
 				$(utteranceElement).attr("data-end", u["end"]);
 				$(utteranceElement).append("<div class=\"speaker f"+u["f"]+"\">"+figure["Reference"]+"</div>");
-				if ("s" in u)
-				for (s of u["s"]) {
-					$(utteranceElement).append("<div class=\"speech\">"+s["txt"]+"</div>");
+				if ("sd" in u)
+				for (s of u["sd"]) {
+					var ct = data["tp"][s];
+					$(utteranceElement).append("<div class=\""+ct["type"]+"\">"+ct["txt"]+"</div>");
 				}
 				$(sceneElement).append(utteranceElement);
 			}
