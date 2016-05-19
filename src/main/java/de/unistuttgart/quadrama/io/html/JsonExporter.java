@@ -18,6 +18,7 @@ import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.tcas.Annotation;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Token;
@@ -32,8 +33,10 @@ import de.unistuttgart.ims.drama.api.FigureType;
 import de.unistuttgart.ims.drama.api.Scene;
 import de.unistuttgart.ims.drama.api.SceneHeading;
 import de.unistuttgart.ims.drama.api.Speech;
+import de.unistuttgart.ims.drama.api.StageDirection;
 import de.unistuttgart.ims.drama.api.Translator;
 import de.unistuttgart.ims.drama.api.Utterance;
+import de.unistuttgart.ims.drama.util.AnnotationComparator;
 import de.unistuttgart.ims.drama.util.DramaUtil;
 import de.unistuttgart.ims.uimautil.WordListDescription;
 import de.unistuttgart.quadrama.io.core.AbstractDramaConsumer;
@@ -86,26 +89,42 @@ public class JsonExporter extends AbstractDramaConsumer {
 				figureTypes.put("All", new JSONObject());
 			figureTypes.getJSONObject("All").append("all", fIndex);
 			freq.put(figure, new Counter<Pair<String, String>>());
-
 		}
 		json.put("ftypes", figureTypes);
+
+		// core text parts
+		ArrayList<Annotation> coreTextParts = new ArrayList<Annotation>();
+		coreTextParts.addAll(JCasUtil.select(aJCas, Speech.class));
+		coreTextParts.addAll(JCasUtil.select(aJCas, StageDirection.class));
+		coreTextParts.sort(new AnnotationComparator());
+
+		for (Annotation anno : coreTextParts) {
+			json.append("tp", typedConvert(anno, true, true));
+		}
 
 		// segments
 		for (Act act : JCasUtil.select(aJCas, Act.class)) {
 			List<ActHeading> ahl = JCasUtil.selectCovered(ActHeading.class, act);
-			if (ahl.isEmpty()) {
-				json.append("acts", convert(act, false));
-			} else {
-				json.append("acts", convert(act, false).put("head", ahl.get(0).getCoveredText()));
+			JSONObject aO = convert(act, false);
+			if (!ahl.isEmpty()) {
+				aO.put("head", ahl.get(0).getCoveredText());
 			}
-			for (Scene scene : JCasUtil.selectCovered(Scene.class, act)) {
-				List<SceneHeading> shl = JCasUtil.selectCovered(SceneHeading.class, scene);
-				if (shl.isEmpty()) {
-					json.append("scs", convert(scene, false));
-				} else {
-					json.append("scs", convert(scene, false).put("head", shl.get(0).getCoveredText()));
+			List<Scene> l = JCasUtil.selectCovered(Scene.class, act);
+			if (l.size() > 0)
+				for (Scene scene : l) {
+					List<SceneHeading> shl = JCasUtil.selectCovered(SceneHeading.class, scene);
+					JSONObject o = convert(scene, false);
+					if (!shl.isEmpty()) {
+						o.put("head", shl.get(0).getCoveredText());
+					}
+					o.put("ct", getCoveredCoreTextIds(aJCas, coreTextParts, scene));
+					json.append("scs", o);
 				}
+			else {
+				aO.put("ct", getCoveredCoreTextIds(aJCas, coreTextParts, act));
 			}
+			json.append("acts", aO);
+
 		}
 		// fields
 		JSONObject fieldsObject = new JSONObject();
@@ -130,7 +149,7 @@ public class JsonExporter extends AbstractDramaConsumer {
 				for (Field field : JCasUtil.selectCovered(Field.class, speech)) {
 					sObj.append("fields", field.getName());
 				}
-				obj.append("s", sObj);
+				obj.append("s", coreTextParts.indexOf(speech));// sObj);
 
 				// word frequencies
 				for (Token lemma : JCasUtil.selectCovered(Token.class, speech)) {
@@ -138,6 +157,7 @@ public class JsonExporter extends AbstractDramaConsumer {
 							mapPosTag(lemma.getPos().getPosValue())));
 				}
 			}
+			obj.put("sd", getCoveredCoreTextIds(aJCas, coreTextParts, utterance));
 			json.append("utt", obj);
 			figureObjects.get(f).append("utt", (json.getJSONArray("utt").length() - 1));
 		}
@@ -194,6 +214,26 @@ public class JsonExporter extends AbstractDramaConsumer {
 		return object;
 	}
 
+	public static <T extends Annotation> JSONObject typedConvert(T annotation, boolean includeText,
+			boolean includeFields) {
+		JSONObject object = new JSONObject();
+		if (includeText)
+			object.put("txt", annotation.getCoveredText());
+		object.put("type", annotation.getType().getShortName());
+		for (Feature feature : annotation.getType().getFeatures()) {
+			if (feature.getRange().isPrimitive()) {
+				object.put(feature.getShortName(), annotation.getFeatureValueAsString(feature));
+			}
+		}
+		if (includeFields)
+			for (Field a : JCasUtil.selectCovered(Field.class, annotation)) {
+				object.append("fields", a.getName());
+			}
+
+		return object;
+
+	}
+
 	@Override
 	public void collectionProcessComplete() throws AnalysisEngineProcessException {
 		if (collectionFilename == null)
@@ -225,5 +265,19 @@ public class JsonExporter extends AbstractDramaConsumer {
 		if (s.startsWith("A"))
 			return s.substring(0, 3);
 		return s.substring(0, 2);
+	}
+
+	public static JSONArray getCoveredCoreTextIds(JCas jcas, List<Annotation> coreTextList, Annotation covering) {
+		JSONArray arr = new JSONArray();
+		ArrayList<Annotation> coreTextParts = new ArrayList<Annotation>();
+		coreTextParts.addAll(JCasUtil.selectCovered(jcas, Speech.class, covering));
+		coreTextParts.addAll(JCasUtil.selectCovered(jcas, StageDirection.class, covering));
+		coreTextParts.sort(new AnnotationComparator());
+
+		for (Annotation a : coreTextParts) {
+			arr.put(coreTextList.indexOf(a));
+		}
+
+		return arr;
 	}
 }
