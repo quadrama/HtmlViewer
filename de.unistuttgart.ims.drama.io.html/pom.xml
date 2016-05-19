@@ -1,19 +1,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>de.unistuttgart.ims</groupId>
-    <artifactId>de.unistuttgart.ims.drama</artifactId>
-    <version>0.2-SNAPSHOT</version>
-  </parent>
-  <artifactId>de.unistuttgart.ims.drama.io.html</artifactId>
-  <name>de.unistuttgart.ims.drama.io.html</name>
+  <artifactId>de.unistuttgart.ims.drama.ui.json</artifactId>
+  <name>de.unistuttgart.ims.drama.ui.json</name>
   <dependencies>
   	<dependency>
   		<groupId>de.tudarmstadt.ukp.dkpro.core</groupId>
   		<artifactId>
   			de.tudarmstadt.ukp.dkpro.core.api.io-asl
   		</artifactId>
-  		<version>${dkpro.version}</version>
+  		<version>1.7.0</version>
   	</dependency>
   	<dependency>
   		<groupId>org.json</groupId>
@@ -25,13 +20,14 @@
   		<artifactId>
   			de.tudarmstadt.ukp.dkpro.core.io.xmi-asl
   		</artifactId>
-  		<version>${dkpro.version}</version>
+  		<version>1.7.0</version>
   		<scope>test</scope>
   	</dependency>
   	<dependency>
   		<groupId>junit</groupId>
   		<artifactId>junit</artifactId>
   		<scope>test</scope>
+  		<version>4.12</version>
   	</dependency>
   	<dependency>
   		<groupId>de.unistuttgart.ims</groupId>
@@ -41,19 +37,6 @@
   	<dependency>
   		<groupId>de.unistuttgart.ims</groupId>
   		<artifactId>de.unistuttgart.ims.drama.core</artifactId>
-  		<version>0.2-SNAPSHOT</version>
-  	</dependency>
-  	<dependency>
-  		<groupId>de.tudarmstadt.ukp.dkpro.core</groupId>
-  		<artifactId>
-  			de.tudarmstadt.ukp.dkpro.core.languagetool-asl
-  		</artifactId>
-  		<version>${dkpro.version}</version>
-  		<scope>test</scope>
-  	</dependency>
-  	<dependency>
-  		<groupId>de.unistuttgart.ims</groupId>
-  		<artifactId>de.unistuttgart.ims.drama.graph</artifactId>
   		<version>0.2-SNAPSHOT</version>
   	</dependency>
   	<dependency>
@@ -69,6 +52,7 @@
   	<dependency>
   		<groupId>de.unistuttgart.ims</groupId>
   		<artifactId>uimautil</artifactId>
+  		<version>0.4.5-SNAPSHOT</version>
   	</dependency>
   	<dependency>
   		<groupId>de.unistuttgart.ims</groupId>
@@ -76,4 +60,6 @@
   		<version>0.2-SNAPSHOT</version>
   	</dependency>
   </dependencies>
+  <groupId>de.unistuttgart.ims</groupId>
+  <version>0.1-SNAPSHOT</version>
 </project>
