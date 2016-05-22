@@ -13,7 +13,9 @@ function loadChart(data) {
 	} else /* if ("seg1" in data["segments"]) */{
 		segments = data["acts"];
 	}
-	var pb = segments.map(function(cur, i, _) {
+	var pb = segments.sort(function(a,b) {
+		return a["begin"]-b["begin"];
+	}).map(function(cur, i, _) {
 		return {
 			from : cur["begin"],
 			to : cur["end"],
@@ -37,11 +39,11 @@ function loadChart(data) {
 							zoomType : 'x'
 						},
 						xAxis : {
-							plotBands : pb
+							plotBands: pb,
+							max: pb[pb.length-1]["to"]
 						},
 						yAxis : {
 							max:figures.length
-						// categories: speakers
 						},
 						plotOptions : {
 							series : {
