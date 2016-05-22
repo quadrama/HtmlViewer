@@ -27,27 +27,76 @@ function loadChart(data) {
 				rotation : 270,
 				align : "center",
 				verticalAlign : "bottom",
-				y : -30
+				y : 30
 			}
 		}
 	});
 	var figures = data["figures"];
+	var figureNames = [];
+	var series = figures.sort(function(a,b) {
+		return a["NumberOfWords"] - b["NumberOfWords"];
+	}).map(function(cur, index, _) {
+		figureNames.push(cur["txt"]);
+		// console.log(cur);
+		var utterances = [];
+		if ("utt" in cur) 
+			for (var i = 0; i < cur["utt"].length; i++) {
+				var uttObj = data["utt"][cur["utt"][i]];
+				if (typeof(uttObj) == "undefined")
+					continue;
+				if ("s" in uttObj)
+					for (sp of uttObj["s"]) {
+						utterances.push({
+							x:sp["begin"],
+							y:index,
+							name:sp["txt"]
+						});
+						utterances.push({
+							x:sp["end"],
+							y:index,
+							name:sp["txt"]
+						});
+					}
+				utterances.push(null);
+			}
+		var r = {
+			name:cur["Reference"],
+			data:utterances,
+			lineWidth:3,
+			visible:(cur["NumberOfWords"]>wordThreshold),
+			turboThreshold:0
+		};
+		// console.log(r);
+		return r;
+	});
 
 	$("#hc").highcharts(
 					{
+						legend:{
+							y:200
+						},
 						title : null,
 						chart : {
 							type : 'line',
-							zoomType : 'x'
+							zoomType : 'xy',
+							spacingBottom:230
 						},
 						xAxis : {
 							plotBands: pb,
 							min: 0,
-							max: end+1
+							max: end+1,
+							labels: {
+								enabled: false
+							}
 						},
 						yAxis : {
-							min: 0,
-							max: figures.length
+							//min: 0,
+							max: figures.length-1,
+							labels: {
+								enabled:true
+							},
+							title:null,
+							categories:figureNames
 						},
 						plotOptions : {
 							series : {
@@ -59,43 +108,9 @@ function loadChart(data) {
 							crosshairs : true,
 							headerFormat : "",
 							useHTML : true,
-							pointFormat : "<div style=\"width:200px;max-width:300px; white-space:normal\"><span style=\"color:{point.color}\">{series.name}</span>: {point.name}</div>"
+							pointFormat : "<div style=\"width:200px;max-width:300px; white-space:normal\"><span style=\"color:{point.color};font-weight:bold;\">{series.name}</span>: {point.name}</div>"
 						},
-						series : figures.sort(function(a,b) {
-							return a["NumberOfWords"] - b["NumberOfWords"];
-						}).map(function(cur, index, _) {
-							// console.log(cur);
-							var utterances = [];
-							if ("utt" in cur) 
-								for (var i = 0; i < cur["utt"].length; i++) {
-									var uttObj = data["utt"][cur["utt"][i]];
-									if (typeof(uttObj) == "undefined")
-										continue;
-									if ("s" in uttObj)
-									for (sp of uttObj["s"]) {
-										utterances.push({
-											x:sp["begin"],
-											y:index,
-											name:sp["txt"]
-										});
-										utterances.push({
-											x:sp["end"],
-											y:index,
-											name:sp["txt"]
-										});
-									}
-									utterances.push(null);
-								}
-							var r = {
-								name:cur["Reference"],
-								data:utterances,
-								lineWidth:3,
-								visible:(cur["NumberOfWords"]>wordThreshold),
-								turboThreshold:0
-							};
-							// console.log(r);
-							return r;
-						})
+						series: series
 					});
 }
 
