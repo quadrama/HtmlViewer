@@ -13,12 +13,14 @@ function loadChart(data) {
 	} else /* if ("seg1" in data["segments"]) */{
 		segments = data["acts"];
 	}
+	var end = 0;
 	var pb = segments.sort(function(a,b) {
 		return a["begin"]-b["begin"];
 	}).map(function(cur, i, _) {
+		if (parseInt(cur["end"]) > end) end = parseInt(cur["end"]);
 		return {
-			from : cur["begin"],
-			to : cur["end"],
+			from : parseInt(cur["begin"]),
+			to : parseInt(cur["end"]),
 			color : colors[i % 3],
 			label : {
 				text : cur["head"],
@@ -40,10 +42,12 @@ function loadChart(data) {
 						},
 						xAxis : {
 							plotBands: pb,
-							max: pb[pb.length-1]["to"]
+							min: 0,
+							max: end+1
 						},
 						yAxis : {
-							max:figures.length
+							min: 0,
+							max: figures.length
 						},
 						plotOptions : {
 							series : {
