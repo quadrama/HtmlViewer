@@ -187,7 +187,25 @@ public class JsonExporter extends AbstractDramaConsumer {
 			object.put("type", annotation.getType().getName());
 		for (Feature feature : annotation.getType().getFeatures()) {
 			if (feature.getRange().isPrimitive()) {
-				object.put(feature.getShortName(), annotation.getFeatureValueAsString(feature));
+				String fvalue = annotation.getFeatureValueAsString(feature);
+				if (feature.getRange().getName().equalsIgnoreCase("uima.cas.Integer"))
+					object.put(feature.getShortName(), Integer.parseInt(fvalue));
+				else if (feature.getRange().getName().equalsIgnoreCase("uima.cas.Double")) {
+					double v = Double.parseDouble(fvalue);
+					if (Double.isFinite(v))
+						object.put(feature.getShortName(), v);
+					else if (Double.isInfinite(v))
+						object.put(feature.getShortName(), Double.MAX_VALUE);
+					else
+						object.put(feature.getShortName(), 0.0);
+
+				} else if (feature.getRange().getName().equalsIgnoreCase("uima.cas.Boolean"))
+					object.put(feature.getShortName(), Boolean.parseBoolean(fvalue));
+				else if (feature.getRange().getName().equalsIgnoreCase("uima.cas.Long"))
+					object.put(feature.getShortName(), Long.parseLong(fvalue));
+				else
+					object.put(feature.getShortName(), fvalue);
+
 			}
 		}
 
