@@ -31,11 +31,12 @@ function loadChart(data) {
 			}
 		}
 	});
-	var figures = data["figures"];
+	var figures = data["figures"].map(function(_,ind,_) {return ind});
 	var figureNames = [];
 	var series = figures.sort(function(a,b) {
-		return a["NumberOfWords"] - b["NumberOfWords"];
-	}).map(function(cur, index, _) {
+		return data["figures"][a]["NumberOfWords"] - data["figures"][b]["NumberOfWords"];
+	}).map(function(cur2, index, _) {
+		var cur = data["figures"][cur2];
 		figureNames.push(cur["txt"]);
 		// console.log(cur);
 		var utterances = [];
@@ -115,28 +116,70 @@ function loadChart(data) {
 }
 
 function loadTable(data) {
+	var wsize = 1000;
+	
 	$("#tabs > ul")
 			.append("<li><a href=\"#speech\">Figure Speech Table</a></li>");
 	$("#tabs")
-			.append("<div id=\"speech\"><table width=\"100%\"></table></div>");
+			.append("<div id=\"speech\"><h3>Chart</h3><div class=\"chart hc\"></div><h3>Table</h3><div><table width=\"100%\"></table></div></div>");
+
+	
+
+	var maxValues = {
+		NumberOfWords:0,
+		NumberOfUtterances:0,
+		UtteranceLengthArithmeticMean:0,
+		TypeTokenRatio100:0,
+	};
+
+	var mydata = data["figures"].map(function(cur, ind, arr) {
+		for (si in maxValues) {
+			var v = cur[si];
+			if (cur["NumberOfWords"]>wsize && v > maxValues[si])
+				maxValues[si] = v;
+		}
+	});
+	console.log(mydata);
+	$("#speech .chart").highcharts({
+		title:null,
+		chart: {
+			type: "column"
+		},
+		xAxis: {
+			categories: Object.keys(maxValues)
+		},
+		yAxis:{
+			min:0,
+			max:1
+		},
+		series: data["figures"].map(function (cur, ind, _) {
+			return {
+				name: cur["Reference"],
+				data: [
+					cur["NumberOfWords"]/maxValues["NumberOfWords"],
+					cur["NumberOfUtterances"]/maxValues["NumberOfUtterances"],
+					cur["UtteranceLengthArithmeticMean"]/maxValues["UtteranceLengthArithmeticMean"],
+					(cur["NumberOfWords"]>wsize?cur["TypeTokenRatio100"]/maxValues["TypeTokenRatio100"]:0)
+				]
+			};
+		})
+	});
 
 	$("#speech table").DataTable({
-		data: data["figures"].map(function(cur, ind, arr) {
-			return [
-				cur['Reference'],
-				cur['NumberOfWords'],
-				cur['NumberOfUtterances'],
-				Number(cur['UtteranceLengthArithmeticMean'])
-					.toFixed(2) ]
-		}),
+		data: data["figures"],
 		columns: [
-			{ title : "Figure" }, 
-			{ title : "Words" },
-			{ title : "Utterances" },
-			{ title : "Mean Utt. Length" }
+			{ title : "Figure",data:"Reference" }, 
+			{ title : "Words",data:"NumberOfWords" },
+			{ title : "Utterances",data:"NumberOfUtterances" },
+			{ title : "Mean Utt. Length",data:"UtteranceLengthArithmeticMean" },
+			{ title : "Type Token Ratio",data:"TypeTokenRatio100" }
 		],
 		pageLength:100,
 		retrieve: true
+	});
+	
+	$("#speech").accordion({
+		heightStyle: "content"
 	});
 }
 
