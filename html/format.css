@@ -92,3 +92,6 @@
 #settings div {
 	margin-bottom:10px;
 }
+#settings input[type=number] {
+	width:6em;
+}

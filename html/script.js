@@ -493,6 +493,127 @@ function init(data) {
 	load();
 }
 
+function filterFigures(figure) {
+	if ($("#limit:checked").length == 1)
+		return figure["NumberOfUtterances"] > 20 && figure["NumberOfWords"];
+	else
+		return true;
+}
+
+function initAll(docs) {
+	$("#limit").change(function() {
+		refreshView(docs);
+	});
+	$("#texts").change(function() {
+		refreshView(docs);
+	});
+	
+	for (var i = 0; i < docs.length; i++) {
+		var cur = docs[i];
+		// console.log(cur);
+		$("#texts").append("<option selected=\"selected\" value=\""+docs[i]["meta"]["DisplayId"]+"\">"+docs[i]["meta"]["DisplayId"]+"</option>");
+	};
+}
+
+function refreshView(docs) {
+	
+	// sort the documents by year
+	docs.sort(function(a,b) {
+		return a.meta.ReferenceDate - b.meta.ReferenceDate;
+	});
+	
+	
+	
+	// filtering of figures
+	var figureFilterFunction = function(a) {return true;};
+	var figureFilterName = "all";
+	if ($("#limit:checked").length == 1) {
+		var limitWords = parseInt($("#limit-words").val());
+		var limitUtterances = parseInt($("#limit-utterances").val());
+		figureFilterFunction = function(a) {
+			return a["NumberOfUtterances"] > limitUtterances && a["NumberOfWords"] > limitWords;
+		};
+		figureFilterName = "#utt > "+limitUtterances+" & #words > "+limitWords;
+	}
+	
+	var docFilterFunction = function(a) {
+		// console.log($("#texts").val());
+		return $("#texts").val().includes(a["meta"]["DisplayId"]);
+	}
+	
+	// assembly of series
+	var series = [];
+	series.push({ 
+		data:docs.filter(docFilterFunction).map(function(cur, index, _) {
+			return cur["figures"].filter(figureFilterFunction).length;
+		}),
+		name:"Number of Figures"
+	});
+	series.push({
+		data:docs.filter(docFilterFunction).map(function(cur, _, _) {
+			var n = 0;
+			cur["figures"].filter(figureFilterFunction).forEach(function(current) {
+				n += current["NumberOfWords"];
+			});
+			return n;
+		}),
+		name:"Total word length"
+	});
+	series.push({
+		data:docs.filter(docFilterFunction).map(function(cur, _, _) {
+			var n = 0.0;
+			var s = 0.0;
+			cur["figures"].filter(figureFilterFunction).forEach(function(current) {
+				n += current["UtteranceLengthArithmeticMean"];
+				s += 1.0;
+			});
+			return n/s;
+		}),
+		name:"Avg. utterance length"
+	});
+	series.push({
+		data:docs.filter(docFilterFunction).map(function(cur, _, _) {
+			var n = 0.0;
+			var s = 0.0;
+			cur["figures"].filter(figureFilterFunction).forEach(function(current) {
+				n += current["NumberOfWords"];
+				s += 1.0;
+			});
+			return n/s;
+		}),
+		name:"Avg. number of words"
+	});
+	series.push({
+		data:docs.filter(docFilterFunction).map(function(cur, _, _) {
+			var n = 0.0;
+			var s = 0.0;
+			cur["figures"].filter(figureFilterFunction).forEach(function(current) {
+				n += current["NumberOfUtterances"];
+				s += 1.0;
+			});
+			return n/s;
+		}),
+		name:"Avg. number of utterances"
+	});
+	
+	
+	// console.log(series);
+	$("#hc").highcharts({
+		chart: {
+			type: 'line'
+		},
+		title: {
+			text: "Figures with " + figureFilterName
+		},
+		series:series,
+		xAxis: {
+			categories: docs.filter(docFilterFunction).map(function(cur, _, _) {
+				return cur["meta"]["ReferenceDate"]+" "+cur["meta"]["authors"][0]["Name"] + ": "+cur["meta"]["documentTitle"]+("transl" in cur["meta"]?" (transl.: "+cur["meta"]["translators"][0]["Name"]+")":"");
+			})
+		}
+	});
+}
+
 function dblclick(d) {
 	d3.select(this).classed("fixed", d.fixed = false);
 }
