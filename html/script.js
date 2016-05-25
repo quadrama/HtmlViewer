@@ -81,7 +81,8 @@ function loadChart(data) {
 						chart : {
 							type : 'line',
 							zoomType : 'xy',
-							spacingBottom:230
+							spacingBottom:230,
+							height:window.innerHeight-210
 						},
 						xAxis : {
 							plotBands: pb,
