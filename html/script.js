@@ -1,5 +1,6 @@
 var colors = [ "#EEF", "#FEE", "#EFE"]
 var strongcolors = ["#AAF", "#FAA", "#AFA", "#55F", "#F55", "#5F5" ];
+var darkcolors = ["#A00", "#0A0", "#00A", "#AA0", "#0AA", "#A0A"];
 var wordThreshold = 500;
 var ftypes = ["Polarity", "RJType", "Gender"];
 var colorIndex = 0;
@@ -241,13 +242,13 @@ function loadFieldTable(data) {
 				}
 			}
 			for (field of Object.keys(data.fields).sort()) {
-				arr.push((sum[field] / data["fields"][field]["Length"])/cur["NumberOfWords"]);
+				arr.push(1000*(sum[field] / data["fields"][field]["Length"])/cur["NumberOfWords"]);
 			}
 			return {
 				name:cur["Reference"],
 				data:arr,
 				pointPlacement: 'on',
-				lineWidth:0.5,
+				lineWidth:2,
 				visible:(cur["NumberOfWords"]>wordThreshold)
 			};
 		});
@@ -256,6 +257,7 @@ function loadFieldTable(data) {
 			polar: true,
 			type: 'line'
 		},
+		colors: darkcolors,
 		title: {
 			text:null
 		},
