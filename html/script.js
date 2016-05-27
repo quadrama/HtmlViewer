@@ -391,8 +391,12 @@ function loadCopresenceNetwork(targetJQ, data) {
 	targetJQ.children("ul").append("<li><a href=\"#copresence\">Copresence Network</a></li>");
 	targetJQ.append("<div id=\"copresence\"></div>");
 
+	// minimal number of co-presences to appear in the graph
+	var copresenceThreshold = 1;
+
 	// data collection
 
+	var maxNumberOfWords = 0;
 	var edgeObject = {};
 	for (var i = 0;i < data["scs"].length; i++) {
 		var scene = data["scs"][i];
@@ -407,6 +411,10 @@ function loadCopresenceNetwork(targetJQ, data) {
 
 		for (var f1i = 0; f1i < figuresInScene.length; f1i++) {
 			var f1 = figuresInScene[f1i];
+
+			if (data["figures"][f1]["NumberOfWords"] > maxNumberOfWords)
+				maxNumberOfWords = data["figures"][f1]["NumberOfWords"];
+
 			if (! edgeObject.hasOwnProperty(f1.toString()))
 				edgeObject[f1.toString()] = {};
 			for (var f2i = f1i+1; f2i < figuresInScene.length; f2i++) {
@@ -422,30 +430,24 @@ function loadCopresenceNetwork(targetJQ, data) {
 
 	for (k in edgeObject) {
 		for (j in edgeObject[k]) {
-			edges.push({
-				source: parseInt(k),
-				target: parseInt(j),
-				value: edgeObject[k][j]
-			});
+			if (edgeObject[k][j] >= copresenceThreshold)
+				edges.push({
+					source: parseInt(k),
+					target: parseInt(j),
+					value: edgeObject[k][j]
+				});
 		}
 	}
-	var nodes = data["figures"].map(function (currentFigure, _, _) {
-		return {
-			label: currentFigure["Reference"]
-		};
-	});
-	console.log(nodes);
+	var nodes = data["figures"];
 	console.log(edges);
 
 	// d3 initialisation
-	var width = 960, height = 500;
+	var width = 960, height = 700;
 	var svg = d3.select("#copresence").append("svg").attr("width", width)
 			.attr("height", height);
 
-	var force = d3.layout.force().size([ width, height ])
+	var force = d3.layout.force().size([ width, height ]).charge(-120)
 		.linkDistance(height/2);
-
-
 
 	var link = svg.selectAll(".link")
 		.data(edges).enter()
@@ -455,10 +457,18 @@ function loadCopresenceNetwork(targetJQ, data) {
 			return d.value;
 		});
 
-	var node = svg.selectAll(".node").data(nodes).enter()
-		.append("g").attr("class", "node").call(force.drag);
+	var node = svg.selectAll(".node")
+		.data(nodes).enter()
+		.append("g").attr("class", "node")
+		.call(force.drag);
 
-	node.append("circle").attr("r", 5).on("dblclick", dblclick);
+	node.append("circle")
+		.attr("r", function (d) {
+			var v = 10*d["NumberOfWords"]/maxNumberOfWords;
+			if (v<=3) return 3;
+			return v;
+		})
+		.on("dblclick", dblclick);
 
 	node.append("text")
 		.attr("dx", 12)
@@ -466,7 +476,7 @@ function loadCopresenceNetwork(targetJQ, data) {
 		.attr("class", "figureLabel")
 		.attr("stroke", "none")
 		.text(function(d) {
-			return d.label
+			return d["Reference"]
 	});
 
 	force.linkStrength(function (link) {
@@ -475,6 +485,8 @@ function loadCopresenceNetwork(targetJQ, data) {
 
 	force.nodes(nodes).links(edges)
 		.start();
+
+	force.drag().on("dragstart", dragstart);
 
 	force.on("tick", function() {
 		link.attr("x1", function(d) {
@@ -743,7 +755,6 @@ function dblclick(d) {
 function dragstart(d) {
 	d3.select(this).classed("fixed", d.fixed = true);
 }
-
 
 function load_aggregated_view(target, data, words, figureclass, figurevalue, ftype, fields) {
 	$("#title").text("Corpus Overview");

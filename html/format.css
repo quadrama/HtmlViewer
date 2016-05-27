@@ -104,6 +104,10 @@
 	fill:#000;
 }
 
+#copresence .link {
+	stroke:#AAA;
+}
+
 #copresence .node {
 	stroke:none;
 	fill:#222;
