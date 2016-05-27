@@ -5,6 +5,16 @@ var wordThreshold = 500;
 var ftypes = ["Polarity", "RJType", "Gender"];
 var colorIndex = 0;
 
+Array.prototype.unique = function()
+{
+    var tmp = {}, out = [];
+    for(var i = 0, n = this.length; i < n; ++i)
+    {
+        if(!tmp[this[i]]) { tmp[this[i]] = true; out.push(this[i]); }
+    }
+    return out;
+}
+
 function dramaViewer(targetSelector, data) {
 	var target = $(targetSelector);
 	target.empty();
@@ -383,26 +393,41 @@ function loadCopresenceNetwork(targetJQ, data) {
 
 	// data collection
 
-	var edges = [];
+	var edgeObject = {};
 	for (var i = 0;i < data["scs"].length; i++) {
 		var scene = data["scs"][i];
 		var utterances = data["utt"].filter(function (a) {
 			return a["begin"] >= scene["begin"] && a["end"] <= scene["end"];
 		});
-		var figuresInScene = {};
+		var figuresInScene = [];
 		for (var u = 0; u < utterances.length; u++) {
-			figuresInScene[utterances[u]["f"]] = 1;
+			figuresInScene.push(utterances[u]["f"]);
 		}
-		console.log(figuresInScene);
-		var figuresInSceneIndex = Object.keys(figuresInScene);
-		for (var f1i = 0; f1i < figuresInSceneIndex.length; f1i++) {
-			var f1 = parseInt(figuresInSceneIndex[f1i]);
-			for (var f2i = f1i+1; f2i < figuresInSceneIndex.length; f2i++) {
-				var f2 = parseInt(figuresInSceneIndex[f2i]);
-				edges.push({ source: f1, target: f2 });
+		figuresInScene = figuresInScene.unique().sort();
+
+		for (var f1i = 0; f1i < figuresInScene.length; f1i++) {
+			var f1 = figuresInScene[f1i];
+			if (! edgeObject.hasOwnProperty(f1.toString()))
+				edgeObject[f1.toString()] = {};
+			for (var f2i = f1i+1; f2i < figuresInScene.length; f2i++) {
+				var f2 = figuresInScene[f2i];
+				if (! edgeObject[f1.toString()].hasOwnProperty(f2.toString()))
+					edgeObject[f1.toString()][f2.toString()] = 0;
+				edgeObject[f1.toString()][f2.toString()]++;
 			}
 		}
 
+	}
+	var edges = [];
+
+	for (k in edgeObject) {
+		for (j in edgeObject[k]) {
+			edges.push({
+				source: parseInt(k),
+				target: parseInt(j),
+				value: edgeObject[k][j]
+			});
+		}
 	}
 	var nodes = data["figures"].map(function (currentFigure, _, _) {
 		return {
@@ -417,14 +442,18 @@ function loadCopresenceNetwork(targetJQ, data) {
 	var svg = d3.select("#copresence").append("svg").attr("width", width)
 			.attr("height", height);
 
-	var force = d3.layout.force().size([ width, height ]).charge(-300)
-		.linkDistance(200);
+	var force = d3.layout.force().size([ width, height ])
+		.linkDistance(height/2);
 
-	force.nodes(nodes).links(edges)
-		.start();
 
-	var link = svg.selectAll(".link").data(edges).enter()
-		.append("line").attr("class", "link");
+
+	var link = svg.selectAll(".link")
+		.data(edges).enter()
+		.append("line")
+		.attr("class", "link")
+		.style("stroke-width", function (d) {
+			return d.value;
+		});
 
 	var node = svg.selectAll(".node").data(nodes).enter()
 		.append("g").attr("class", "node").call(force.drag);
@@ -440,6 +469,13 @@ function loadCopresenceNetwork(targetJQ, data) {
 			return d.label
 	});
 
+	force.linkStrength(function (link) {
+		return 1/link.value;
+	});
+
+	force.nodes(nodes).links(edges)
+		.start();
+
 	force.on("tick", function() {
 		link.attr("x1", function(d) {
 			return d.source.x;
@@ -450,6 +486,7 @@ function loadCopresenceNetwork(targetJQ, data) {
 		}).attr("y2", function(d) {
 			return d.target.y;
 		});
+
 
 		node.attr("transform", function(d) {
 			return "translate(" + d.x + "," + d.y + ")";
