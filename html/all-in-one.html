@@ -1,8 +1,8 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-<link rel="stylesheet" href="jquery-ui.css">
-<link rel="stylesheet" href="format.css">
+<link rel="stylesheet" href="css/jquery-ui.css">
+<link rel="stylesheet" href="css/format.css">
 <link rel="stylesheet" type="text/css" href="datatables.min.css" />
 <style>
 .link {
@@ -27,14 +27,14 @@
 	fill: #f00;
 }
 </style>
-<script src="datatables.min.js"></script>
-<script src="highcharts.js"></script>
-<script src="highcharts-more.js"></script>
-<script src="exporting.js"></script>
+<script src="js/datatables.min.js"></script>
+<script src="js/highcharts.js"></script>
+<script src="js/highcharts-more.js"></script>
+<script src="js/exporting.js"></script>
 <script src="data/all-data.js"></script>
-<script src="jquery-ui.js"></script>
-<script src="d3.v3.min.js" charset="utf-8"></script>
-<script src="script.js"></script>
+<script src="js/jquery-ui.js"></script>
+<script src="js/d3.v3.min.js" charset="utf-8"></script>
+<script src="js/script.js"></script>
 <script>
 	$(function() {
 +		init(data);
@@ -69,7 +69,7 @@ lieben.VV</textarea>
 	</div>
 	<div id="wordfield">
 		<p>Word fields</p>
-		
+
 	</div>
 	<div>
 		Figure type<br/>
@@ -79,7 +79,7 @@ lieben.VV</textarea>
 	<div><input type="checkbox" id="everythingHidden" value="1" checked="checked">Everything hidden</div>
 	<div><a href="javascript:draw()">Update</a></div>
 </div>
-	
+
 </div>
 <div id="content">
 	<h1 id="title"></h1>
