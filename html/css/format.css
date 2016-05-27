@@ -4,7 +4,9 @@
 
 
 
-
+h1#title {
+	font-size:x-large;
+}
 
 .hc {
 	width:93%;

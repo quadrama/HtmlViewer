@@ -25,7 +25,14 @@ function dramaViewer(targetSelector, data) {
 	loadFigureStatistics(target, data);
 	loadCopresenceNetwork(target, data);
 
-	$("#tabs").tabs();
+
+  $("h1#title").append(data["meta"]["ReferenceDate"]
+    + " "
+    + data["meta"]["authors"][0]["Name"]
+    + ": "
+    + data["meta"]["documentTitle"]
+    + ("translators" in data["meta"] ? " (transl.: " + data["meta"]["translators"][0]["Name"]+")" : ""));
+	$(targetSelector).tabs();
 
 }
 
@@ -600,6 +607,12 @@ function clean() {
 	$("#content h2").remove();
 	$("#tabs").empty();
 	$("#tabs").append("<ul></ul>");
+}
+
+function initFromJson(url) {
+	$.getJSON(url, function(data) {
+		dramaViewer("#drama", data);
+	});
 }
 
 function init(data) {
