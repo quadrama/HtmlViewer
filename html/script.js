@@ -391,11 +391,17 @@ function loadCopresenceNetwork(targetJQ, data) {
 	targetJQ.children("ul").append("<li><a href=\"#copresence\">Copresence Network</a></li>");
 	targetJQ.append("<div id=\"copresence\"></div>");
 
+	var limitWords = 1000; //parseInt($("#limit-words").val());
+	var limitUtterances = 10 // parseInt($("#limit-utterances").val());
+
+	var figureFilterFunction = function(figure) {
+		return figure["NumberOfUtterances"] > limitUtterances && figure["NumberOfWords"] > limitWords;
+	};
+
 	// minimal number of co-presences to appear in the graph
 	var copresenceThreshold = 1;
 
 	// data collection
-
 	var maxNumberOfWords = 0;
 	var edgeObject = {};
 	for (var i = 0;i < data["scs"].length; i++) {
@@ -427,18 +433,19 @@ function loadCopresenceNetwork(targetJQ, data) {
 
 	}
 	var edges = [];
+	var nodes = data["figures"].filter(figureFilterFunction);
 
 	for (k in edgeObject) {
 		for (j in edgeObject[k]) {
-			if (edgeObject[k][j] >= copresenceThreshold)
+			if (figureFilterFunction(data["figures"][k])
+				&& figureFilterFunction(data["figures"][j]))
 				edges.push({
-					source: parseInt(k),
-					target: parseInt(j),
+					source: nodes.indexOf(data["figures"][k]),
+					target: nodes.indexOf(data["figures"][j]),
 					value: edgeObject[k][j]
 				});
 		}
 	}
-	var nodes = data["figures"];
 	console.log(edges);
 
 	// d3 initialisation
@@ -470,6 +477,10 @@ function loadCopresenceNetwork(targetJQ, data) {
 		})
 		.on("dblclick", dblclick);
 
+	node.append("title").text(function(d) {
+		return d["txt"];
+	});
+
 	node.append("text")
 		.attr("dx", 12)
 		.attr("dy", ".35em")
@@ -482,6 +493,8 @@ function loadCopresenceNetwork(targetJQ, data) {
 	force.linkStrength(function (link) {
 		return 1/link.value;
 	});
+	force.friction(0.5);
+
 
 	force.nodes(nodes).links(edges)
 		.start();
@@ -750,6 +763,7 @@ function refreshView(docs) {
 
 function dblclick(d) {
 	d3.select(this).classed("fixed", d.fixed = false);
+	d3.layout.force().stop();
 }
 
 function dragstart(d) {
