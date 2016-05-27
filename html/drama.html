@@ -13,7 +13,11 @@
 <script src="js/script.js"></script>
 <script>
 	$(function() {
-		initFromJson("vndf.0.json");
+		var p = getQueryParams(document.location.search);
+		if (p.hasOwnProperty("drama"))
+			initFromJson("data/"+p["drama"]+".json");
+		else
+			initFromJson("data/rksp.0.json");
 	});
 </script>
 </head>
