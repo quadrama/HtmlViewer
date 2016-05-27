@@ -95,3 +95,11 @@
 #settings input[type=number] {
 	width:6em;
 }
+
+
+#copresence .figureLabel {
+	font-weight:lighter;
+	color:#222;
+	font-family: sans-serif;
+	fill:#000;
+}
