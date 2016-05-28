@@ -545,6 +545,7 @@ function loadCopresenceNetwork(targetJQ, data) {
   // add tab
   targetJQ.children("ul").append("<li><a href=\"#copresence\">Copresence Network</a></li>");
 	targetJQ.append("<div id=\"copresence\"></div>");
+  var targetDiv = targetJQ.children("div#copresence");
 
   // toolbar
   var settingsPane = document.createElement("div");
@@ -576,7 +577,7 @@ function loadCopresenceNetwork(targetJQ, data) {
   $(settingsPane).append(fieldSet);
 
 
-  targetJQ.children("div").append(settingsPane);
+  targetDiv.append(settingsPane);
 
   $(settingsPane).find("input").change(function() {
     var figureFilterFunction;
