@@ -2,10 +2,35 @@
 	font-family:sans-serif;
 }
 
+#header {
+	position:fixed;
+	top:0px;
+	left:0px;
+	padding:10px;
+	background-color:#CCC;
+	width:100%;
+	z-index:10;
+	display:flex;
+  justify-content:space-between;
+}
 
+#header div {
+	margin-left:10px;
+	margin-right:10px;
+}
+
+#header div:last-child {
+	marign-right:30px;
+	font-size: small;
+}
+
+#header+div {
+	position:absolute;
+	top:40px;
+}
 
 h1#title {
-	font-size:x-large;
+	font-size:large;
 }
 
 .hc {
