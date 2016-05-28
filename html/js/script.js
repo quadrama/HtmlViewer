@@ -408,136 +408,223 @@ function loadText(targetJQ, data) {
 
 }
 
+function getGraphData(data, figureFilterFunction, figureClassFunction) {
+  // data collection
+  var maxNumberOfWords = 0;
+  var edgeObject = {};
+  for (var i = 0;i < data["scs"].length; i++) {
+    var scene = data["scs"][i];
+    var utterances = data["utt"].filter(function (a) {
+      return a["begin"] >= scene["begin"] && a["end"] <= scene["end"];
+    });
+    var figuresInScene = [];
+    for (var u = 0; u < utterances.length; u++) {
+      figuresInScene.push(utterances[u]["f"]);
+    }
+    figuresInScene = figuresInScene.unique().sort();
+
+    for (var f1i = 0; f1i < figuresInScene.length; f1i++) {
+      var f1 = figuresInScene[f1i];
+
+      if (data["figures"][f1]["NumberOfWords"] > maxNumberOfWords)
+        maxNumberOfWords = data["figures"][f1]["NumberOfWords"];
+
+      if (! edgeObject.hasOwnProperty(f1.toString()))
+        edgeObject[f1.toString()] = {};
+      for (var f2i = f1i+1; f2i < figuresInScene.length; f2i++) {
+        var f2 = figuresInScene[f2i];
+        if (! edgeObject[f1.toString()].hasOwnProperty(f2.toString()))
+          edgeObject[f1.toString()][f2.toString()] = 0;
+        edgeObject[f1.toString()][f2.toString()]++;
+      }
+    }
+
+  }
+  var edges = [];
+  var nodes = data["figures"].filter(figureFilterFunction);/*.map(function(current, _, _) {
+    current["type"] = figureClassFunction(current);
+  });*/
+
+  for (k in edgeObject) {
+    for (j in edgeObject[k]) {
+      if (figureFilterFunction(data["figures"][k])
+        && figureFilterFunction(data["figures"][j]))
+        edges.push({
+          source: nodes.indexOf(data["figures"][k]),
+          target: nodes.indexOf(data["figures"][j]),
+          value: edgeObject[k][j]
+        });
+    }
+  }
+  // console.log(edges);
+  return {
+    nodes:nodes,
+    edges:edges,
+    maxNumberOfWords:maxNumberOfWords
+  }
+}
+
+function drawGraph(target, graph, figureColorFunction) {
+  console.log(graph);
+
+  var width = 800, height = 600;
+  var svg = d3.select(target).append("svg").attr("width", width)
+      .attr("height", height);
+
+  var force = d3.layout.force().size([ width, height ]).charge(-120)
+    .linkDistance(height/2);
+
+  var link = svg.selectAll(".link")
+    .data(graph["edges"]).enter()
+    .append("line")
+    .attr("class", "link")
+    .style("stroke-width", function (d) {
+      return d.value*1.5;
+    });
+
+  var node = svg.selectAll(".node")
+    .data(graph["nodes"]).enter()
+    .append("g").attr("class", "node")
+    .style("fill", function (d) {
+      return figureColorFunction(d);
+    })
+    .call(force.drag);
+
+  node.append("circle")
+    .attr("r", function (d) {
+      var v = 10*d["NumberOfWords"]/graph["maxNumberOfWords"];
+      if (v<=3) return 3;
+      return v;
+    })
+    .on("dblclick", dblclick);
+
+  node.append("title").text(function(d) {
+    return d["txt"];
+  });
+
+  node.append("text")
+    .attr("dx", 12)
+    .attr("dy", ".35em")
+    .attr("class", "figureLabel")
+    .attr("stroke", "none")
+    .text(function(d) {
+      return d["Reference"]
+  });
+
+  force.linkStrength(function (link) {
+    return 1/link.value;
+  });
+  force.friction(0.5);
+
+
+  force.nodes(graph["nodes"]).links(graph["edges"])
+    .start();
+
+  force.drag().on("dragstart", dragstart);
+
+  force.on("tick", function() {
+    link.attr("x1", function(d) {
+      return d.source.x;
+    }).attr("y1", function(d) {
+      return d.source.y;
+    }).attr("x2", function(d) {
+      return d.target.x;
+    }).attr("y2", function(d) {
+      return d.target.y;
+    });
+
+
+    node.attr("transform", function(d) {
+      return "translate(" + d.x + "," + d.y + ")";
+    });
+  });
+}
+
 function loadCopresenceNetwork(targetJQ, data) {
-	targetJQ.children("ul").append("<li><a href=\"#copresence\">Copresence Network</a></li>");
+
+  // add tab
+  targetJQ.children("ul").append("<li><a href=\"#copresence\">Copresence Network</a></li>");
 	targetJQ.append("<div id=\"copresence\"></div>");
 
-	var limitWords = 1000; //parseInt($("#limit-words").val());
-	var limitUtterances = 10 // parseInt($("#limit-utterances").val());
+  // toolbar
+  var settingsPane = document.createElement("div");
+  $(settingsPane).addClass("toolbar");
 
-	var figureFilterFunction = function(figure) {
-		return figure["NumberOfUtterances"] > limitUtterances && figure["NumberOfWords"] > limitWords;
-	};
+  var limit = $(document.createElement("fieldset"));
+  limit.append("<input type=\"checkbox\" class=\"limit-enable\" checked=\"checked\">");
+  limit.append("Show figures with at least <br/>");
+  limit.append("<input type=\"number\" class=\"limit-words\" value=\"1000\">");
+  limit.append("words and ");
+  limit.append("<input type=\"number\" class=\"limit-utterances\" value=\"10\">");
+  limit.append("utterances.");
 
-	// minimal number of co-presences to appear in the graph
-	var copresenceThreshold = 1;
+  var fieldSet = $(document.createElement("fieldset"));
+  fieldSet.addClass("typecolor");
+  fieldSet.append("<input type=\"checkbox\" class=\"color-enable\">");
+  fieldSet.append("Color nodes by ");
+  fieldSet.append("<br/>");
 
-	// data collection
-	var maxNumberOfWords = 0;
-	var edgeObject = {};
-	for (var i = 0;i < data["scs"].length; i++) {
-		var scene = data["scs"][i];
-		var utterances = data["utt"].filter(function (a) {
-			return a["begin"] >= scene["begin"] && a["end"] <= scene["end"];
-		});
-		var figuresInScene = [];
-		for (var u = 0; u < utterances.length; u++) {
-			figuresInScene.push(utterances[u]["f"]);
-		}
-		figuresInScene = figuresInScene.unique().sort();
-
-		for (var f1i = 0; f1i < figuresInScene.length; f1i++) {
-			var f1 = figuresInScene[f1i];
-
-			if (data["figures"][f1]["NumberOfWords"] > maxNumberOfWords)
-				maxNumberOfWords = data["figures"][f1]["NumberOfWords"];
-
-			if (! edgeObject.hasOwnProperty(f1.toString()))
-				edgeObject[f1.toString()] = {};
-			for (var f2i = f1i+1; f2i < figuresInScene.length; f2i++) {
-				var f2 = figuresInScene[f2i];
-				if (! edgeObject[f1.toString()].hasOwnProperty(f2.toString()))
-					edgeObject[f1.toString()][f2.toString()] = 0;
-				edgeObject[f1.toString()][f2.toString()]++;
-			}
-		}
-
-	}
-	var edges = [];
-	var nodes = data["figures"].filter(figureFilterFunction);
-
-	for (k in edgeObject) {
-		for (j in edgeObject[k]) {
-			if (figureFilterFunction(data["figures"][k])
-				&& figureFilterFunction(data["figures"][j]))
-				edges.push({
-					source: nodes.indexOf(data["figures"][k]),
-					target: nodes.indexOf(data["figures"][j]),
-					value: edgeObject[k][j]
-				});
-		}
-	}
-	console.log(edges);
-
-	// d3 initialisation
-	var width = 960, height = 700;
-	var svg = d3.select("#copresence").append("svg").attr("width", width)
-			.attr("height", height);
-
-	var force = d3.layout.force().size([ width, height ]).charge(-120)
-		.linkDistance(height/2);
-
-	var link = svg.selectAll(".link")
-		.data(edges).enter()
-		.append("line")
-		.attr("class", "link")
-		.style("stroke-width", function (d) {
-			return d.value;
-		});
-
-	var node = svg.selectAll(".node")
-		.data(nodes).enter()
-		.append("g").attr("class", "node")
-		.call(force.drag);
-
-	node.append("circle")
-		.attr("r", function (d) {
-			var v = 10*d["NumberOfWords"]/maxNumberOfWords;
-			if (v<=3) return 3;
-			return v;
-		})
-		.on("dblclick", dblclick);
-
-	node.append("title").text(function(d) {
-		return d["txt"];
-	});
-
-	node.append("text")
-		.attr("dx", 12)
-		.attr("dy", ".35em")
-		.attr("class", "figureLabel")
-		.attr("stroke", "none")
-		.text(function(d) {
-			return d["Reference"]
-	});
-
-	force.linkStrength(function (link) {
-		return 1/link.value;
-	});
-	force.friction(0.5);
+  var colorMap = {};
+  var i = 0;
+  for (var ftype in data["ftypes"]) {
+    if (ftype != "All") {
+      fieldSet.append("<input type=\"radio\" name=\"figureColor\" value=\""+ftype+"\"> " + ftype);
+      colorMap[ftype] = strongcolors[(i++)%strongcolors.length];
+    }
+  }
+  $(settingsPane).append(limit);
+  $(settingsPane).append(fieldSet);
 
 
-	force.nodes(nodes).links(edges)
-		.start();
+  targetJQ.children("div").append(settingsPane);
 
-	force.drag().on("dragstart", dragstart);
+  $(settingsPane).find("input").change(function() {
+    var figureFilterFunction;
+    if ($("#copresence .limit-enable:checked()").length == 0)
+      figureFilterFunction = function(_) { return true; }
+    else {
+      var limitWords = parseInt($("#copresence .limit-words").val());
+      var limitUtterances = parseInt($("#copresence .limit-utterances").val());
 
-	force.on("tick", function() {
-		link.attr("x1", function(d) {
-			return d.source.x;
-		}).attr("y1", function(d) {
-			return d.source.y;
-		}).attr("x2", function(d) {
-			return d.target.x;
-		}).attr("y2", function(d) {
-			return d.target.y;
-		});
+      figureFilterFunction = function(figure) {
+        return figure["NumberOfUtterances"] > limitUtterances && figure["NumberOfWords"] > limitWords;
+      };
+    }
+    var colorMap = {};
+    var selectedType = $("#copresence input[name='figureColor']:checked").val();
+    var i = 0;
+
+    for (var fvalue in data["ftypes"][selectedType]) {
+      colorMap[fvalue] = strongcolors[i++%strongcolors.length];
+    }
+    console.log(colorMap);
+
+    var figureColorFunction;
+    if ($("#copresence .color-enable:checked()").length == 0) {
+      figureColorFunction = function() { return "#000"; }
+    } else {
+      figureColorFunction = function(f) {
+        var figureIndex = data["figures"].indexOf(f);
+        console.log(f);
+        console.log(figureIndex);
+        for (var fvalue in data["ftypes"][selectedType]) {
+          console.log(data["ftypes"][selectedType]);
+  				if (data["ftypes"][selectedType][fvalue].includes(figureIndex)) {
+            return colorMap[fvalue];
+          }
+  			}
+        return "#000";
+      }
+    }
+
+    var graph = getGraphData(data, figureFilterFunction);
+
+    d3.select("#copresence svg").remove();
+    drawGraph("#copresence", graph, figureColorFunction);
+  });
+  $(settingsPane).find("input").eq(0).change();
 
 
-		node.attr("transform", function(d) {
-			return "translate(" + d.x + "," + d.y + ")";
-		});
-	});
 }
 
 function loadNetwork(data) {

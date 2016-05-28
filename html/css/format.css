@@ -80,6 +80,23 @@ h1#title {
 	background-color:yellow;
 }
 
+
+.toolbar {
+	width:100%;
+	background-color:#EEE;
+	padding:5px;
+	margin:0px;
+	border-radius: 5px;
+	font-size:small;
+}
+
+.toolbar fieldset {
+	display:inline-block;
+	border:thin solid #DDD;
+	height:40px;
+	vertical-align: middle;
+}
+
 #settings {
 	width:200px;
 	position:fixed;
@@ -94,8 +111,8 @@ h1#title {
 #settings div {
 	margin-bottom:10px;
 }
-#settings input[type=number] {
-	width:6em;
+input[type=number] {
+	width:4em;
 }
 
 
@@ -112,5 +129,4 @@ h1#title {
 
 #copresence .node {
 	stroke:none;
-	fill:#222;
 }
