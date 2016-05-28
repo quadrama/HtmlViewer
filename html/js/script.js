@@ -471,8 +471,11 @@ function drawGraph(target, graph, figureColorFunction) {
   var svg = d3.select(target).append("svg").attr("width", width)
       .attr("height", height);
 
-  var force = d3.layout.force().size([ width, height ]).charge(-120)
-    .linkDistance(height/2);
+  var force = d3.layout.force().size([ width, height ])
+    .charge(-30)
+    .linkDistance(function (link) {
+      return 500/link.value;
+    });
 
   var link = svg.selectAll(".link")
     .data(graph["edges"]).enter()
