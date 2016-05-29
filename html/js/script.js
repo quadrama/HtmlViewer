@@ -487,13 +487,17 @@ function drawGraph(target, graph, figureColorFunction) {
 		)
 	])
 	.range([3,10]);
+	
+	var wscale = d3.scale.linear()
+		.domain([0,d3.max(graph["edges"], function (d) {return d.value;})])
+		.range([1,8]);
 
   var link = svg.selectAll(".link")
     .data(graph["edges"]).enter()
     .append("line")
     .attr("class", "link")
     .style("stroke-width", function (d) {
-      return d.value*1.5;
+      return wscale(d.value);
     });
 
   var node = svg.selectAll(".node")
