@@ -477,6 +477,17 @@ function drawGraph(target, graph, figureColorFunction) {
       return 500/link.value;
     });
 
+	var rscale = d3.scale.linear()
+	.domain([0,
+		d3.max(
+			graph["nodes"],
+ 			function (d) {
+				return d["NumberOfWords"];
+			}
+		)
+	])
+	.range([3,10]);
+
   var link = svg.selectAll(".link")
     .data(graph["edges"]).enter()
     .append("line")
@@ -495,9 +506,7 @@ function drawGraph(target, graph, figureColorFunction) {
 
   node.append("circle")
     .attr("r", function (d) {
-      var v = 10*d["NumberOfWords"]/graph["maxNumberOfWords"];
-      if (v<=3) return 3;
-      return v;
+      return rscale(d["NumberOfWords"]);
     })
     .on("dblclick", dblclick);
 
