@@ -1,6 +1,6 @@
 var colors = [ "#EEF", "#FEE", "#EFE"]
 var strongcolors = ["#AAF", "#FAA", "#AFA", "#55F", "#F55", "#5F5" ];
-var darkcolors = ["#A00", "#0A0", "#00A", "#AA0", "#0AA", "#A0A"];
+var darkcolors = ["#000", "#A00", "#0A0", "#00A", "#AA0", "#0AA", "#A0A"];
 var wordThreshold = 500;
 var ftypes = ["Polarity", "RJType", "Gender"];
 var colorIndex = 0;
@@ -408,7 +408,36 @@ function loadText(targetJQ, data) {
 
 }
 
-function getGraphData(data, figureFilterFunction, figureClassFunction) {
+function getFigureTypes(data, figure) {
+	var types = [];
+	var figureIndex = data["figures"].indexOf(figure);
+	for (ftype in data["ftypes"]) {
+		for (fvalue in data["ftypes"][ftype]) {
+			if (data["ftypes"][ftype][fvalue].includes(figureIndex)) {
+				types.push({
+					ftype: ftype,
+					fvalue: fvalue
+				});
+			}
+		}
+	}
+	
+	return types;
+}
+
+function getFigureTypeValue(data, figureIndex, ftype) {
+	for (fvalue in data["ftypes"][ftype]) {
+		if (data["ftypes"][ftype][fvalue].includes(figureIndex))
+			return fvalue;
+	}
+	return "";
+}
+
+function getGraphData(data, figureFilterFunction, ftype) {
+	var typeValues = [""];
+	if (typeof data["ftypes"][ftype] != "undefined")
+		typeValues = typeValues.concat(Object.keys(data["ftypes"][ftype]));
+	
   // data collection
   var edgeObject = {};
   for (var i = 0;i < data["scs"].length; i++) {
@@ -443,7 +472,8 @@ function getGraphData(data, figureFilterFunction, figureClassFunction) {
   			Reference:f["Reference"],
   			txt:f["txt"],
   			weight:f["NumberOfWords"],
-  			index:i
+  			index:i,
+  			type:getFigureTypeValue(data, i, ftype)
   		}
   	})
   	.filter(function (f) {
@@ -470,11 +500,12 @@ function getGraphData(data, figureFilterFunction, figureClassFunction) {
   // console.log(edges);
   return {
     nodes:nodes,
-    edges:edges
+    edges:edges,
+    categories:typeValues
   }
 }
 
-function drawGraph(target, graph, figureColorFunction) {
+function drawGraph(target, graph) {
   console.log(graph);
 
   var width = 800, height = 600;
@@ -514,7 +545,7 @@ function drawGraph(target, graph, figureColorFunction) {
     .data(graph["nodes"]).enter()
     .append("g").attr("class", "node")
     .style("fill", function (d) {
-      return figureColorFunction(d);
+      return darkcolors[graph.categories.indexOf(d["type"]) % darkcolors.length];
     })
     .call(force.drag);
 
@@ -618,36 +649,15 @@ function loadCopresenceNetwork(targetJQ, data) {
       };
     }
     var colorMap = {};
-    var selectedType = $("#copresence input[name='figureColor']:checked").val();
-    var i = 0;
-
-    for (var fvalue in data["ftypes"][selectedType]) {
-      colorMap[fvalue] = strongcolors[i++%strongcolors.length];
-    }
-    console.log(colorMap);
-
-    var figureColorFunction;
-    if ($("#copresence .color-enable:checked()").length == 0) {
-      figureColorFunction = function() { return "#000"; }
-    } else {
-      figureColorFunction = function(f) {
-        var figureIndex = data["figures"].indexOf(f);
-        console.log(f);
-        console.log(figureIndex);
-        for (var fvalue in data["ftypes"][selectedType]) {
-          console.log(data["ftypes"][selectedType]);
-  				if (data["ftypes"][selectedType][fvalue].includes(figureIndex)) {
-            return colorMap[fvalue];
-          }
-  			}
-        return "#000";
-      }
-    }
-
-    var graph = getGraphData(data, figureFilterFunction);
+    var selectedType = "x";
+    if ($("#copresence fieldset.typecolor input.color-enable:checked").length > 0)
+    	selectedType = $("#copresence input[name='figureColor']:checked").val();
+    
+    var graph = getGraphData(data, figureFilterFunction, selectedType);
 
     d3.select("#copresence svg").remove();
-    drawGraph("#copresence", graph, figureColorFunction);
+    console.log(JSON.stringify(graph));
+    drawGraph("#copresence", graph);
   });
   $(settingsPane).find("input").eq(0).change();
 
