@@ -622,12 +622,10 @@ function loadCopresenceNetwork(targetJQ, data) {
   fieldSet.append("Color nodes by ");
   fieldSet.append("<br/>");
 
-  var colorMap = {};
   var i = 0;
   for (var ftype in data["ftypes"]) {
     if (ftype != "All") {
       fieldSet.append("<input type=\"radio\" name=\"figureColor\" value=\""+ftype+"\"> " + ftype);
-      colorMap[ftype] = strongcolors[(i++)%strongcolors.length];
     }
   }
   $(settingsPane).append(limit);
@@ -648,7 +646,6 @@ function loadCopresenceNetwork(targetJQ, data) {
         return figure["NumberOfUtterances"] > limitUtterances && figure["NumberOfWords"] > limitWords;
       };
     }
-    var colorMap = {};
     var selectedType = "x";
     if ($("#copresence fieldset.typecolor input.color-enable:checked").length > 0)
     	selectedType = $("#copresence input[name='figureColor']:checked").val();
