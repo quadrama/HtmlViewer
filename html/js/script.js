@@ -437,7 +437,18 @@ function getGraphData(data, figureFilterFunction, figureClassFunction) {
 
   }
   var edges = [];
-  var nodes = data["figures"].filter(figureFilterFunction);/*.map(function(current, _, _) {
+  var nodes = data["figures"]
+  	.map(function (f,i,_) {
+  		return {
+  			Reference:f["Reference"],
+  			txt:f["txt"],
+  			weight:f["NumberOfWords"],
+  			index:i
+  		}
+  	})
+  	.filter(function (f) {
+  		return figureFilterFunction(data["figures"][f["index"]])
+  	});/*.map(function(current, _, _) {
     current["type"] = figureClassFunction(current);
   });*/
 
@@ -446,8 +457,12 @@ function getGraphData(data, figureFilterFunction, figureClassFunction) {
       if (figureFilterFunction(data["figures"][k])
         && figureFilterFunction(data["figures"][j]))
         edges.push({
-          source: nodes.indexOf(data["figures"][k]),
-          target: nodes.indexOf(data["figures"][j]),
+          source: nodes.findIndex(function (f) {
+          	return f["index"] == k;
+          }),
+          target: nodes.findIndex(function (f) {
+          	return f["index"] == j;
+          }),
           value: edgeObject[k][j]
         });
     }
@@ -477,7 +492,7 @@ function drawGraph(target, graph, figureColorFunction) {
 		d3.max(
 			graph["nodes"],
  			function (d) {
-				return d["NumberOfWords"];
+				return d["weight"];
 			}
 		)
 	])
@@ -505,7 +520,7 @@ function drawGraph(target, graph, figureColorFunction) {
 
   node.append("circle")
     .attr("r", function (d) {
-      return rscale(d["NumberOfWords"]);
+      return rscale(d["weight"]);
     })
     .on("dblclick", dblclick);
 
