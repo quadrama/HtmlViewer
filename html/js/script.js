@@ -410,7 +410,6 @@ function loadText(targetJQ, data) {
 
 function getGraphData(data, figureFilterFunction, figureClassFunction) {
   // data collection
-  var maxNumberOfWords = 0;
   var edgeObject = {};
   for (var i = 0;i < data["scs"].length; i++) {
     var scene = data["scs"][i];
@@ -425,9 +424,6 @@ function getGraphData(data, figureFilterFunction, figureClassFunction) {
 
     for (var f1i = 0; f1i < figuresInScene.length; f1i++) {
       var f1 = figuresInScene[f1i];
-
-      if (data["figures"][f1]["NumberOfWords"] > maxNumberOfWords)
-        maxNumberOfWords = data["figures"][f1]["NumberOfWords"];
 
       if (! edgeObject.hasOwnProperty(f1.toString()))
         edgeObject[f1.toString()] = {};
@@ -459,8 +455,7 @@ function getGraphData(data, figureFilterFunction, figureClassFunction) {
   // console.log(edges);
   return {
     nodes:nodes,
-    edges:edges,
-    maxNumberOfWords:maxNumberOfWords
+    edges:edges
   }
 }
 
