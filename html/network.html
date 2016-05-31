@@ -1,0 +1,35 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="stylesheet" href="css/jquery-ui.css">
+<link rel="stylesheet" href="css/format.css">
+<link rel="stylesheet" type="text/css" href="css/datatables.min.css" />
+<script src="js/datatables.min.js"></script>
+<script src="js/highcharts.js"></script>
+<script src="js/highcharts-more.js"></script>
+<script src="js/exporting.js"></script>
+<script src="js/jquery-ui.js"></script>
+<script src="js/d3.v3.min.js" charset="utf-8"></script>
+<script src="js/script.js"></script>
+<script>
+	$(function() {
+		$.getJSON("data/rksp.0.json", function(data) {
+			loadCopresenceNetwork($("#drama"), data)
+		});
+	});
+</script>
+</head>
+<body>
+<div id="header">
+	<div>QuaDramA HTML Viewer</div>
+	<div><a href="mailto:nils.reiter@ims.uni-stuttgart.de">Contact</a>&nbsp;</div>
+</div>
+<div>
+<h1 id="title"></h1>
+<div id="drama">
+	<ul></ul>
+</div>
+</div>
+
+</body>
+</html>
