@@ -493,8 +493,8 @@ function getGraphData(data, figureFilterFunction, ftype) {
   }
 }
 
-function initForce(containerSelector) {
-	var force = d3.layout.force().size([ 800, 600 ])
+function initForce(containerSelector, dimensions) {
+	var force = d3.layout.force().size(dimensions)
 		.charge(-30)
 		.linkDistance(function (link) {
 			return 300/link.value;
@@ -522,11 +522,12 @@ function initForce(containerSelector) {
 	return force;
 }
 
-function drawGraph(target, graph, force) {
-	console.log(graph);
-  var width = 800, height = 600;
-  var svg = d3.select(target).select("svg").attr("width", width)
-      .attr("height", height);
+function drawGraph(target, graph, force, dimensions) {
+	var animLength = 500;
+
+	var width = dimensions[0];
+	var height = dimensions[1];
+	var svg = d3.select(target).select("svg");
 
 
 	var key = function (d) {
@@ -534,9 +535,7 @@ function drawGraph(target, graph, force) {
 	}
 
 	var rscale = d3.scale.linear()
-	.domain([0,
-		d3.max(
-			graph["nodes"],
+	.domain([0, d3.max(graph["nodes"],
 			function (d) {
 				return d["figureWeight"];
 			}
@@ -548,56 +547,78 @@ function drawGraph(target, graph, force) {
 		.domain([0,d3.max(graph["edges"], function (d) {return d.value;})])
 		.range([1,8]);
 
+	// remove old links
 	svg.selectAll(".link").data(graph["edges"], key)
-		.exit().remove();
-  var link = svg.selectAll(".link")
-    .data(graph["edges"], key)
-		.enter()
-    .append("line")
+		.exit()
+		.transition().duration(animLength)
+		.style('opacity', 0)
+		.remove();
+
+	// data join
+  var linkD = svg.selectAll(".link")
+    .data(graph["edges"], key);
+
+	// add lines to the svg
+	var link = linkD.enter()
+    .insert("line", ".node")
     .attr("class", "link")
+		.style("opacity", 0)
     .style("stroke-width", function (d) {
       return wscale(d.value);
     });
 
+	// animate into opacity
+	linkD.transition().duration(animLength)
+		.style("opacity", 1);
+
+	// remove old nodes
 	svg.selectAll("g.node").data(graph["nodes"], key)
-		.exit().remove();
-  var node = svg.selectAll(".node")
-    .data(graph["nodes"], key).enter()
+		.exit()
+		.transition().duration(animLength)
+		.style('opacity', 0)
+		.remove();
+
+  var nodeD = svg.selectAll(".node")
+    .data(graph["nodes"], key);
+
+	var node = nodeD.enter()
     .append("g").attr("class", "node")
-    .call(force.drag);
+		.style("opacity", 0)
+		.call(force.drag);
 
   node.append("circle")
     .attr("r", function (d) {
       return rscale(d["figureWeight"]);
     })
     .on("dblclick", dblclick);
-
-	svg.selectAll(".node")
-		.style("fill", function (d) {
-			return darkcolors[graph.categories.indexOf(d["type"]) % darkcolors.length];
+	node.append("title").text(function(d) {
+			return d["txt"];
+		});
+	node.append("text")
+			.attr("dx", 12)
+			.attr("dy", ".35em")
+			.attr("class", "figureLabel")
+			.attr("stroke", "none")
+			.text(function(d) {
+				return d["Reference"]
 		});
 
-  node.append("title").text(function(d) {
-    return d["txt"];
-  });
-
-  node.append("text")
-    .attr("dx", 12)
-    .attr("dy", ".35em")
-    .attr("class", "figureLabel")
-    .attr("stroke", "none")
-    .text(function(d) {
-      return d["Reference"]
-  });
+	nodeD
+		.transition().duration(animLength)
+		.style("fill", function (d) {
+			return darkcolors[graph.categories.indexOf(d["type"]) % darkcolors.length];
+		})
+		.style("opacity", 1);
 }
 
 function loadCopresenceNetwork(targetJQ, data) {
 
   // add tab
   targetJQ.children("ul").append("<li><a href=\"#copresence\">Copresence Network</a></li>");
-	targetJQ.append("<div id=\"copresence\"></div>");
+	targetJQ.append("<div id=\"copresence\" class=\"view\"></div>");
   var targetDiv = targetJQ.children("div#copresence");
-
+	var width = $(targetDiv).innerWidth();
+	var height = $(targetDiv).innerHeight(); //window.innerHeight-200;
 
   // toolbar
   var settingsPane = document.createElement("div");
@@ -629,8 +650,10 @@ function loadCopresenceNetwork(targetJQ, data) {
 
 	targetDiv.append(settingsPane);
 	targetDiv.append("<svg></svg>");
+	targetDiv.children("svg").attr("height", height);
+	targetDiv.children("svg").attr("width", width);
 	var baseGraph = getGraphData(data, null, null);
-	var force = initForce("div#copresence");
+	var force = initForce("div#copresence", [width, height]);
 
   $(settingsPane).find("input").change(function() {
 		force.stop();
@@ -664,7 +687,7 @@ function loadCopresenceNetwork(targetJQ, data) {
 			edges:links,
 			categories:typeValues
 		};
-    drawGraph("#copresence", graph, force);
+    drawGraph("#copresence", graph, force, [width, height]);
 
 		force.nodes(graph["nodes"]).links(graph["edges"])
 	    .start();
