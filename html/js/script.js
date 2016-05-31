@@ -5,28 +5,23 @@ var wordThreshold = 500;
 var ftypes = ["Polarity", "RJType", "Gender"];
 var colorIndex = 0;
 
-Array.prototype.unique = function()
-{
-    var tmp = {}, out = [];
-    for(var i = 0, n = this.length; i < n; ++i)
-    {
-        if(!tmp[this[i]]) { tmp[this[i]] = true; out.push(this[i]); }
-    }
-    return out;
+Array.prototype.unique = function() {
+	var tmp = {}, out = [];
+	for(var i = 0, n = this.length; i < n; ++i) {
+		if(!tmp[this[i]]) { tmp[this[i]] = true; out.push(this[i]); }
+	}
+	return out;
 }
 
 function getQueryParams(qs) {
-    qs = qs.split('+').join(' ');
-
-    var params = {},
-        tokens,
-        re = /[?&]?([^=]+)=([^&]*)/g;
-
-    while (tokens = re.exec(qs)) {
-        params[decodeURIComponent(tokens[1])] = decodeURIComponent(tokens[2]);
-    }
-
-    return params;
+	qs = qs.split('+').join(' ');
+	var params = {},
+		tokens,
+		re = /[?&]?([^=]+)=([^&]*)/g;
+	while (tokens = re.exec(qs)) {
+		params[decodeURIComponent(tokens[1])] = decodeURIComponent(tokens[2]);
+	}
+	return params;
 }
 
 function dramaViewer(targetSelector, data) {
@@ -421,7 +416,7 @@ function getFigureTypes(data, figure) {
 			}
 		}
 	}
-	
+
 	return types;
 }
 
@@ -437,7 +432,7 @@ function getGraphData(data, figureFilterFunction, ftype) {
 	var typeValues = [""];
 	if (typeof data["ftypes"][ftype] != "undefined")
 		typeValues = typeValues.concat(Object.keys(data["ftypes"][ftype]));
-	
+
   // data collection
   var edgeObject = {};
   for (var i = 0;i < data["scs"].length; i++) {
@@ -463,7 +458,6 @@ function getGraphData(data, figureFilterFunction, ftype) {
         edgeObject[f1.toString()][f2.toString()]++;
       }
     }
-
   }
   var edges = [];
   var nodes = data["figures"]
@@ -475,22 +469,15 @@ function getGraphData(data, figureFilterFunction, ftype) {
   			figureIndex:i,
   			type:getFigureTypeValue(data, i, ftype)
   		}
-  	})
-  	.filter(function (f) {
-  		return figureFilterFunction(data["figures"][f["figureIndex"]])
-  	});/*.map(function(current, _, _) {
-    current["type"] = figureClassFunction(current);
-  });*/
+  	});
 
   for (k in edgeObject) {
     for (j in edgeObject[k]) {
-      if (figureFilterFunction(data["figures"][k])
-        && figureFilterFunction(data["figures"][j]))
         edges.push({
-          source: nodes.findIndex(function (f) {
+          source: nodes.find(function (f) {
           	return f["figureIndex"] == k;
           }),
-          target: nodes.findIndex(function (f) {
+          target: nodes.find(function (f) {
           	return f["figureIndex"] == j;
           }),
           value: edgeObject[k][j],
@@ -506,18 +493,42 @@ function getGraphData(data, figureFilterFunction, ftype) {
   }
 }
 
-function drawGraph(target, graph) {
-//   console.log(graph);
+function initForce(containerSelector) {
+	var force = d3.layout.force().size([ 800, 600 ])
+		.charge(-30)
+		.linkDistance(function (link) {
+			return 300/link.value;
+		});
+	force.linkStrength(function (link) {
+	  return 1/link.value;
+	});
+	force.friction(0.5);
+	force.drag().on("dragstart", dragstart);
 
+  force.on("tick", function() {
+    d3.select(containerSelector).select("svg").selectAll(".link").attr("x1", function(d) {
+      return d.source.x;
+    }).attr("y1", function(d) {
+      return d.source.y;
+    }).attr("x2", function(d) {
+      return d.target.x;
+    }).attr("y2", function(d) {
+      return d.target.y;
+    });
+    d3.select(containerSelector).select("svg").selectAll(".node").attr("transform", function(d) {
+      return "translate(" + d.x + "," + d.y + ")";
+    });
+  });
+	return force;
+}
+
+function drawGraph(target, graph, force) {
+	console.log(graph);
   var width = 800, height = 600;
   var svg = d3.select(target).select("svg").attr("width", width)
       .attr("height", height);
 
-  var force = d3.layout.force().size([ width, height ])
-    .charge(-30)
-    .linkDistance(function (link) {
-      return 500/link.value;
-    });
+
 	var key = function (d) {
 		return d.figureIndex;
 	}
@@ -526,13 +537,13 @@ function drawGraph(target, graph) {
 	.domain([0,
 		d3.max(
 			graph["nodes"],
- 			function (d) {
+			function (d) {
 				return d["figureWeight"];
 			}
 		)
 	])
 	.range([3,10]);
-	
+
 	var wscale = d3.scale.linear()
 		.domain([0,d3.max(graph["edges"], function (d) {return d.value;})])
 		.range([1,8]);
@@ -540,7 +551,8 @@ function drawGraph(target, graph) {
 	svg.selectAll(".link").data(graph["edges"], key)
 		.exit().remove();
   var link = svg.selectAll(".link")
-    .data(graph["edges"], key).enter()
+    .data(graph["edges"], key)
+		.enter()
     .append("line")
     .attr("class", "link")
     .style("stroke-width", function (d) {
@@ -552,9 +564,6 @@ function drawGraph(target, graph) {
   var node = svg.selectAll(".node")
     .data(graph["nodes"], key).enter()
     .append("g").attr("class", "node")
-    .style("fill", function (d) {
-      return darkcolors[graph.categories.indexOf(d["type"]) % darkcolors.length];
-    })
     .call(force.drag);
 
   node.append("circle")
@@ -562,6 +571,11 @@ function drawGraph(target, graph) {
       return rscale(d["figureWeight"]);
     })
     .on("dblclick", dblclick);
+
+	svg.selectAll(".node")
+		.style("fill", function (d) {
+			return darkcolors[graph.categories.indexOf(d["type"]) % darkcolors.length];
+		});
 
   node.append("title").text(function(d) {
     return d["txt"];
@@ -574,34 +588,6 @@ function drawGraph(target, graph) {
     .attr("stroke", "none")
     .text(function(d) {
       return d["Reference"]
-  });
-
-  force.linkStrength(function (link) {
-    return 1/link.value;
-  });
-  force.friction(0.5);
-
-
-  force.nodes(graph["nodes"]).links(graph["edges"])
-    .start();
-
-  force.drag().on("dragstart", dragstart);
-
-  force.on("tick", function() {
-    link.attr("x1", function(d) {
-      return d.source.x;
-    }).attr("y1", function(d) {
-      return d.source.y;
-    }).attr("x2", function(d) {
-      return d.target.x;
-    }).attr("y2", function(d) {
-      return d.target.y;
-    });
-
-
-    node.attr("transform", function(d) {
-      return "translate(" + d.x + "," + d.y + ")";
-    });
   });
 }
 
@@ -643,8 +629,11 @@ function loadCopresenceNetwork(targetJQ, data) {
 
 	targetDiv.append(settingsPane);
 	targetDiv.append("<svg></svg>");
+	var baseGraph = getGraphData(data, null, null);
+	var force = initForce("div#copresence");
 
   $(settingsPane).find("input").change(function() {
+		force.stop();
     var figureFilterFunction;
     if ($("#copresence .limit-enable:checked()").length == 0)
       figureFilterFunction = function(_) { return true; }
@@ -653,18 +642,32 @@ function loadCopresenceNetwork(targetJQ, data) {
       var limitUtterances = parseInt($("#copresence .limit-utterances").val());
 
       figureFilterFunction = function(figure) {
-        return figure["NumberOfUtterances"] > limitUtterances && figure["NumberOfWords"] > limitWords;
+        return data["figures"][figure["figureIndex"]]["NumberOfUtterances"] > limitUtterances && data["figures"][figure["figureIndex"]]["NumberOfWords"] > limitWords;
       };
     }
     var selectedType = "x";
-    if ($("#copresence fieldset.typecolor input.color-enable:checked").length > 0)
+		var typeValues = [""];
+    if ($("#copresence fieldset.typecolor input.color-enable:checked").length > 0) {
     	selectedType = $("#copresence input[name='figureColor']:checked").val();
-    
-    var graph = getGraphData(data, figureFilterFunction, selectedType);
+			if (typeof data["ftypes"][selectedType] != "undefined")
+				typeValues = typeValues.concat(Object.keys(data["ftypes"][selectedType]));
 
-//     d3.select("#copresence svg").remove();
-    console.log(JSON.stringify(graph));
-    drawGraph("#copresence", graph);
+		}
+
+		var nodes = baseGraph["nodes"].filter(figureFilterFunction);
+		var links = baseGraph["edges"].filter(function (a) { return figureFilterFunction(a.source) && figureFilterFunction(a.target) });
+		for (node of nodes) {
+			node["type"] = getFigureTypeValue(data, node["figureIndex"], selectedType);
+		}
+		var graph = {
+			nodes:nodes,
+			edges:links,
+			categories:typeValues
+		};
+    drawGraph("#copresence", graph, force);
+
+		force.nodes(graph["nodes"]).links(graph["edges"])
+	    .start();
   });
   $(settingsPane).find("input").eq(0).change();
 
