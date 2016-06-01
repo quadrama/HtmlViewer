@@ -99,7 +99,7 @@ function loadPresenceChart(targetJQ, data) {
 				if (typeof(uttObj) == "undefined")
 					continue;
 				if ("s" in uttObj)
-					for (sp of uttObj["s"]) {
+					for (var sp of uttObj["s"]) {
 						utterances.push({
 							x:sp["begin"],
 							y:index,
@@ -181,7 +181,7 @@ function loadFigureStatistics(targetJQ, data) {
 
 	// find out the maximal value for each category
 	var mydata = data["figures"].map(function(cur, ind, arr) {
-		for (si in maxValues) {
+		for (var si in maxValues) {
 			var v = cur[si];
 			if (cur["NumberOfWords"]>wsize && v > maxValues[si])
 				maxValues[si] = v;
@@ -252,16 +252,16 @@ function loadSemanticFields(targetJQ, data) {
 	}).map(function(cur, ind, arr) {
 		var sum = {};
 		var arr = [];
-		for (field of Object.keys(data.fields).sort()) {
+		for (var field of Object.keys(data.fields).sort()) {
 			sum[field] = 0;
 		}
 		if ("utt" in cur) {
 			for (var i = 0; i < cur["utt"].length; i++) {
 				var currentUtterance = data["utt"][cur["utt"][i]]
 				if ("s" in currentUtterance) {
-					for (speech of currentUtterance.s) {
+					for (var speech of currentUtterance.s) {
 						if ("fields" in speech) {
-							for (fname of speech["fields"]) {
+							for (var fname of speech["fields"]) {
 								sum[fname]++;
 							}
 						}
@@ -269,7 +269,7 @@ function loadSemanticFields(targetJQ, data) {
 				}
 			}
 		}
-		for (field of Object.keys(data.fields).sort()) {
+		for (var field of Object.keys(data.fields).sort()) {
 			arr.push(boostFactor*(sum[field] / data["fields"][field]["Length"])/cur[normalizationFactor]);
 		}
 		return {
@@ -353,7 +353,7 @@ function loadText(targetJQ, data) {
 	// add segmentation to header and text into the pane
 	var actIndex = 1;
 	var segment = document.createElement("div");
-	for (act of data["acts"].sort(function(a,b) {return parseInt(a["begin"])-parseInt(b["begin"])})) {
+	for (var act of data["acts"].sort(function(a,b) {return parseInt(a["begin"])-parseInt(b["begin"])})) {
 		segment = document.createElement("div");
 		var anchor = "act"+actIndex;
 		var actToc = document.createElement("ul");
@@ -370,7 +370,7 @@ function loadText(targetJQ, data) {
 		var scenes = data["scs"].filter(function(a) {
 			return parseInt(a["begin"]) >= parseInt(act["begin"]) && parseInt(a["end"]) <= parseInt(act["end"]);
 		}).sort(function (a,b) {return parseInt(a["begin"])-parseInt(b["begin"])});
-		for (scene of scenes) {
+		for (var scene of scenes) {
 			var sceneElement = document.createElement("div");
 			var anchor = "act"+actIndex+"_scene"+sceneIndex;
 			if ("head" in scene) {
@@ -381,7 +381,7 @@ function loadText(targetJQ, data) {
 				$(actToc).append("<li><a href=\"#"+anchor+"\">"+sceneIndex+". Scene</a></li>");
 				$(sceneElement).append("<div class=\"sceneheading\"><a name=\""+anchor+"\">"+(sceneIndex++)+". Scene</a></div>");
 			}
-			for (u of data["utt"].filter(function (a) {
+			for (var u of data["utt"].filter(function (a) {
 				return a["begin"] >= scene["begin"] && a["end"] <= scene["end"];
 			})) {
 				var figure = data["figures"][u["f"]];
@@ -391,7 +391,7 @@ function loadText(targetJQ, data) {
 				$(utteranceElement).attr("data-end", u["end"]);
 				$(utteranceElement).append("<div class=\"speaker f"+u["f"]+"\">"+figure["Reference"]+"</div>");
 				if ("s" in u)
-				for (s of u["s"]) {
+				for (var s of u["s"]) {
 					$(utteranceElement).append("<div class=\"speech\">"+s["txt"]+"</div>");
 				}
 				$(sceneElement).append(utteranceElement);
@@ -497,7 +497,7 @@ function getGraphData(data, figureFilterFunction, ftype) {
 
 function initForce(containerSelector, dimensions) {
 	var force = d3.layout.force().size(dimensions)
-		.charge(-30)
+		.charge(-50)
 		.linkDistance(function (link) {
 			return 300/link.value;
 		});
