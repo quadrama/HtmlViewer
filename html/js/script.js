@@ -586,7 +586,21 @@ function drawGraph(target, graph, force, dimensions) {
 	var node = nodeD.enter()
 		.append("g").attr("class", "node")
 		.style("opacity", 0)
-		.call(force.drag);
+		.call(force.drag)
+		.on("click", function() {
+			d3.select("g.node.selected")
+				.transition()
+				.duration(animLength)
+				.style({"stroke-width":"0px"});
+			d3.select("g.node.selected")
+				.classed("selected", false);
+			d3.select(this)
+				.transition()
+				.duration(animLength)
+				.style({"stroke": "#A00", "stroke-width": "5px"});
+			d3.select(this)
+						.classed("selected", true);
+		});
 
 	node.append("circle")
 		.attr("r", function (d) {
