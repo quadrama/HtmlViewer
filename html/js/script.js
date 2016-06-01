@@ -1,3 +1,5 @@
+"use strict";
+
 var colors = [ "#EEF", "#FEE", "#EFE"]
 var strongcolors = ["#AAF", "#FAA", "#AFA", "#55F", "#F55", "#5F5" ];
 var darkcolors = ["#000", "#A00", "#0A0", "#00A", "#AA0", "#0AA", "#A0A"];
@@ -61,7 +63,7 @@ function loadPresenceChart(targetJQ, data) {
 	var end = 0;
 	var pb = segments.filter(function(_){return true;}).sort(function(a,b) {
 		return a["begin"]-b["begin"];
-	}).map(function(cur, i, _) {
+	}).map(function(cur, i, arr) {
 		if (parseInt(cur["end"]) > end) end = parseInt(cur["end"]);
 		return {
 			from : parseInt(cur["begin"]),
@@ -78,7 +80,7 @@ function loadPresenceChart(targetJQ, data) {
 	});
 
 	// create an array of the figure index numbers (index in the original array)
-	var figures = data["figures"].map(function(_,ind,_) {return ind});
+	var figures = data["figures"].map(function(cur,ind,arr) {return ind});
 
 	// create an array for the figure names (which will be categories later
 	// along the y axis)
@@ -87,7 +89,7 @@ function loadPresenceChart(targetJQ, data) {
 	// create the series array
 	var series = figures.sort(function(a,b) {
 		return data["figures"][a][figureSortKey] - data["figures"][b][figureSortKey];
-	}).map(function(currentFigureIndex, index, _) {
+	}).map(function(currentFigureIndex, index, arr) {
 		var currentFigure = data["figures"][currentFigureIndex];
 		figureNames.push(currentFigure["Reference"]);
 		var utterances = [];
@@ -192,7 +194,7 @@ function loadFigureStatistics(targetJQ, data) {
 		chart: { type: "column" },
 		xAxis: { categories: Object.keys(maxValues) },
 		yAxis:{ min:0, max:1 },
-		series: data["figures"].map(function (cur, ind, _) {
+		series: data["figures"].map(function (cur, ind, arr) {
 			return {
 				name: cur["Reference"],
 				data: [
@@ -239,13 +241,13 @@ function loadSemanticFields(targetJQ, data) {
 	// columns for table
 	var columns = [ {
 		title: "Figure"
-	} ].concat(Object.keys(data["fields"]).sort().map(function(cur, _, _) {
+	} ].concat(Object.keys(data["fields"]).sort().map(function(cur, ind, arr) {
 		return {title:cur,width:"10%"};
 	}));
 
 
 	// collect data
-	var series = data["figures"].filter(function(cur, _, _) {
+	var series = data["figures"].filter(function(cur) {
 		return true;
 	}).map(function(cur, ind, arr) {
 		var sum = {};
@@ -289,7 +291,7 @@ function loadSemanticFields(targetJQ, data) {
 		title: { text:null },
 		pane:{ size:'90%' },
 		xAxis:{
-			categories: columns.map(function(cur, _, _) {
+			categories: columns.map(function(cur) {
 				return cur["title"]
 			}),
 			lineWidth: 0
@@ -300,7 +302,7 @@ function loadSemanticFields(targetJQ, data) {
 	});
 
 	// create table
-	var tableData = series.map(function(current, _, _) {
+	var tableData = series.map(function(current) {
 		return [current["name"]].concat(current["data"]);
 	});
 	$("#fields table").DataTable({
@@ -471,8 +473,8 @@ function getGraphData(data, figureFilterFunction, ftype) {
   		}
   	});
 
-  for (k in edgeObject) {
-    for (j in edgeObject[k]) {
+  for (var k in edgeObject) {
+    for (var j in edgeObject[k]) {
         edges.push({
           source: nodes.find(function (f) {
           	return f["figureIndex"] == k;
@@ -659,7 +661,7 @@ function loadCopresenceNetwork(targetJQ, data) {
 		force.stop();
     var figureFilterFunction;
     if ($("#copresence .limit-enable:checked()").length == 0)
-      figureFilterFunction = function(_) { return true; }
+      figureFilterFunction = function(a) { return true; }
     else {
       var limitWords = parseInt($("#copresence .limit-words").val());
       var limitUtterances = parseInt($("#copresence .limit-utterances").val());
@@ -679,7 +681,7 @@ function loadCopresenceNetwork(targetJQ, data) {
 
 		var nodes = baseGraph["nodes"].filter(figureFilterFunction);
 		var links = baseGraph["edges"].filter(function (a) { return figureFilterFunction(a.source) && figureFilterFunction(a.target) });
-		for (node of nodes) {
+		for (var node of nodes) {
 			node["type"] = getFigureTypeValue(data, node["figureIndex"], selectedType);
 		}
 		var graph = {
@@ -875,13 +877,13 @@ function refreshView(docs) {
 	// assembly of series
 	var series = [];
 	series.push({
-		data:docs.filter(docFilterFunction).map(function(cur, index, _) {
+		data:docs.filter(docFilterFunction).map(function(cur, index) {
 			return cur["figures"].filter(figureFilterFunction).length;
 		}),
 		name:"Number of Figures"
 	});
 	series.push({
-		data:docs.filter(docFilterFunction).map(function(cur, _, _) {
+		data:docs.filter(docFilterFunction).map(function(cur) {
 			var n = 0;
 			cur["figures"].filter(figureFilterFunction).forEach(function(current) {
 				n += current["NumberOfWords"];
@@ -891,7 +893,7 @@ function refreshView(docs) {
 		name:"Total word length"
 	});
 	series.push({
-		data:docs.filter(docFilterFunction).map(function(cur, _, _) {
+		data:docs.filter(docFilterFunction).map(function(cur) {
 			var n = 0.0;
 			var s = 0.0;
 			cur["figures"].filter(figureFilterFunction).forEach(function(current) {
@@ -903,7 +905,7 @@ function refreshView(docs) {
 		name:"Avg. utterance length"
 	});
 	series.push({
-		data:docs.filter(docFilterFunction).map(function(cur, _, _) {
+		data:docs.filter(docFilterFunction).map(function(cur) {
 			var n = 0.0;
 			var s = 0.0;
 			cur["figures"].filter(figureFilterFunction).forEach(function(current) {
@@ -915,7 +917,7 @@ function refreshView(docs) {
 		name:"Avg. number of words"
 	});
 	series.push({
-		data:docs.filter(docFilterFunction).map(function(cur, _, _) {
+		data:docs.filter(docFilterFunction).map(function(cur) {
 			var n = 0.0;
 			var s = 0.0;
 			cur["figures"].filter(figureFilterFunction).forEach(function(current) {
@@ -938,7 +940,7 @@ function refreshView(docs) {
 		},
 		series:series,
 		xAxis: {
-			categories: docs.filter(docFilterFunction).map(function(cur, _, _) {
+			categories: docs.filter(docFilterFunction).map(function(cur) {
 				return cur["meta"]["ReferenceDate"]+" "+cur["meta"]["authors"][0]["Name"] + ": "+cur["meta"]["documentTitle"]+("transl" in cur["meta"]?" (transl.: "+cur["meta"]["translators"][0]["Name"]+")":"");
 			})
 		}
@@ -971,8 +973,8 @@ function load_aggregated_view(target, data, words, figureclass, figurevalue, fty
 		return parseInt(a.meta.ReferenceDate) - parseInt(b.meta.ReferenceDate);
 	});
 	// console.log(docs);
-	var series = words.map(function(cur, index, _) {
-		var d = docs.map(function(cur2, _, _) {
+	var series = words.map(function(cur, index) {
+		var d = docs.map(function(cur2) {
 			var figureIndices = cur2["ftypes"][figureclass][figurevalue];
 			var occ = 0;
 			var total = 0;
@@ -1006,8 +1008,8 @@ function load_aggregated_view(target, data, words, figureclass, figurevalue, fty
 			visible: ($("#everythingHidden:checked").length == 0)
 		};
 	}).concat(
-		fields.map(function(cur,_, _) {
-			var d = docs.map(function(cur2, _, _) {
+		fields.map(function(cur) {
+			var d = docs.map(function(cur2) {
 				var figureIndices = cur2["ftypes"][figureclass][figurevalue];
 				var occ = 0;
 				var total = 0;
@@ -1058,7 +1060,7 @@ function load_aggregated_view(target, data, words, figureclass, figurevalue, fty
 				headerFormat:"<small>{point.key}</small><br/>"
 			},
 			xAxis: {
-				categories: docs.map(function(cur, _, _) {
+				categories: docs.map(function(cur) {
 					return cur["meta"]["ReferenceDate"]+" "+cur["meta"]["authors"][0]["Name"] + ": "+cur["meta"]["documentTitle"]+("transl" in cur["meta"]?" (transl.: "+cur["meta"]["translators"][0]["Name"]+")":"");
 				})
 			}
