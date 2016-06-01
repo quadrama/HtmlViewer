@@ -497,14 +497,14 @@ function getGraphData(data, figureFilterFunction, ftype) {
 
 function initForce(containerSelector, dimensions) {
 	var force = d3.layout.force().size(dimensions)
-		.charge(-50)
+		.charge(-500)
 		.linkDistance(function (link) {
-			return 300/link.value;
+			return 200/link.value;
 		});
 	force.linkStrength(function (link) {
 	  return 1/link.value;
 	});
-	force.friction(0.5);
+	force.friction(0.2);
 	force.drag().on("dragstart", dragstart);
 
   force.on("tick", function() {
@@ -562,12 +562,12 @@ function drawGraph(target, graph, force, dimensions) {
 
 	// add lines to the svg
 	var link = linkD.enter()
-    .insert("line", ".node")
-    .attr("class", "link")
+		.insert("line", ".node")
+		.attr("class", "link")
 		.style("opacity", 0)
-    .style("stroke-width", function (d) {
-      return wscale(d.value);
-    });
+		.style("stroke-width", function (d) {
+			return wscale(d.value);
+		});
 
 	// animate into opacity
 	linkD.transition().duration(animLength)
@@ -580,29 +580,29 @@ function drawGraph(target, graph, force, dimensions) {
 		.style('opacity', 0)
 		.remove();
 
-  var nodeD = svg.selectAll(".node")
-    .data(graph["nodes"], key);
+	var nodeD = svg.selectAll(".node")
+		.data(graph["nodes"], key);
 
 	var node = nodeD.enter()
-    .append("g").attr("class", "node")
+		.append("g").attr("class", "node")
 		.style("opacity", 0)
 		.call(force.drag);
 
-  node.append("circle")
-    .attr("r", function (d) {
-      return rscale(d["figureWeight"]);
-    })
-    .on("dblclick", dblclick);
+	node.append("circle")
+		.attr("r", function (d) {
+			return rscale(d["figureWeight"]);
+		})
+		.on("dblclick", dblclick);
 	node.append("title").text(function(d) {
 			return d["txt"];
 		});
 	node.append("text")
-			.attr("dx", 12)
-			.attr("dy", ".35em")
-			.attr("class", "figureLabel")
-			.attr("stroke", "none")
-			.text(function(d) {
-				return d["Reference"]
+		.attr("dx", 12)
+		.attr("dy", ".35em")
+		.attr("class", "figureLabel")
+		.attr("stroke", "none")
+		.text(function(d) {
+			return d["Reference"]
 		});
 
 	nodeD
