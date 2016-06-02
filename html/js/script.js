@@ -577,15 +577,17 @@ function drawGraph(target, graph, force, dimensions) {
 	linkD.transition().duration(animLength)
 		.style("opacity", 1);
 
-	// remove old nodes
-	svg.selectAll("g.node").data(graph["nodes"], key)
-		.exit()
-		.transition().duration(animLength)
-		.style('opacity', 0)
-		.remove();
+	
 
 	var nodeD = svg.selectAll(".node")
 		.data(graph["nodes"], key);
+		
+	// remove old nodes
+
+	nodeD.exit()
+		.transition().duration(animLength)
+		.style('opacity', 0)
+		.remove();
 
 	var node = nodeD.enter()
 		.append("g");
@@ -612,7 +614,7 @@ function drawGraph(target, graph, force, dimensions) {
 			return d["Reference"]
 		});
 
-	svg.selectAll(".node")
+	nodeD
 		.transition().duration(animLength)
 		.style("fill", function (d) {
 			return darkcolors[graph.categories.indexOf(d["type"]) % darkcolors.length];
