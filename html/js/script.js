@@ -584,22 +584,58 @@ function drawGraph(target, graph, force, dimensions) {
 		.data(graph["nodes"], key);
 
 	var node = nodeD.enter()
-		.append("g").attr("class", "node")
+		.append("g");
+		
+	node.attr("class", "node")
 		.style("opacity", 0)
 		.call(force.drag)
 		.on("click", function() {
-			d3.select("g.node.selected")
-				.transition()
-				.duration(animLength)
-				.style({"stroke-width":"0px"});
-			d3.select("g.node.selected")
-				.classed("selected", false);
-			d3.select(this)
-				.transition()
-				.duration(animLength)
-				.style({"stroke": "#A00", "stroke-width": "5px"});
-			d3.select(this)
-						.classed("selected", true);
+			var thisNode = d3.select(this);
+			var thisFigure = thisNode.datum();
+			var otherNodes = svg.selectAll("g.node")
+				.filter(function (d) {
+					return true;
+			});
+			var relatedLinks = svg.selectAll(".link")
+				.filter(function (d) {
+					if (typeof(d) == "undefined")
+						return false;
+					return d.source === thisFigure ||
+						d.target === thisFigure;
+			});
+			if (thisNode.classed("selected")) {
+				thisNode.transition()
+					.duration(animLength)
+					.style({"stroke-width":"0px"});
+				relatedLinks.transition()
+					.duration(animLength)
+					.style("stroke", "#AAA");
+				thisNode.classed("selected", false);
+				relatedLinks.classed("selected", false);
+			} else {
+				var selectedNodes = d3.select("g.node.selected");
+				var selectedLinks = d3.selectAll(".link.selected");
+				
+				// remove old style
+				selectedLinks.transition()
+					.duration(animLength)
+					.style("stroke", "#AAA");
+				selectedNodes.transition()
+					.duration(animLength)
+					.style({"stroke-width":"0px"});
+				selectedLinks.classed("selected", false);
+				selectedNodes.classed("selected", false);
+				
+				// add new style
+				relatedLinks.transition()
+ 					.duration(animLength)
+ 					.style("stroke", "#A00");
+				thisNode.transition()
+					.duration(animLength)
+								.style({"stroke": "#A00", "stroke-width": "5px"});
+				thisNode.classed("selected", true);
+				relatedLinks.classed("selected", true);
+			}
 		});
 
 	node.append("circle")
@@ -619,7 +655,7 @@ function drawGraph(target, graph, force, dimensions) {
 			return d["Reference"]
 		});
 
-	nodeD
+	node
 		.transition().duration(animLength)
 		.style("fill", function (d) {
 			return darkcolors[graph.categories.indexOf(d["type"]) % darkcolors.length];
