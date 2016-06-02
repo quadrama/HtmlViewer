@@ -496,17 +496,20 @@ function getGraphData(data, figureFilterFunction, ftype) {
   }
 }
 
-function initForce(containerSelector, dimensions) {
+function initForce(containerSelector, dimensions, graph) {
+	var maxLinkValue = d3.max(graph["edges"], function(d) {return d.value;});
+	var distanceScale = d3.scale.linear()
+		.domain([1,maxLinkValue])
+		.range([1,10]);
+	
 	var force = d3.layout.force().size(dimensions)
-		.charge(-500)
+		.charge(-100)
 		.linkDistance(function (link) {
-			return 200/link.value;
-		});
-	force.linkStrength(function (link) {
-	  return 1/link.value;
-	});
-	force.friction(0.2);
-	force.drag().on("dragstart", dragstart);
+			return 300 / distanceScale(link.value);
+		})
+		.linkStrength(0.5)
+		.friction(0.2);
+		force.drag().on("dragstart", dragstart);
 
   force.on("tick", function() {
     d3.select(containerSelector).select("svg").selectAll(".link").attr("x1", function(d) {
@@ -659,7 +662,7 @@ function loadCopresenceNetwork(targetJQ, data) {
 	targetDiv.children("svg").attr("height", height);
 	targetDiv.children("svg").attr("width", width);
 	var baseGraph = getGraphData(data, null, null);
-	var force = initForce("div#copresence", [width, height]);
+	var force = initForce("div#copresence", [width, height], baseGraph);
 
   $(settingsPane).find("input").change(function() {
 		force.stop();
