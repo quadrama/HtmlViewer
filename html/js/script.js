@@ -6,6 +6,7 @@ var darkcolors = ["#000", "#A00", "#0A0", "#00A", "#AA0", "#0AA", "#A0A"];
 var wordThreshold = 500;
 var ftypes = ["Polarity", "RJType", "Gender"];
 var colorIndex = 0;
+var animLength = 500;
 
 Array.prototype.unique = function() {
 	var tmp = {}, out = [];
@@ -525,7 +526,7 @@ function initForce(containerSelector, dimensions) {
 }
 
 function drawGraph(target, graph, force, dimensions) {
-	var animLength = 500;
+
 
 	var width = dimensions[0];
 	var height = dimensions[1];
@@ -589,54 +590,7 @@ function drawGraph(target, graph, force, dimensions) {
 	node.attr("class", "node")
 		.style("opacity", 0)
 		.call(force.drag)
-		.on("click", function() {
-			var thisNode = d3.select(this);
-			var thisFigure = thisNode.datum();
-			var otherNodes = svg.selectAll("g.node")
-				.filter(function (d) {
-					return true;
-			});
-			var relatedLinks = svg.selectAll(".link")
-				.filter(function (d) {
-					if (typeof(d) == "undefined")
-						return false;
-					return d.source === thisFigure ||
-						d.target === thisFigure;
-			});
-			if (thisNode.classed("selected")) {
-				thisNode.transition()
-					.duration(animLength)
-					.style({"stroke-width":"0px"});
-				relatedLinks.transition()
-					.duration(animLength)
-					.style("stroke", "#AAA");
-				thisNode.classed("selected", false);
-				relatedLinks.classed("selected", false);
-			} else {
-				var selectedNodes = d3.select("g.node.selected");
-				var selectedLinks = d3.selectAll(".link.selected");
-				
-				// remove old style
-				selectedLinks.transition()
-					.duration(animLength)
-					.style("stroke", "#AAA");
-				selectedNodes.transition()
-					.duration(animLength)
-					.style({"stroke-width":"0px"});
-				selectedLinks.classed("selected", false);
-				selectedNodes.classed("selected", false);
-				
-				// add new style
-				relatedLinks.transition()
- 					.duration(animLength)
- 					.style("stroke", "#A00");
-				thisNode.transition()
-					.duration(animLength)
-								.style({"stroke": "#A00", "stroke-width": "5px"});
-				thisNode.classed("selected", true);
-				relatedLinks.classed("selected", true);
-			}
-		});
+		.on("click", selectNode);
 
 	node.append("circle")
 		.attr("r", function (d) {
@@ -1001,6 +955,56 @@ function dblclick(d) {
 	d3.select(this).classed("fixed", d.fixed = false);
 	d3.layout.force().stop();
 }
+
+function selectNode() {
+	var svg = d3.select("svg");
+			var thisNode = d3.select(this);
+			var thisFigure = thisNode.datum();
+			var otherNodes = svg.selectAll("g.node")
+				.filter(function (d) {
+					return true;
+			});
+			var relatedLinks = svg.selectAll(".link")
+				.filter(function (d) {
+					if (typeof(d) == "undefined")
+						return false;
+					return d.source === thisFigure ||
+						d.target === thisFigure;
+			});
+			if (thisNode.classed("selected")) {
+				thisNode.transition()
+					.duration(animLength)
+					.style({"stroke-width":"0px"});
+				relatedLinks.transition()
+					.duration(animLength)
+					.style("stroke", "#AAA");
+				thisNode.classed("selected", false);
+				relatedLinks.classed("selected", false);
+			} else {
+				var selectedNodes = d3.select("g.node.selected");
+				var selectedLinks = d3.selectAll(".link.selected");
+				
+				// remove old style
+				selectedLinks.transition()
+					.duration(animLength)
+					.style("stroke", "#AAA");
+				selectedNodes.transition()
+					.duration(animLength)
+					.style({"stroke-width":"0px"});
+				selectedLinks.classed("selected", false);
+				selectedNodes.classed("selected", false);
+				
+				// add new style
+				relatedLinks.transition()
+ 					.duration(animLength)
+ 					.style("stroke", "#A00");
+				thisNode.transition()
+					.duration(animLength)
+								.style({"stroke": "#A00", "stroke-width": "5px"});
+				thisNode.classed("selected", true);
+				relatedLinks.classed("selected", true);
+			}
+		}
 
 function dragstart(d) {
 	d3.select(this).classed("fixed", d.fixed = true);
