@@ -409,8 +409,8 @@ function loadText(targetJQ, data) {
 function getFigureTypes(data, figure) {
 	var types = [];
 	var figureIndex = data["figures"].indexOf(figure);
-	for (ftype in data["ftypes"]) {
-		for (fvalue in data["ftypes"][ftype]) {
+	for (var ftype in data["ftypes"]) {
+		for (var fvalue in data["ftypes"][ftype]) {
 			if (data["ftypes"][ftype][fvalue].includes(figureIndex)) {
 				types.push({
 					ftype: ftype,
@@ -424,7 +424,7 @@ function getFigureTypes(data, figure) {
 }
 
 function getFigureTypeValue(data, figureIndex, ftype) {
-	for (fvalue in data["ftypes"][ftype]) {
+	for (var fvalue in data["ftypes"][ftype]) {
 		if (data["ftypes"][ftype][fvalue].includes(figureIndex))
 			return fvalue;
 	}
@@ -457,8 +457,8 @@ function getGraphData(data, figureFilterFunction, ftype) {
       for (var f2i = f1i+1; f2i < figuresInScene.length; f2i++) {
         var f2 = figuresInScene[f2i];
         if (! edgeObject[f1.toString()].hasOwnProperty(f2.toString()))
-          edgeObject[f1.toString()][f2.toString()] = 0;
-        edgeObject[f1.toString()][f2.toString()]++;
+          edgeObject[f1.toString()][f2.toString()] = [];
+        edgeObject[f1.toString()][f2.toString()].push(i);
       }
     }
   }
@@ -483,7 +483,8 @@ function getGraphData(data, figureFilterFunction, ftype) {
           target: nodes.find(function (f) {
           	return f["figureIndex"] == j;
           }),
-          value: edgeObject[k][j],
+          value: edgeObject[k][j].length,
+          scenes: edgeObject[k][j],
           figureIndex: k.toString()+"_"+j.toString()
         });
     }
@@ -529,25 +530,21 @@ function initForce(containerSelector, dimensions, graph) {
 }
 
 function drawGraph(target, graph, force, dimensions) {
-
-
 	var width = dimensions[0];
 	var height = dimensions[1];
 	var svg = d3.select(target).select("svg");
-
 
 	var key = function (d) {
 		return d.figureIndex;
 	}
 
 	var rscale = d3.scale.linear()
-	.domain([0, d3.max(graph["nodes"],
+		.domain([0, d3.max(graph["nodes"],
 			function (d) {
 				return d["figureWeight"];
 			}
 		)
-	])
-	.range([3,10]);
+	]).range([3,10]);
 
 	var wscale = d3.scale.linear()
 		.domain([0,d3.max(graph["edges"], function (d) {return d.value;})])
@@ -572,6 +569,9 @@ function drawGraph(target, graph, force, dimensions) {
 		.style("stroke-width", function (d) {
 			return wscale(d.value);
 		});
+	link.append("title").text(function(d){
+		return d.scenes;
+	});
 
 	// animate into opacity
 	linkD.transition().duration(animLength)
@@ -612,7 +612,7 @@ function drawGraph(target, graph, force, dimensions) {
 			return d["Reference"]
 		});
 
-	node
+	svg.selectAll(".node")
 		.transition().duration(animLength)
 		.style("fill", function (d) {
 			return darkcolors[graph.categories.indexOf(d["type"]) % darkcolors.length];
@@ -822,7 +822,7 @@ function init(data) {
 	for (ftype in ftypes) {
 		var og = document.createElement("optgroup");
 		$(og).attr("label", ftype);
-		for (fvalue in ftypes[ftype])
+		for (var fvalue in ftypes[ftype])
 			$(og).append("<option value=\""+ftype+"."+fvalue+"\">"+fvalue+"</option>");
 		$("#figuretype").append(og);
 	}
