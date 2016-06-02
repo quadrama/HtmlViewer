@@ -583,7 +583,6 @@ function drawGraph(target, graph, force, dimensions) {
 		.data(graph["nodes"], key);
 		
 	// remove old nodes
-
 	nodeD.exit()
 		.transition().duration(animLength)
 		.style('opacity', 0)
@@ -614,6 +613,7 @@ function drawGraph(target, graph, force, dimensions) {
 			return d["Reference"]
 		});
 
+	// recolor the nodes
 	nodeD
 		.transition().duration(animLength)
 		.style("fill", function (d) {
