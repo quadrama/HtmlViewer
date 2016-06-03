@@ -31,21 +31,7 @@ function getQueryParams(qs) {
 }
 
 function dramaViewer(targetSelector, data) {
-	var target = $(targetSelector);
-	target.empty();
-	target.append("<ul></ul>");
-	loadText(target, data);
-	loadPresenceChart(target, data);
-	loadSemanticFields(target, data);
-	loadFigureStatistics(target, data);
-	loadCopresenceNetwork(target, data);
-
-
-	$("h1#title").append(data["meta"]["ReferenceDate"] +
-		" " + data["meta"]["authors"][0]["Name"] +
-		": " + data["meta"]["documentTitle"] +
-		("translators" in data["meta"] ? " (transl.: " + data["meta"]["translators"][0]["Name"]+")" : ""));
-	$(targetSelector).tabs();
+	Drama(targetSelector, data).addAll();
 
 }
 
