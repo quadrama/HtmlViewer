@@ -11,7 +11,7 @@ function Drama(selector) {
 	init();
 
 	var api = {
-		title:titleString,
+		title:function() {return titleString;},
 		addNetworkView:function () {
 			views.push(NetworkView(target));
 			$(selector).tabs("refresh");
@@ -60,6 +60,7 @@ function Drama(selector) {
 			": " + data.meta.documentTitle +
 			("translators" in data.meta ? " (transl.: " + data.meta.translators[0].Name+")" : "");
 		for (var view of views) {
+			view.clear();
 			view.load();
 		}
 		return api;
@@ -156,7 +157,8 @@ function Drama(selector) {
 		load();
 
 		return {
-			load:load
+			load:load,
+			clear:clear
 		};
 
 		function init() {
@@ -177,6 +179,12 @@ function Drama(selector) {
 
 			textArea = $(document.createElement("div"));
 			textArea.appendTo("#text");
+			$(".toccontainer").accordion({
+				header:"p",
+				heightStyle:"content",
+				collapsible:true,
+				active:false
+			});
 
 		}
 
@@ -187,7 +195,6 @@ function Drama(selector) {
 		}
 
 		function load() {
-			clear();
 			var figure;
 
 			// add figures to header
@@ -256,7 +263,6 @@ function Drama(selector) {
 				}
 				textArea.append(segment);
 			}
-			$(".toccontainer").accordion({header:"p",heightStyle:"content",collapsible:true});
 		}
 	}
 
@@ -422,7 +428,6 @@ function Drama(selector) {
 		}
 
 		function load() {
-			clear();
 			// for normalizing in the chart
 			// (otherwise, it gets unreadable)
 			var maxValues = {
@@ -511,7 +516,6 @@ function Drama(selector) {
 		}
 
 		function load() {
-			clear();
 			// collect data
 			var series = data.figures.filter(function(cur) {
 				return true;
@@ -592,7 +596,8 @@ function Drama(selector) {
 				base: baseGraph
 			},
 			redraw:draw,
-			load:load
+			load:load,
+			clear:clear
 		};
 
 		function init() {
@@ -634,6 +639,8 @@ function Drama(selector) {
 			svg = d3.select("div#"+idString).append("svg")
 				.attr("height", height)
 				.attr("width", width);
+			var legend = svg.append("text").attr("x", 10).attr("y", 40);
+			legend.text("Legend");
 
 			$(settingsPane).find("input").change(updateSettings);
 		}
@@ -689,6 +696,64 @@ function Drama(selector) {
 		function clear() {
 			svg.selectAll(".link").remove();
 			svg.selectAll(".node").remove();
+		}
+
+		function dblclick(d) {
+			d3.select(this).classed("fixed", true);
+			d3.layout.force().stop();
+		}
+
+		function selectNode() {
+					var thisNode = d3.select(this);
+					var thisFigure = thisNode.datum();
+					var otherNodes = svg.selectAll("g.node")
+						.filter(function (d) {
+							return true;
+					});
+					var relatedLinks = svg.selectAll(".link")
+						.filter(function (d) {
+							if (typeof(d) == "undefined")
+								return false;
+							return d.source === thisFigure ||
+								d.target === thisFigure;
+					});
+					if (thisNode.classed("selected")) {
+						thisNode.transition()
+							.duration(animLength)
+							.style({"stroke-width":"0px"});
+						relatedLinks.transition()
+							.duration(animLength)
+							.style("stroke", "#AAA");
+						thisNode.classed("selected", false);
+						relatedLinks.classed("selected", false);
+					} else {
+						var selectedNodes = d3.select("g.node.selected");
+						var selectedLinks = d3.selectAll(".link.selected");
+
+						// remove old style
+						selectedLinks.transition()
+							.duration(animLength)
+							.style("stroke", "#AAA");
+						selectedNodes.transition()
+							.duration(animLength)
+							.style({"stroke-width":"0px"});
+						selectedLinks.classed("selected", false);
+						selectedNodes.classed("selected", false);
+
+						// add new style
+						relatedLinks.transition()
+		 					.duration(animLength)
+		 					.style("stroke", "#A00");
+						thisNode.transition()
+							.duration(animLength)
+										.style({"stroke": "#A00", "stroke-width": "5px"});
+						thisNode.classed("selected", true);
+						relatedLinks.classed("selected", true);
+					}
+				}
+
+		function dragstart(d) {
+			d3.select(this).classed("fixed", true);
 		}
 
 		function draw() {
