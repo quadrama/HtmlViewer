@@ -636,11 +636,24 @@ function Drama(selector) {
 			$(settingsPane).append(fieldSet);
 
 			targetDiv.append(settingsPane);
+
+			var legendDiv = $(document.createElement("div"));
+				legendDiv.addClass("legend");
+				legendDiv.append("<h1>Legend</h1>");
+				legendDiv.append("<p>Two figures are connected, if they are present on stage within a scene.");
+				legendDiv.append("<p><strong>Node size</strong>: #words (overall)</p>");
+				legendDiv.append("<p><strong>Line width</strong>: #scenes in which the fig. are co-present</p>");
+				legendDiv.append("<p>Figures are closer together if they are co-present in more scenes.</p>");
+				legendDiv.draggable();
+				targetDiv.append(legendDiv);
+
+
 			svg = d3.select("div#"+idString).append("svg")
 				.attr("height", height)
 				.attr("width", width);
-			var legend = svg.append("text").attr("x", 10).attr("y", 40);
-			legend.text("Legend");
+
+
+
 
 			$(settingsPane).find("input").change(updateSettings);
 		}
