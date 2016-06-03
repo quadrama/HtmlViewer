@@ -1,6 +1,9 @@
+/*jshint -W069 */
+/*jshint -W117 */
+
 "use strict";
 
-var colors = [ "#EEF", "#FEE", "#EFE"]
+var colors = [ "#EEF", "#FEE", "#EFE"];
 var strongcolors = ["#AAF", "#FAA", "#AFA", "#55F", "#F55", "#5F5" ];
 var darkcolors = ["#000", "#A00", "#0A0", "#00A", "#AA0", "#0AA", "#A0A"];
 var wordThreshold = 500;
@@ -14,7 +17,7 @@ Array.prototype.unique = function() {
 		if(!tmp[this[i]]) { tmp[this[i]] = true; out.push(this[i]); }
 	}
 	return out;
-}
+};
 
 function getQueryParams(qs) {
 	qs = qs.split('+').join(' ');
@@ -38,12 +41,10 @@ function dramaViewer(targetSelector, data) {
 	loadCopresenceNetwork(target, data);
 
 
-  $("h1#title").append(data["meta"]["ReferenceDate"]
-    + " "
-    + data["meta"]["authors"][0]["Name"]
-    + ": "
-    + data["meta"]["documentTitle"]
-    + ("translators" in data["meta"] ? " (transl.: " + data["meta"]["translators"][0]["Name"]+")" : ""));
+	$("h1#title").append(data["meta"]["ReferenceDate"] +
+		" " + data["meta"]["authors"][0]["Name"] +
+		": " + data["meta"]["documentTitle"] +
+		("translators" in data["meta"] ? " (transl.: " + data["meta"]["translators"][0]["Name"]+")" : ""));
 	$(targetSelector).tabs();
 
 }
@@ -77,11 +78,11 @@ function loadPresenceChart(targetJQ, data) {
 				verticalAlign : "bottom",
 				y : 30
 			}
-		}
+		};
 	});
 
 	// create an array of the figure index numbers (index in the original array)
-	var figures = data["figures"].map(function(cur,ind,arr) {return ind});
+	var figures = data["figures"].map(function(cur,ind,arr) {return ind;});
 
 	// create an array for the figure names (which will be categories later
 	// along the y axis)
@@ -258,7 +259,7 @@ function loadSemanticFields(targetJQ, data) {
 		}
 		if ("utt" in cur) {
 			for (var i = 0; i < cur["utt"].length; i++) {
-				var currentUtterance = data["utt"][cur["utt"][i]]
+				var currentUtterance = data["utt"][cur["utt"][i]];
 				if ("s" in currentUtterance) {
 					for (var speech of currentUtterance.s) {
 						if ("fields" in speech) {
@@ -293,7 +294,7 @@ function loadSemanticFields(targetJQ, data) {
 		pane:{ size:'90%' },
 		xAxis:{
 			categories: columns.map(function(cur) {
-				return cur["title"]
+				return cur["title"];
 			}),
 			lineWidth: 0
 		},
@@ -354,7 +355,7 @@ function loadText(targetJQ, data) {
 	// add segmentation to header and text into the pane
 	var actIndex = 1;
 	var segment = document.createElement("div");
-	for (var act of data["acts"].sort(function(a,b) {return parseInt(a["begin"])-parseInt(b["begin"])})) {
+	for (var act of data["acts"].sort(function(a,b) {return parseInt(a["begin"])-parseInt(b["begin"]);})) {
 		segment = document.createElement("div");
 		var anchor = "act"+actIndex;
 		var actToc = document.createElement("ul");
@@ -370,7 +371,7 @@ function loadText(targetJQ, data) {
 		var sceneIndex = 1;
 		var scenes = data["scs"].filter(function(a) {
 			return parseInt(a["begin"]) >= parseInt(act["begin"]) && parseInt(a["end"]) <= parseInt(act["end"]);
-		}).sort(function (a,b) {return parseInt(a["begin"])-parseInt(b["begin"])});
+		}).sort(function (a,b) {return parseInt(a["begin"])-parseInt(b["begin"]);});
 		for (var scene of scenes) {
 			var sceneElement = document.createElement("div");
 			var anchor = "act"+actIndex+"_scene"+sceneIndex;
@@ -471,7 +472,7 @@ function getGraphData(data, figureFilterFunction, ftype) {
   			figureWeight:f["NumberOfWords"],
   			figureIndex:i,
   			type:getFigureTypeValue(data, i, ftype)
-  		}
+  		};
   	});
 
   for (var k in edgeObject) {
@@ -494,7 +495,7 @@ function getGraphData(data, figureFilterFunction, ftype) {
     nodes:nodes,
     edges:edges,
     categories:typeValues
-  }
+  };
 }
 
 function initForce(containerSelector, dimensions, graph) {
@@ -502,7 +503,7 @@ function initForce(containerSelector, dimensions, graph) {
 	var distanceScale = d3.scale.linear()
 		.domain([1,maxLinkValue])
 		.range([1,10]);
-	
+
 	var force = d3.layout.force().size(dimensions)
 		.charge(-100)
 		.linkDistance(function (link) {
@@ -536,7 +537,7 @@ function drawGraph(target, graph, force, dimensions) {
 
 	var key = function (d) {
 		return d.figureIndex;
-	}
+	};
 
 	var rscale = d3.scale.linear()
 		.domain([0, d3.max(graph["nodes"],
@@ -577,11 +578,11 @@ function drawGraph(target, graph, force, dimensions) {
 	linkD.transition().duration(animLength)
 		.style("opacity", 1);
 
-	
+
 
 	var nodeD = svg.selectAll(".node")
 		.data(graph["nodes"], key);
-		
+
 	// remove old nodes
 	nodeD.exit()
 		.transition().duration(animLength)
@@ -590,7 +591,7 @@ function drawGraph(target, graph, force, dimensions) {
 
 	var node = nodeD.enter()
 		.append("g");
-		
+
 	node.attr("class", "node")
 		.style("opacity", 0)
 		.call(force.drag)
@@ -610,7 +611,7 @@ function drawGraph(target, graph, force, dimensions) {
 		.attr("class", "figureLabel")
 		.attr("stroke", "none")
 		.text(function(d) {
-			return d["Reference"]
+			return d["Reference"];
 		});
 
 	// recolor the nodes
@@ -669,8 +670,8 @@ function loadCopresenceNetwork(targetJQ, data) {
   $(settingsPane).find("input").change(function() {
 		force.stop();
     var figureFilterFunction;
-    if ($("#copresence .limit-enable:checked()").length == 0)
-      figureFilterFunction = function(a) { return true; }
+    if ($("#copresence .limit-enable:checked()").length === 0)
+      figureFilterFunction = function(a) { return true; };
     else {
       var limitWords = parseInt($("#copresence .limit-words").val());
       var limitUtterances = parseInt($("#copresence .limit-utterances").val());
@@ -689,7 +690,7 @@ function loadCopresenceNetwork(targetJQ, data) {
 		}
 
 		var nodes = baseGraph["nodes"].filter(figureFilterFunction);
-		var links = baseGraph["edges"].filter(function (a) { return figureFilterFunction(a.source) && figureFilterFunction(a.target) });
+		var links = baseGraph["edges"].filter(function (a) { return figureFilterFunction(a.source) && figureFilterFunction(a.target); });
 		for (var node of nodes) {
 			node["type"] = getFigureTypeValue(data, node["figureIndex"], selectedType);
 		}
@@ -746,7 +747,7 @@ function loadNetwork(data) {
 
 	node.append("text").attr("dx", 12).attr("dy", ".35em").style("font-weight",
 			"normal").text(function(d) {
-		return d.label
+		return d.label;
 	});
 
 	force.on("tick", function() {
@@ -807,7 +808,7 @@ function init(data) {
 		$("#docselect").append("<option value=\""+i+"\">"+data[i]["meta"]["DisplayId"]+"</option>");
 		for (var ftype in data[i]["ftypes"]) {
 			if (!ftypes.hasOwnProperty(ftype))
-				ftypes[ftype] = new Object();
+				ftypes[ftype] = {};
 			for (var fvalue in data[i]["ftypes"][ftype]) {
 				ftypes[ftype][fvalue] = 1;
 			}
@@ -821,14 +822,14 @@ function init(data) {
 		clean();
 		load();
 	});
-	for (ftype in ftypes) {
+	for (var ftype in ftypes) {
 		var og = document.createElement("optgroup");
 		$(og).attr("label", ftype);
 		for (var fvalue in ftypes[ftype])
 			$(og).append("<option value=\""+ftype+"."+fvalue+"\">"+fvalue+"</option>");
 		$("#figuretype").append(og);
 	}
-	for (wf in wordfields) {
+	for (var wf in wordfields) {
 		$("#wordfield").append("<input type=\"checkbox\" name=\"field\" value=\""+wf+"\" />"+wf+"<br/>");
 	}
 
@@ -854,7 +855,7 @@ function initAll(docs) {
 		var cur = docs[i];
 		// console.log(cur);
 		$("#texts").append("<option selected=\"selected\" value=\""+docs[i]["meta"]["DisplayId"]+"\">"+docs[i]["meta"]["DisplayId"]+"</option>");
-	};
+	}
 }
 
 function refreshView(docs) {
@@ -881,7 +882,7 @@ function refreshView(docs) {
 	var docFilterFunction = function(a) {
 		// console.log($("#texts").val());
 		return $("#texts").val().includes(a["meta"]["DisplayId"]);
-	}
+	};
 
 	// assembly of series
 	var series = [];
@@ -988,7 +989,7 @@ function selectNode() {
 			} else {
 				var selectedNodes = d3.select("g.node.selected");
 				var selectedLinks = d3.selectAll(".link.selected");
-				
+
 				// remove old style
 				selectedLinks.transition()
 					.duration(animLength)
@@ -998,7 +999,7 @@ function selectNode() {
 					.style({"stroke-width":"0px"});
 				selectedLinks.classed("selected", false);
 				selectedNodes.classed("selected", false);
-				
+
 				// add new style
 				relatedLinks.transition()
  					.duration(animLength)
@@ -1037,7 +1038,7 @@ function load_aggregated_view(target, data, words, figureclass, figurevalue, fty
 			var figureIndices = cur2["ftypes"][figureclass][figurevalue];
 			var occ = 0;
 			var total = 0;
-			for (f of figureIndices) {
+			for (var f of figureIndices) {
 				total += parseInt(cur2["figures"][f]["NumberOfWords"]);
 				try {
 					occ += parseInt(cur2["figures"][f]["freq"][cur]["c"]);
@@ -1054,7 +1055,7 @@ function load_aggregated_view(target, data, words, figureclass, figurevalue, fty
 			} catch (err) {
 				// console.err;
 			} finally {
-			};
+			}
 			// var ret = parseInt(cur2["meta"]["ReferenceDate"]);
 			return yvalue; // ret;
 		});
@@ -1064,7 +1065,7 @@ function load_aggregated_view(target, data, words, figureclass, figurevalue, fty
 			marker:{radius:4},
 			name : cur,
 			data : d,
-			visible: ($("#everythingHidden:checked").length == 0)
+			visible: ($("#everythingHidden:checked").length === 0)
 		};
 	}).concat(
 		fields.map(function(cur) {
@@ -1140,7 +1141,7 @@ function draw () {
 	var ft = $("#figuretype").val().split(".");
 	var vt = $("#valuetype").val();
 	if ($("#words_entered:checked").length>0) {
-		for (w of $("#words").val().split("\n")) {
+		for (var w of $("#words").val().split("\n")) {
 			words[w] = 1;
 		}
 	}
@@ -1156,14 +1157,14 @@ function draw () {
 		posTags.push("ADJ");
 	}
 	if ($("#words_most_frequent:checked").length>0) {
-		for (doc of data) {
-			var array = new Object();
+		for (var doc of data) {
+			var array = {};
 			try {
 				// console.log(ft);
-				for (figIndex of doc["ftypes"][ft[0]][ft[1]]) {
+				for (var figIndex of doc["ftypes"][ft[0]][ft[1]]) {
 					var figure = doc["figures"][figIndex];
-					for (word in figure["freq"]) {
-						var p = figure["freq"][word]["pos"]
+					for (var word in figure["freq"]) {
+						var p = figure["freq"][word]["pos"];
 						if (useEveryPosTag || posTags.includes(p))
 							array[word] = figure["freq"][word]["c"];
 					}
