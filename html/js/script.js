@@ -253,7 +253,6 @@ function loadSemanticFields(targetJQ, data) {
 		return true;
 	}).map(function(cur, ind, arr) {
 		var sum = {};
-		var arr = [];
 		for (var field of Object.keys(data.fields).sort()) {
 			sum[field] = 0;
 		}
@@ -374,7 +373,7 @@ function loadText(targetJQ, data) {
 		}).sort(function (a,b) {return parseInt(a["begin"])-parseInt(b["begin"]);});
 		for (var scene of scenes) {
 			var sceneElement = document.createElement("div");
-			var anchor = "act"+actIndex+"_scene"+sceneIndex;
+			anchor = "act"+actIndex+"_scene"+sceneIndex;
 			if ("head" in scene) {
 				$(actToc).append("<li><a href=\"#"+anchor+"\">"+scene["head"]+"</a></li>");
 				$(sceneElement).append("<div class=\"sceneheading\"><a name=\""+anchor+"\">"+scene["head"]+"</a></div>");
