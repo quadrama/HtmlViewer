@@ -14,12 +14,16 @@
 <script src="js/script.js"></script>
 <script src="js/drama.js"></script>
 <script>
+var drama;
 	$(function() {
+		drama = Drama("#drama");
+		var url = "data/rksp.0.json";
 		var p = getQueryParams(document.location.search);
 		if (p.hasOwnProperty("drama"))
-			initFromJson("data/"+p["drama"]+".json");
-		else
-			initFromJson("data/rksp.0.json");
+			url = "data/"+p["drama"]+".json";
+		$.getJSON(url, function(data) {
+			drama.load(data).addAll();
+		})
 	});
 </script>
 </head>

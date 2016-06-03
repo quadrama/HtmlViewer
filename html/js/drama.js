@@ -1,11 +1,13 @@
-function Drama(selector, data) {
+function Drama(selector) {
 	"use strict";
 	var strongcolors = ["#AAF", "#FAA", "#AFA", "#55F", "#F55", "#5F5" ];
 	var darkcolors = ["#000", "#A00", "#0A0", "#00A", "#AA0", "#0AA", "#A0A"];
 	var animLength = 500;
 	var target;
+	var data;
 	var titleString;
 	var views = [];
+	var dimensions;
 	init();
 
 	var api = {
@@ -46,26 +48,45 @@ function Drama(selector, data) {
 				.addFigureStatisticsView()
 				.addSemanticFieldsView()
 				.addNetworkView();
-		}
+		},
+		load:load
 	};
 	return api;
 
-	function init() {
-		target = $(selector);
-		target.empty();
-		target.append("<ul></ul>");
+	function loadObject(dataObject) {
+		data = dataObject;
 		titleString = data.meta.ReferenceDate +
 			" " + data.meta.authors[0].Name +
 			": " + data.meta.documentTitle +
 			("translators" in data.meta ? " (transl.: " + data.meta.translators[0].Name+")" : "");
+		for (var view of views) {
+			view.load();
+		}
+		return api;
+	}
 
-		/*views.push(TextView(target));
-		views.push(PresenceView(target));
-		views.push(FigureStatisticsView(target));
-		views.push(SemanticFieldsView(target));
-		views.push(NetworkView(target));*/
+	function load(dataOrUrl) {
+		if (typeof(dataOrUrl) == "string") {
+			$.getJSON(dataOrUrl, function(data) {
+				loadObject(data);
+			});
+		} else {
+			return loadObject(dataOrUrl);
+		}
+	}
 
+	function init() {
+		target = $(selector);
+		target.css("height", "90vh");
+		target.css("width", "90vw");
+		target.empty();
+		target.append("<ul></ul>");
 		$(selector).tabs();
+		dimensions = {
+			w: $(target).innerWidth(),
+			h: $(target).innerHeight()
+		};
+		console.log(dimensions);
 	}
 
 	function addTab(id, name) {
@@ -82,6 +103,22 @@ function Drama(selector, data) {
 	function containedIn(b) {
 		return function(a) {
 			return parseInt(a.begin) >= parseInt(b.begin) && parseInt(a.end) <= parseInt(b.end);
+		};
+	}
+
+	function figureFilter(o) {
+		return function(f) {
+			var figure = f;
+			if (typeof(f) == "number") {
+				figure = data.figures[f];
+			} else if (f.hasOwnProperty("figureIndex")) {
+				figure = data.figures[f.figureIndex];
+			}
+			for (var p in o) {
+				if (figure[p] < o[p])
+					return false;
+			}
+			return true;
 		};
 	}
 
@@ -112,9 +149,15 @@ function Drama(selector, data) {
 
 	function TextView(targetJQ) {
 		var contentArea;
+		var tocArea;
+		var dpArea;
+		var textArea;
 		init();
+		load();
 
-		return {};
+		return {
+			load:load
+		};
 
 		function init() {
 			contentArea = addTab("text", "Text");
@@ -127,11 +170,29 @@ function Drama(selector, data) {
 			$(textHeader).append("<p>Dramatis Personae</p>");
 			$(textHeader).append("<ul class=\"dramatispersonae\"></ul>");
 
+			tocArea = $(textHeader).children("ul.toc");
+			dpArea = $(textHeader).children("ul.dramatispersonae");
 			$("#text").append(textHeader);
+
+
+			textArea = $(document.createElement("div"));
+			textArea.appendTo("#text");
+
+		}
+
+		function clear() {
+			tocArea.empty();
+			dpArea.empty();
+			textArea.empty();
+		}
+
+		function load() {
+			clear();
+			var figure;
 
 			// add figures to header
 			for (var fIndex = 0; fIndex < data.figures.length; fIndex++) {
-				var figure = data.figures[fIndex];
+				figure = data.figures[fIndex];
 				var figureLi = document.createElement("li");
 				$(figureLi).addClass("f"+fIndex);
 				$(figureLi).append("<input type=\"checkbox\" value=\"f"+fIndex+"\"/>");
@@ -178,7 +239,7 @@ function Drama(selector, data) {
 						$(sceneElement).append("<div class=\"sceneheading\"><a name=\""+anchor+"\">"+(sceneIndex++)+". Scene</a></div>");
 					}
 					for (var u of data.utt.filter(containedIn(scene))) {
-						var figure = data.figures[u.f];
+						figure = data.figures[u.f];
 						var utteranceElement = document.createElement("div");
 						$(utteranceElement).addClass("utterance");
 						$(utteranceElement).attr("data-begin", u.begin);
@@ -193,7 +254,7 @@ function Drama(selector, data) {
 					$(segment).append(sceneElement);
 					$("#text ul.toc").append(actToc);
 				}
-				$("#text").append(segment);
+				textArea.append(segment);
 			}
 			$(".toccontainer").accordion({header:"p",heightStyle:"content",collapsible:true});
 		}
@@ -203,234 +264,290 @@ function Drama(selector, data) {
 		var contentArea = addTab("presence", "Figure Presence Chart");
 		var figureSortKey = "NumberOfWords";
 
-		// create plot bands
-		var segments;
-		if ("scs" in data) {
-			segments = data.scs;
-		} else /* if ("seg1" in data["segments"]) */{
-			segments = data.acts;
+		load();
+
+		var api = {
+			clear:clear,
+			load:load
+		};
+
+		return api;
+
+
+		function clear() {
+			contentArea.empty();
+			return api;
 		}
-		var end = 0;
-		var pb = segments.filter(function(_){return true;}).sort(sortAnnotations).map(function(cur, i, arr) {
-			if (parseInt(cur.end) > end) end = parseInt(cur.end);
-			return {
-				from : parseInt(cur.begin),
-				to : parseInt(cur.end),
-				color : colors[i % 3],
-				label : {
-					text : cur.head,
-					rotation : 270,
-					align : "center",
-					verticalAlign : "bottom",
-					y : 30
-				}
-			};
-		});
 
-		// create an array of the figure index numbers (index in the original array)
-		var figures = data.figures.map(function(cur,ind,arr) {return ind;});
+		function load() {
+			// create plot bands
+			var segments;
+			if ("scs" in data) {
+				segments = data.scs;
+			} else /* if ("seg1" in data["segments"]) */{
+			segments = data.acts;
+			}
+			var end = 0;
+			var pb = segments.sort(sortAnnotations).map(function(cur, i) {
+				if (parseInt(cur.end) > end) end = parseInt(cur.end);
+				return {
+					from : parseInt(cur.begin),
+					to : parseInt(cur.end),
+					color : colors[i % 3],
+					label : {
+						text : cur.head,
+						rotation : 270,
+						align : "center",
+						verticalAlign : "bottom",
+						y : 30
+					}
+				};
+			});
 
-		// create an array for the figure names (which will be categories later
-		// along the y axis)
-		var figureNames = [];
+			// create an array of the figure index numbers (index in the original array)
+			var figures = data.figures.map(function(cur,ind) {return ind;});
 
-		// create the series array
-		var series = figures.sort(function(a,b) {
-			return data.figures[a][figureSortKey] - data.figures[b][figureSortKey];
-		}).map(function(currentFigureIndex, index, arr) {
-			var currentFigure = data.figures[currentFigureIndex];
-			figureNames.push(currentFigure.Reference);
-			var utterances = [];
-			if ("utt" in currentFigure)
-				for (var i = 0; i < currentFigure.utt.length; i++) {
-					var uttObj = data.utt[currentFigure.utt[i]];
-					if (typeof(uttObj) == "undefined")
-						continue;
-					if ("s" in uttObj)
-						for (var sp of uttObj.s) {
-							utterances.push({
-								x:sp.begin,
-								y:index,
-								name:sp.txt
-							});
-							utterances.push({
-								x:sp.end,
-								y:index,
-								name:sp.txt
-							});
-						}
-					utterances.push(null);
-				}
-			var r = {
-				name:currentFigure.Reference,
-				data:utterances,
-				lineWidth:3,
-				visible:(currentFigure.NumberOfWords>wordThreshold),
-				turboThreshold:0
-			};
-			return r;
-		});
+			// create an array for the figure names (which will be categories later
+			// along the y axis)
+			var figureNames = [];
 
-		// initiate highcharts vis
-		contentArea.highcharts({
-			legend: { y:200 },
-			title: null,
-			chart: {
-				type : 'line',
-				zoomType : 'xy',
-				spacingBottom:230,
-				height:window.innerHeight-210
-			},
-			xAxis: {
-				plotBands: pb,
-				min: 0,
-				max: end+1,
-				labels: { enabled: false }
-			},
-			yAxis: {
-				//min: 0,
-				max: figures.length-1,
-				labels: { enabled:true },
-				title:null,
-				categories:figureNames
-			},
-			plotOptions: { series: { lineWidth : 1 } },
-			tooltip: {
-				crosshairs : true,
-				headerFormat : "",
-				useHTML : true,
-				pointFormat : "<div style=\"width:200px;max-width:300px; white-space:normal\"><span style=\"color:{point.color};font-weight:bold;\">{series.name}</span>: {point.name}</div>"
-			},
-			series: series
-		});
+			// create the series array
+			var series = figures.sort(function(a,b) {
+				return data.figures[a][figureSortKey] - data.figures[b][figureSortKey];
+			}).map(function(currentFigureIndex, index, arr) {
+				var currentFigure = data.figures[currentFigureIndex];
+				figureNames.push(currentFigure.Reference);
+				var utterances = [];
+				if ("utt" in currentFigure)
+					for (var i = 0; i < currentFigure.utt.length; i++) {
+						var uttObj = data.utt[currentFigure.utt[i]];
+						if (typeof(uttObj) == "undefined")
+							continue;
+						if ("s" in uttObj)
+							for (var sp of uttObj.s) {
+								utterances.push({
+									x:sp.begin,
+									y:index,
+									name:sp.txt
+								});
+								utterances.push({
+									x:sp.end,
+									y:index,
+									name:sp.txt
+								});
+							}
+							utterances.push(null);
+					}
+				var r = {
+					name:currentFigure.Reference,
+					data:utterances,
+					lineWidth:3,
+					visible:(currentFigure.NumberOfWords>wordThreshold),
+					turboThreshold:0
+				};
+				return r;
+			});
+			// initiate highcharts vis
+			contentArea.highcharts({
+				legend: { y:200 },
+				title: null,
+				chart: {
+					type: 'line',
+					zoomType: 'xy',
+					spacingBottom: 230,
+					height: dimensions.h-20,
+					width: contentArea.innerWidth()-50
+				},
+				xAxis: {
+					plotBands: pb,
+					min: 0, max: end+1,
+					labels: { enabled: false }
+				},
+				yAxis: {
+					max: figures.length-1,
+					labels: { enabled:true },
+					title:null,
+					categories:figureNames
+				},
+				plotOptions: { series: { lineWidth : 1 } },
+				tooltip: {
+					crosshairs : true,
+					headerFormat : "",
+					useHTML : true,
+					pointFormat : "<div style=\"width:200px;max-width:300px; white-space:normal\"><span style=\"color:{point.color};font-weight:bold;\">{series.name}</span>: {point.name}</div>"
+				},
+				series: series
+			});
+		}
 	}
 
 	function FigureStatisticsView(targetJQ) {
 		var contentArea = addTab("figure-statistics", "Figure Statistics");
-
+		var chart;
+		var dTable;
 
 		var wsize = 1000;
 
-
-		// create accordion
-		contentArea.append("<h3>Chart</h3>");
-		contentArea.append("<div class=\"chart\">Chart</div>");
-		contentArea.append("<h3>Table</h3>");
-		contentArea.append("<div><table width=\"100%\"></table></div>");
-
-
-		// for normalizing in the chart
-		// (otherwise, it gets unreadable)
-		var maxValues = {
-			NumberOfWords:0,
-			NumberOfUtterances:0,
-			UtteranceLengthArithmeticMean:0,
-			TypeTokenRatio100:0,
+		var api = {
+			load:load,
+			clear:clear
 		};
+		init();
+		load();
 
-		// find out the maximal value for each category
-		var mydata = data.figures.map(function(cur, ind, arr) {
-			for (var si in maxValues) {
-				var v = cur[si];
-				if (cur.NumberOfWords > wsize && v > maxValues[si])
-					maxValues[si] = v;
-			}
-		});
+		return api;
 
-		// create the chart
-		contentArea.children(".chart").highcharts({
-			title: null,
-			chart: { type: "column" },
-			xAxis: { categories: Object.keys(maxValues) },
-			yAxis:{ min:0, max:1 },
-			series: data.figures.map(function (cur, ind, arr) {
-				return {
-					name: cur.Reference,
-					data: [
-						cur.NumberOfWords/maxValues.NumberOfWords,
-						cur.NumberOfUtterances/maxValues.NumberOfUtterances,
-						cur.UtteranceLengthArithmeticMean/maxValues.UtteranceLengthArithmeticMean,
-						(cur.NumberOfWords>wsize?cur.TypeTokenRatio100/maxValues.TypeTokenRatio100:0)
-					]
-				};
-			})
-		});
+		function init() {
+		// create accordion
+			contentArea.append("<h3>Chart</h3>");
+			chart = $(document.createElement("div"));
+			chart.appendTo(contentArea);
+			contentArea.append("<h3>Table</h3>");
+			contentArea.append("<div><table></table></div>");
+			dTable = contentArea.find("table").DataTable({
+				columns: [
+					{ title: "Figure", data:"Reference" },
+					{ title: "Words", data:"NumberOfWords" },
+					{ title: "Utterances", data:"NumberOfUtterances" },
+					{ title: "Mean Utt. Length", data:"UtteranceLengthArithmeticMean" },
+					{ title: "Type Token Ratio", data:"TypeTokenRatio100" }
+				],
+				pageLength: 100
+			});
+		}
 
-		contentArea.children("table").DataTable({
-			data: data.figures,
-			columns: [
-				{ title: "Figure", data:"Reference" },
-				{ title: "Words", data:"NumberOfWords" },
-				{ title: "Utterances", data:"NumberOfUtterances" },
-				{ title: "Mean Utt. Length", data:"UtteranceLengthArithmeticMean" },
-				{ title: "Type Token Ratio", data:"TypeTokenRatio100" }
-			],
-			pageLength: 100,
-			retrieve: true
-		});
+		function clear() {
+			chart.empty();
+			dTable.clear();
+		}
 
-		contentArea.accordion({
-			heightStyle: "content"
-		});
+		function load() {
+			clear();
+			// for normalizing in the chart
+			// (otherwise, it gets unreadable)
+			var maxValues = {
+				NumberOfWords:0,
+				NumberOfUtterances:0,
+				UtteranceLengthArithmeticMean:0,
+				TypeTokenRatio100:0,
+			};
+
+			// find out the maximal value for each category
+			var mydata = data.figures.map(function(cur) {
+				for (var si in maxValues) {
+					var v = cur[si];
+					if (cur.NumberOfWords > wsize && v > maxValues[si])
+						maxValues[si] = v;
+					}
+			});
+
+
+			// create the chart
+			chart.highcharts({
+				title: null,
+				chart: { type: "column" },
+				xAxis: { categories: Object.keys(maxValues) },
+				yAxis:{ min:0, max:1 },
+				series: data.figures.map(function (cur, ind, arr) {
+					return {
+						name: cur.Reference,
+						data: [
+							cur.NumberOfWords/maxValues.NumberOfWords,
+							cur.NumberOfUtterances/maxValues.NumberOfUtterances,
+							cur.UtteranceLengthArithmeticMean/maxValues.UtteranceLengthArithmeticMean,
+							(cur.NumberOfWords>wsize?cur.TypeTokenRatio100/maxValues.TypeTokenRatio100:0)
+						]
+					};
+				})
+			});
+
+			dTable.rows.add(data.figures).draw();
+			contentArea.accordion({
+				heightStyle: "content"
+			});
+		}
 	}
 
 	function SemanticFieldsView(targetJQ) {
 		var contentArea = addTab("fields", "Figures and Semantic Fields");
 		var boostFactor = 1000;
 		var normalizationFactor = "NumberOfWords";
+		var chart;
+		var dTable;
 
-		// create accordion
-		contentArea.append("<h3>Chart</h3>");
-		contentArea.append("<div class=\"chart\">Chart</div>");
-		contentArea.append("<h3>Table</h3>");
-		contentArea.append("<div><table width=\"100%\"></table></div>");
+		init();
+		load();
+		var api = {
+			load:load,
+			clear:clear
+		};
+		return api;
 
-		// columns for table
-		var columns = [ {
-			title: "Figure"
-		} ].concat(Object.keys(data.fields).sort().map(function(cur) {
-			return {title:cur,width:"10%"};
-		}));
+		function init() {
+			// create accordion
+			contentArea.append("<h3>Chart</h3>");
+			chart = $(document.createElement("div"));
+			chart.appendTo(contentArea);
+			contentArea.append("<h3>Table</h3>");
+			contentArea.append("<div><table></table></div>");
+			dTable = contentArea.find("table").DataTable({
+				data: [],
+				columns: [ {
+					title: "Figure"
+				} ].concat(Object.keys(data.fields).sort().map(function(cur) {
+					return {title:cur,width:"10%"};
+				})),
+				pageLength: 100
+			});
+			contentArea.accordion({
+				heightStyle: "content"
+			});
 
+		}
 
-		// collect data
-		var series = data.figures.filter(function(cur) {
-			return true;
-		}).map(function(cur) {
-			var arr = [];
-			var sum = {};
-			for (var field of Object.keys(data.fields).sort()) {
-				sum[field] = 0;
-			}
-			if ("utt" in cur) {
-				for (var i = 0; i < cur.utt.length; i++) {
-					var currentUtterance = data.utt[cur.utt[i]];
-					if ("s" in currentUtterance) {
-						for (var speech of currentUtterance.s) {
-							if ("fields" in speech) {
-								for (var fname of speech.fields) {
-									sum[fname]++;
+		function clear() {
+			chart.empty();
+			dTable.clear();
+		}
+
+		function load() {
+			clear();
+			// collect data
+			var series = data.figures.filter(function(cur) {
+				return true;
+			}).map(function(cur) {
+				var arr = [];
+				var sum = {};
+				for (var field of Object.keys(data.fields).sort()) {
+					sum[field] = 0;
+				}
+				if ("utt" in cur) {
+					for (var i = 0; i < cur.utt.length; i++) {
+						var currentUtterance = data.utt[cur.utt[i]];
+						if ("s" in currentUtterance) {
+							for (var speech of currentUtterance.s) {
+								if ("fields" in speech) {
+									for (var fname of speech.fields) {
+										sum[fname]++;
+									}
 								}
 							}
 						}
 					}
 				}
-			}
-
-			for (var field of Object.keys(data.fields).sort()) {
-				arr.push(boostFactor*(sum[field] / data.fields[field].Length)/cur[normalizationFactor]);
-			}
-			return {
-				name:cur.Reference,
-				data:arr,
-				pointPlacement: 'on',
-				lineWidth:2,
-				visible:(cur.NumberOfWords > wordThreshold)
-			};
-		});
-
+				for (field of Object.keys(data.fields).sort()) {
+					arr.push(boostFactor*(sum[field] / data.fields[field].Length)/cur[normalizationFactor]);
+				}
+				return {
+					name:cur.Reference,
+					data:arr,
+					pointPlacement: 'on',
+					lineWidth:2,
+					visible:(cur.NumberOfWords > wordThreshold)
+				};
+			});
 			// create chart
-			contentArea.children(".chart").highcharts({
+			chart.highcharts({
 				chart: {
 					polar: true,
 					type: 'line'
@@ -439,9 +556,7 @@ function Drama(selector, data) {
 				title: { text:null },
 				pane:{ size:'90%' },
 				xAxis:{
-					categories: columns.slice(1).map(function(cur) {
-						return cur.title;
-					}),
+					categories: Object.keys(data.fields).sort(),
 					lineWidth: 0
 				},
 				yAxis:{ gridLineInterpolation: 'polygon' },
@@ -453,20 +568,8 @@ function Drama(selector, data) {
 			var tableData = series.map(function(current) {
 				return [current.name].concat(current.data);
 			});
-			console.log(tableData);
-
-			contentArea.find("table").DataTable({
-				retrieve: true,
-				data: tableData,
-				columns: columns,
-				pageLength: 100
-			});
-
-			contentArea.accordion({
-				heightStyle: "content"
-			});
-
-
+			dTable.rows.add(tableData).draw();
+		}
 	}
 
 	function NetworkView(targetJQ) {
@@ -475,7 +578,9 @@ function Drama(selector, data) {
 		var currentGraph = {};
 		var svg;
 		var force;
+		var width, height;
 		init();
+		load();
 
 		return {
 			d3: {
@@ -486,7 +591,8 @@ function Drama(selector, data) {
 				current: currentGraph,
 				base: baseGraph
 			},
-			redraw:draw
+			redraw:draw,
+			load:load
 		};
 
 		function init() {
@@ -494,8 +600,8 @@ function Drama(selector, data) {
 			targetJQ.children("ul").append("<li><a href=\"#"+idString+"\">Copresence Network</a></li>");
 			targetJQ.append("<div id=\""+idString+"\" class=\"view\"></div>");
 			var targetDiv = targetJQ.children("div#"+idString);
-			var width = $(targetDiv).innerWidth();
-			var height = $(targetDiv).innerHeight(); //window.innerHeight-200;
+			width = $(targetDiv).innerWidth();
+			height = $(targetDiv).innerHeight(); //window.innerHeight-200;
 
 			// toolbar
 			var settingsPane = document.createElement("div");
@@ -528,11 +634,15 @@ function Drama(selector, data) {
 			svg = d3.select("div#"+idString).append("svg")
 				.attr("height", height)
 				.attr("width", width);
-			baseGraph = getGraphData(data, null, null);
-			force = initForce("div#copresence", [width, height], baseGraph);
 
 			$(settingsPane).find("input").change(updateSettings);
-			$(settingsPane).find("input").eq(0).change();
+		}
+
+		function load() {
+			clear();
+			baseGraph = getGraphData();
+			force = initForce([width, height], baseGraph);
+			updateSettings();
 		}
 
 		function updateSettings() {
@@ -546,9 +656,10 @@ function Drama(selector, data) {
 				var limitWords = parseInt($(cssId + " .limit-words").val());
 				var limitUtterances = parseInt($(cssId+" .limit-utterances").val());
 
-				figureFilterFunction = function(figure) {
-					return data.figures[figure["figureIndex"]]["NumberOfUtterances"] > limitUtterances && data["figures"][figure["figureIndex"]]["NumberOfWords"] > limitWords;
-				};
+				figureFilterFunction = figureFilter({
+					"NumberOfUtterances":limitUtterances,
+					"NumberOfWords":limitWords
+				});
 			}
 			var selectedType = "x";
 			var typeValues = [""];
@@ -573,6 +684,11 @@ function Drama(selector, data) {
 
 			force.nodes(currentGraph.nodes).links(currentGraph.edges)
 				.start();
+		}
+
+		function clear() {
+			svg.selectAll(".link").remove();
+			svg.selectAll(".node").remove();
 		}
 
 		function draw() {
@@ -663,10 +779,7 @@ function Drama(selector, data) {
 				.style("opacity", 1);
 		}
 
-		function getGraphData(figureFilterFunction, ftype) {
-			var typeValues = [""];
-			if (typeof data.ftypes[ftype] != "undefined")
-				typeValues = typeValues.concat(Object.keys(data.ftypes[ftype]));
+		function getGraphData() {
 
 		  // data collection
 		  var edgeObject = {};
@@ -699,8 +812,7 @@ function Drama(selector, data) {
 		  			Reference:f.Reference,
 		  			txt:f.txt,
 		  			figureWeight:f.NumberOfWords,
-		  			figureIndex:i,
-		  			type:getFigureTypeValue(data, i, ftype)
+		  			figureIndex:i
 		  		};
 		  	});
 
@@ -723,12 +835,11 @@ function Drama(selector, data) {
 		  // console.log(edges);
 		  return {
 		    nodes:nodes,
-		    edges:edges,
-		    categories:typeValues
+		    edges:edges
 		  };
 		}
 
-		function initForce(containerSelector, dimensions, graph) {
+		function initForce(dimensions, graph) {
 			var maxLinkValue = d3.max(graph.edges, function(d) {return d.value;});
 			var distanceScale = d3.scale.linear()
 				.domain([1,maxLinkValue])
@@ -744,7 +855,7 @@ function Drama(selector, data) {
 				force.drag().on("dragstart", dragstart);
 
 		  force.on("tick", function() {
-		    d3.select(containerSelector).select("svg").selectAll(".link").attr("x1", function(d) {
+		    svg.selectAll(".link").attr("x1", function(d) {
 		      return d.source.x;
 		    }).attr("y1", function(d) {
 		      return d.source.y;
@@ -753,7 +864,7 @@ function Drama(selector, data) {
 		    }).attr("y2", function(d) {
 		      return d.target.y;
 		    });
-		    d3.select(containerSelector).select("svg").selectAll(".node").attr("transform", function(d) {
+		    svg.selectAll(".node").attr("transform", function(d) {
 		      return "translate(" + d.x + "," + d.y + ")";
 		    });
 		  });

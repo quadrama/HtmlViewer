@@ -30,9 +30,10 @@ function getQueryParams(qs) {
 	return params;
 }
 
-function dramaViewer(targetSelector, data) {
-	Drama(targetSelector, data).addAll();
-
+function initFromJson(url) {
+	$.getJSON(url, function(data) {
+		Drama("#drama").load(data).addAll();
+	});
 }
 
 function loadPresenceChart(targetJQ, data) {
@@ -777,11 +778,7 @@ function clean() {
 	$("#tabs").append("<ul></ul>");
 }
 
-function initFromJson(url) {
-	$.getJSON(url, function(data) {
-		dramaViewer("#drama", data);
-	});
-}
+
 
 function init(data) {
 	data = data.sort(function (a,b) {

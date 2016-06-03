@@ -14,10 +14,11 @@
 <script src="js/script.js"></script>
 <script src="js/drama.js"></script>
 <script>
+	var drama;
 	$(function() {
 		$.getJSON("data/rksp.0.json", function(data) {
-			var drama = Drama("#drama", data);
-			drama.addNetworkView();
+			drama = Drama("#drama");
+			drama.load(data).addNetworkView();
 		});
 	});
 </script>
@@ -25,6 +26,7 @@
 <body>
 <div id="header">
 	<div>QuaDramA HTML Viewer</div>
+	<div><a href="javascript:drama.load('data/vndf.0.json')">vndf.0</a> | <a href="javascript:drama.load('data/rksp.0.json')">rksp.0</a></div>
 	<div><a href="mailto:nils.reiter@ims.uni-stuttgart.de">Contact</a>&nbsp;</div>
 </div>
 <div>
