@@ -712,12 +712,12 @@ function Drama(selector) {
 		}
 
 		function dblclick(d) {
-			d3.select(this).classed("fixed", true);
+			d3.select(d).classed("fixed", true);
 			d3.layout.force().stop();
 		}
 
 		function selectNode() {
-					var thisNode = d3.select(this);
+					var thisNode = d3.select(d);
 					var thisFigure = thisNode.datum();
 					var otherNodes = svg.selectAll("g.node")
 						.filter(function (d) {
@@ -766,7 +766,7 @@ function Drama(selector) {
 				}
 
 		function dragstart(d) {
-			d3.select(this).classed("fixed", true);
+			d3.select(d).classed("fixed", true);
 		}
 
 		function draw() {
