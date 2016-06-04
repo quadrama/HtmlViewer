@@ -1,13 +1,18 @@
-function Drama(selector) {
+function Drama(selector, userSettings) {
 	"use strict";
+	var defaultSettings = {
+		animation: {
+			duration: 500
+		}
+	};
 	var strongcolors = ["#AAF", "#FAA", "#AFA", "#55F", "#F55", "#5F5" ];
 	var darkcolors = ["#000", "#A00", "#0A0", "#00A", "#AA0", "#0AA", "#A0A"];
-	var animLength = 500;
 	var target;
 	var data;
 	var titleString;
 	var views = [];
 	var dimensions;
+	var settings;
 	init();
 
 	var api = {
@@ -87,7 +92,10 @@ function Drama(selector) {
 			w: $(target).innerWidth(),
 			h: $(target).innerHeight()
 		};
-		console.log(dimensions);
+		settings = Object.create(defaultSettings);
+		for (var k in userSettings) {
+			settings[k] = userSettings[k];
+		}
 	}
 
 	function addTab(id, name) {
@@ -732,10 +740,10 @@ function Drama(selector) {
 					});
 					if (thisNode.classed("selected")) {
 						thisNode.transition()
-							.duration(animLength)
+							.duration(settings.animation.duration)
 							.style({"stroke-width":"0px"});
 						relatedLinks.transition()
-							.duration(animLength)
+							.duration(settings.animation.duration)
 							.style("stroke", "#AAA");
 						thisNode.classed("selected", false);
 						relatedLinks.classed("selected", false);
@@ -745,20 +753,20 @@ function Drama(selector) {
 
 						// remove old style
 						selectedLinks.transition()
-							.duration(animLength)
+							.duration(settings.animation.duration)
 							.style("stroke", "#AAA");
 						selectedNodes.transition()
-							.duration(animLength)
+							.duration(settings.animation.duration)
 							.style({"stroke-width":"0px"});
 						selectedLinks.classed("selected", false);
 						selectedNodes.classed("selected", false);
 
 						// add new style
 						relatedLinks.transition()
-		 					.duration(animLength)
+		 					.duration(settings.animation.duration)
 		 					.style("stroke", "#A00");
 						thisNode.transition()
-							.duration(animLength)
+							.duration(settings.animation.duration)
 										.style({"stroke": "#A00", "stroke-width": "5px"});
 						thisNode.classed("selected", true);
 						relatedLinks.classed("selected", true);
@@ -791,7 +799,7 @@ function Drama(selector) {
 			// remove old links
 			svg.selectAll(".link").data(graph.edges, key)
 				.exit()
-				.transition().duration(animLength)
+				.transition().duration(settings.animation.duration)
 				.style('opacity', 0)
 				.remove();
 
@@ -812,14 +820,14 @@ function Drama(selector) {
 			});
 
 			// animate into opacity
-			linkD.transition().duration(animLength)
+			linkD.transition().duration(settings.animation.duration)
 				.style("opacity", 1);
 			var nodeD = svg.selectAll(".node")
 				.data(graph.nodes, key);
 
 			// remove old nodes
 			nodeD.exit()
-				.transition().duration(animLength)
+				.transition().duration(settings.animation.duration)
 				.style('opacity', 0)
 				.remove();
 
@@ -850,7 +858,7 @@ function Drama(selector) {
 
 			// recolor the nodes
 			nodeD
-				.transition().duration(animLength)
+				.transition().duration(settings.animation.duration)
 				.style("fill", function (d) {
 					return darkcolors[graph.categories.indexOf(d.type) % darkcolors.length];
 				})
