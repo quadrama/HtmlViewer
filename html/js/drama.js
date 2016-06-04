@@ -17,7 +17,7 @@ function Drama(selector, userSettings) {
 		FigureStatisticsView: {
 			idString: "figure-statistics",
 			title: "Figure Statistics",
-			keys: ["Reference", "NumberOfWords", "NumberOfUtterances", "UtteranceLengthArithmeticMean"]
+			keys: ["Reference", "NumberOfWords", "NumberOfUtterances", "UtteranceLengthArithmeticMean", "UtteranceLengthStandardDeviation"]
 		},
 		SemanticFieldsView: {
 			boostFactor: 1000,
@@ -113,7 +113,6 @@ function Drama(selector, userSettings) {
 		div.appendTo($(selector));
 		return div;
 	}
-
 
 	function addView(view) {
 		views.push(view(target));
@@ -415,16 +414,16 @@ function Drama(selector, userSettings) {
 		var contentArea = addTab(settings.FigureStatisticsView);
 		var chart;
 		var dTable;
-		var allColumns = [
-			{ title: "Figure", data:"Reference" },
-			{ title: "Words", data:"NumberOfWords" },
-			{ title: "Utterances", data:"NumberOfUtterances" },
-			{ title: "Mean Utt. Length", data:"UtteranceLengthArithmeticMean" },
-			{ title: "Min Utt. Length", data:"UtteranceLengthMin"},
-			{ title: "Max Utt. Length", data:"UtteranceLengthMax"},
-			{ title: "Std Dev. Utt. Length", data: "UtteranceLengthStandardDeviation"},
-			{ title: "Type Token Ratio", data:"TypeTokenRatio100" }
-		];
+		var allColumns = {
+			Reference: { title: "Figure", data:"Reference" },
+			NumberOfWords: { title: "Words", data:"NumberOfWords" },
+			NumberOfUtterances: { title: "Utterances", data:"NumberOfUtterances" },
+			UtteranceLengthArithmeticMean: { title: "Mean Utt. Length", data:"UtteranceLengthArithmeticMean" },
+			UtteranceLengthMin: { title: "Min Utt. Length", data:"UtteranceLengthMin"},
+			UtteranceLengthMax: { title: "Max Utt. Length", data:"UtteranceLengthMax"},
+			UtteranceLengthStandardDeviation: { title: "Std Dev. Utt. Length", data: "UtteranceLengthStandardDeviation"},
+			TypeTokenRatio100: { title: "Type Token Ratio", data:"TypeTokenRatio100" }
+		};
 
 		var wsize = 1000;
 
@@ -438,15 +437,16 @@ function Drama(selector, userSettings) {
 		return api;
 
 		function init() {
-		// create accordion
+			// create accordion
 			contentArea.append("<h3>Chart</h3>");
 			chart = $(document.createElement("div"));
 			chart.appendTo(contentArea);
 			contentArea.append("<h3>Table</h3>");
 			contentArea.append("<div><table></table></div>");
+
 			dTable = contentArea.find("table").DataTable({
-				columns: allColumns.filter(function (a) {
-					return settings.FigureStatisticsView.keys.includes(a.data);
+				columns: settings.FigureStatisticsView.keys.map(function(current) {
+					return allColumns[current];
 				}),
 				pageLength: 100
 			});
@@ -460,12 +460,10 @@ function Drama(selector, userSettings) {
 		function load() {
 			// for normalizing in the chart
 			// (otherwise, it gets unreadable)
-			var maxValues = {
-				NumberOfWords:0,
-				NumberOfUtterances:0,
-				UtteranceLengthArithmeticMean:0,
-				TypeTokenRatio100:0,
-			};
+			var maxValues = {};
+			for (var key of settings.FigureStatisticsView.keys) {
+				maxValues[key] = 0;
+			}
 
 			// find out the maximal value for each category
 			var mydata = data.figures.map(function(cur) {
@@ -481,17 +479,16 @@ function Drama(selector, userSettings) {
 			chart.highcharts({
 				title: null,
 				chart: { type: "column" },
-				xAxis: { categories: Object.keys(maxValues) },
+				xAxis: { categories: settings.FigureStatisticsView.keys.slice(1).map(function (k) {
+					return allColumns[k].title;
+				}) },
 				yAxis:{ min:0, max:1 },
 				series: data.figures.map(function (cur, ind, arr) {
 					return {
-						name: cur.Reference,
-						data: [
-							cur.NumberOfWords/maxValues.NumberOfWords,
-							cur.NumberOfUtterances/maxValues.NumberOfUtterances,
-							cur.UtteranceLengthArithmeticMean/maxValues.UtteranceLengthArithmeticMean,
-							(cur.NumberOfWords>wsize?cur.TypeTokenRatio100/maxValues.TypeTokenRatio100:0)
-						]
+						name: cur[settings.FigureStatisticsView.keys[0]],
+						data: settings.FigureStatisticsView.keys.slice(1).map(function (k) {
+							return cur[k] / maxValues[k];
+						})
 					};
 				})
 			});
