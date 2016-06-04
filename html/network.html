@@ -17,7 +17,7 @@
 	var drama;
 	$(function() {
 		$.getJSON("data/rksp.0.json", function(data) {
-			drama = Drama("#drama");
+			drama = Drama("#drama", {NetworkView:{animationDuration:0, title:"The Network!"}});
 			drama.load(data).addTextView().addFigureStatisticsView().addPresenceView().addNetworkView();
 		});
 	});

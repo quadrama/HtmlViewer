@@ -16,3 +16,12 @@ function getQueryParams(qs) {
 	}
 	return params;
 }
+function merge(o1, o2) {
+	for (var k in o2) {
+		if (typeof(o2[k]) != "object") {
+			o1[k] = o2[k];
+		} else {
+			merge(o1[k], o2[k]);
+		}
+	}
+}

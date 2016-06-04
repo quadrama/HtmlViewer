@@ -1,8 +1,33 @@
 function Drama(selector, userSettings) {
 	"use strict";
 	var defaultSettings = {
-		animation: {
-			duration: 500
+		NetworkView: {
+			/**
+			 * Duration (in milliseconds) of all animations in the network
+			 */
+			animationDuration: 500,
+			idString:"copresence",
+			title:"Copresence Network"
+		},
+		PresenceView: {
+			sortKey: "NumberOfWords",
+			idString: "presence",
+			title: "Figure Presence Chart"
+		},
+		FigureStatisticsView: {
+			idString: "figure-statistics",
+			title: "Figure Statistics",
+			keys: ["Reference", "NumberOfWords", "NumberOfUtterances", "UtteranceLengthArithmeticMean"]
+		},
+		SemanticFieldsView: {
+			boostFactor: 1000,
+			normalizationKey: "NumberOfWords",
+			idString: "fields",
+			title: "Figures and Semantic Fields"
+		},
+		TextView: {
+			idString: "text",
+			title: "Text"
 		}
 	};
 	var strongcolors = ["#AAF", "#FAA", "#AFA", "#55F", "#F55", "#5F5" ];
@@ -18,34 +43,19 @@ function Drama(selector, userSettings) {
 	var api = {
 		title:function() {return titleString;},
 		addNetworkView:function () {
-			views.push(NetworkView(target));
-			$(selector).tabs("refresh");
-			$(selector).tabs({active:views.length-1});
-			return api;
+			return addView(NetworkView);
 		},
 		addTextView:function() {
-			views.push(TextView(target));
-			$(selector).tabs("refresh");
-			$(selector).tabs({active:views.length-1});
-			return api;
+			return addView(TextView);
 		},
 		addPresenceView:function() {
-			views.push(PresenceView(target));
-			$(selector).tabs("refresh");
-			$(selector).tabs({active:views.length-1});
-			return api;
+			return addView(PresenceView);
 		},
 		addFigureStatisticsView:function() {
-			views.push(FigureStatisticsView(target));
-			$(selector).tabs("refresh");
-			$(selector).tabs({active:views.length-1});
-			return api;
+			return addView(FigureStatisticsView);
 		},
 		addSemanticFieldsView:function() {
-			views.push(SemanticFieldsView(target));
-			$(selector).tabs("refresh");
-			$(selector).tabs({active:views.length-1});
-			return api;
+			return addView(SemanticFieldsView);
 		},
 		addAll:function() {
 			return api.addTextView()
@@ -93,16 +103,23 @@ function Drama(selector, userSettings) {
 			h: $(target).innerHeight()
 		};
 		settings = Object.create(defaultSettings);
-		for (var k in userSettings) {
-			settings[k] = userSettings[k];
-		}
+		merge(settings, userSettings);
+		console.log(settings);
 	}
 
-	function addTab(id, name) {
-		$(selector).children("ul").append("<li><a href=\"#"+id+"\">"+name+"</a></li>");
-		var div = $("<div id=\""+id+"\"></div>");
+	function addTab(o) {
+		$(selector).children("ul").append("<li><a href=\"#"+o.idString+"\">"+o.title+"</a></li>");
+		var div = $("<div id=\""+o.idString+"\" class=\"view\"></div>");
 		div.appendTo($(selector));
 		return div;
+	}
+
+
+	function addView(view) {
+		views.push(view(target));
+		$(selector).tabs("refresh");
+		$(selector).tabs({active:views.length-1});
+		return api;
 	}
 
 	function sortAnnotations(a,b) {
@@ -157,7 +174,7 @@ function Drama(selector, userSettings) {
 	}
 
 	function TextView(targetJQ) {
-		var contentArea;
+		var contentArea = addTab(settings.TextView);
 		var tocArea;
 		var dpArea;
 		var textArea;
@@ -170,7 +187,7 @@ function Drama(selector, userSettings) {
 		};
 
 		function init() {
-			contentArea = addTab("text", "Text");
+
 
 			// create header structure
 			var textHeader = document.createElement("div");
@@ -275,8 +292,7 @@ function Drama(selector, userSettings) {
 	}
 
 	function PresenceView(targetJQ) {
-		var contentArea = addTab("presence", "Figure Presence Chart");
-		var figureSortKey = "NumberOfWords";
+		var contentArea = addTab(settings.PresenceView);
 
 		load();
 
@@ -327,7 +343,7 @@ function Drama(selector, userSettings) {
 
 			// create the series array
 			var series = figures.sort(function(a,b) {
-				return data.figures[a][figureSortKey] - data.figures[b][figureSortKey];
+				return data.figures[a][settings.PresenceView.sortKey] - data.figures[b][settings.PresenceView.sortKey];
 			}).map(function(currentFigureIndex, index, arr) {
 				var currentFigure = data.figures[currentFigureIndex];
 				figureNames.push(currentFigure.Reference);
@@ -396,9 +412,19 @@ function Drama(selector, userSettings) {
 	}
 
 	function FigureStatisticsView(targetJQ) {
-		var contentArea = addTab("figure-statistics", "Figure Statistics");
+		var contentArea = addTab(settings.FigureStatisticsView);
 		var chart;
 		var dTable;
+		var allColumns = [
+			{ title: "Figure", data:"Reference" },
+			{ title: "Words", data:"NumberOfWords" },
+			{ title: "Utterances", data:"NumberOfUtterances" },
+			{ title: "Mean Utt. Length", data:"UtteranceLengthArithmeticMean" },
+			{ title: "Min Utt. Length", data:"UtteranceLengthMin"},
+			{ title: "Max Utt. Length", data:"UtteranceLengthMax"},
+			{ title: "Std Dev. Utt. Length", data: "UtteranceLengthStandardDeviation"},
+			{ title: "Type Token Ratio", data:"TypeTokenRatio100" }
+		];
 
 		var wsize = 1000;
 
@@ -419,13 +445,9 @@ function Drama(selector, userSettings) {
 			contentArea.append("<h3>Table</h3>");
 			contentArea.append("<div><table></table></div>");
 			dTable = contentArea.find("table").DataTable({
-				columns: [
-					{ title: "Figure", data:"Reference" },
-					{ title: "Words", data:"NumberOfWords" },
-					{ title: "Utterances", data:"NumberOfUtterances" },
-					{ title: "Mean Utt. Length", data:"UtteranceLengthArithmeticMean" },
-					{ title: "Type Token Ratio", data:"TypeTokenRatio100" }
-				],
+				columns: allColumns.filter(function (a) {
+					return settings.FigureStatisticsView.keys.includes(a.data);
+				}),
 				pageLength: 100
 			});
 		}
@@ -482,9 +504,7 @@ function Drama(selector, userSettings) {
 	}
 
 	function SemanticFieldsView(targetJQ) {
-		var contentArea = addTab("fields", "Figures and Semantic Fields");
-		var boostFactor = 1000;
-		var normalizationFactor = "NumberOfWords";
+		var contentArea = addTab(settings.SemanticFieldsView);
 		var chart;
 		var dTable;
 
@@ -548,7 +568,10 @@ function Drama(selector, userSettings) {
 					}
 				}
 				for (field of Object.keys(data.fields).sort()) {
-					arr.push(boostFactor*(sum[field] / data.fields[field].Length)/cur[normalizationFactor]);
+					arr.push(settings.SemanticFieldsView.boostFactor *
+						(sum[field] / data.fields[field].Length) /
+						cur[settings.SemanticFieldsView.normalizationKey]
+					);
 				}
 				return {
 					name:cur.Reference,
@@ -585,7 +608,7 @@ function Drama(selector, userSettings) {
 	}
 
 	function NetworkView(targetJQ) {
-		var idString = "copresence";
+		var contentArea = addTab(settings.NetworkView);
 		var baseGraph = {};
 		var currentGraph = {};
 		var svg;
@@ -609,12 +632,9 @@ function Drama(selector, userSettings) {
 		};
 
 		function init() {
-			// add tab
-			targetJQ.children("ul").append("<li><a href=\"#"+idString+"\">Copresence Network</a></li>");
-			targetJQ.append("<div id=\""+idString+"\" class=\"view\"></div>");
-			var targetDiv = targetJQ.children("div#"+idString);
-			width = $(targetDiv).innerWidth();
-			height = $(targetDiv).innerHeight(); //window.innerHeight-200;
+			var targetDiv = contentArea;
+			width = $(contentArea).innerWidth();
+			height = $(contentArea).innerHeight(); //window.innerHeight-200;
 
 			// toolbar
 			var settingsPane = document.createElement("div");
@@ -643,7 +663,7 @@ function Drama(selector, userSettings) {
 			$(settingsPane).append(limit);
 			$(settingsPane).append(fieldSet);
 
-			targetDiv.append(settingsPane);
+			contentArea.append(settingsPane);
 
 			var legendDiv = $(document.createElement("div"));
 				legendDiv.addClass("legend");
@@ -653,16 +673,11 @@ function Drama(selector, userSettings) {
 				legendDiv.append("<p><strong>Line width</strong>: #scenes in which the fig. are co-present</p>");
 				legendDiv.append("<p>Figures are closer together if they are co-present in more scenes.</p>");
 				legendDiv.draggable();
-				targetDiv.append(legendDiv);
+				contentArea.append(legendDiv);
 
-
-			svg = d3.select("div#"+idString).append("svg")
+			svg = d3.select("div#"+settings.NetworkView.idString).append("svg")
 				.attr("height", height)
 				.attr("width", width);
-
-
-
-
 			$(settingsPane).find("input").change(updateSettings);
 		}
 
@@ -674,7 +689,7 @@ function Drama(selector, userSettings) {
 		}
 
 		function updateSettings() {
-			var cssId = "#"+idString;
+			var cssId = "#"+settings.NetworkView.idString;
 			force.stop();
 
 			var figureFilterFunction;
@@ -740,10 +755,10 @@ function Drama(selector, userSettings) {
 					});
 					if (thisNode.classed("selected")) {
 						thisNode.transition()
-							.duration(settings.animation.duration)
+							.duration(settings.NetworkView.animationDuration)
 							.style({"stroke-width":"0px"});
 						relatedLinks.transition()
-							.duration(settings.animation.duration)
+							.duration(settings.NetworkView.animationDuration)
 							.style("stroke", "#AAA");
 						thisNode.classed("selected", false);
 						relatedLinks.classed("selected", false);
@@ -753,20 +768,20 @@ function Drama(selector, userSettings) {
 
 						// remove old style
 						selectedLinks.transition()
-							.duration(settings.animation.duration)
+							.duration(settings.NetworkView.animationDuration)
 							.style("stroke", "#AAA");
 						selectedNodes.transition()
-							.duration(settings.animation.duration)
+							.duration(settings.NetworkView.animationDuration)
 							.style({"stroke-width":"0px"});
 						selectedLinks.classed("selected", false);
 						selectedNodes.classed("selected", false);
 
 						// add new style
 						relatedLinks.transition()
-		 					.duration(settings.animation.duration)
+		 					.duration(settings.NetworkView.animationDuration)
 		 					.style("stroke", "#A00");
 						thisNode.transition()
-							.duration(settings.animation.duration)
+							.duration(settings.NetworkView.animationDuration)
 										.style({"stroke": "#A00", "stroke-width": "5px"});
 						thisNode.classed("selected", true);
 						relatedLinks.classed("selected", true);
@@ -799,7 +814,7 @@ function Drama(selector, userSettings) {
 			// remove old links
 			svg.selectAll(".link").data(graph.edges, key)
 				.exit()
-				.transition().duration(settings.animation.duration)
+				.transition().duration(settings.NetworkView.animationDuration)
 				.style('opacity', 0)
 				.remove();
 
@@ -820,14 +835,14 @@ function Drama(selector, userSettings) {
 			});
 
 			// animate into opacity
-			linkD.transition().duration(settings.animation.duration)
+			linkD.transition().duration(settings.NetworkView.animationDuration)
 				.style("opacity", 1);
 			var nodeD = svg.selectAll(".node")
 				.data(graph.nodes, key);
 
 			// remove old nodes
 			nodeD.exit()
-				.transition().duration(settings.animation.duration)
+				.transition().duration(settings.NetworkView.animationDuration)
 				.style('opacity', 0)
 				.remove();
 
@@ -858,7 +873,7 @@ function Drama(selector, userSettings) {
 
 			// recolor the nodes
 			nodeD
-				.transition().duration(settings.animation.duration)
+				.transition().duration(settings.NetworkView.animationDuration)
 				.style("fill", function (d) {
 					return darkcolors[graph.categories.indexOf(d.type) % darkcolors.length];
 				})
