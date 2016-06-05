@@ -48,7 +48,8 @@ function ChartTableView(target, userSettings) {
 
 		dTable = contentArea.find("table").DataTable({
 			columns: settings.columns,
-			pageLength: 100
+			pageLength: 100,
+			retrieve: true
 		});
 	}
 
@@ -101,9 +102,9 @@ function ChartTableView(target, userSettings) {
 				};
 			})
 		};
-		console.log(ch);
+		// console.log(ch);
 		chart.highcharts(ch);
-
+		console.log(data);
 		dTable.rows.add(data).draw();
 		contentArea.accordion({
 			heightStyle: "content"

@@ -58,28 +58,11 @@ function Drama(selector, userSettings) {
 		addPresenceView:function() {
 			return addView(PresenceView);
 		},
-		addFigureStatisticsView:function() {
-			return addView(FigureStatisticsView);
-		},
 		addFigureStatisticsView2:function() {
-			var contentArea = addTab(settings.FigureStatisticsView);
-			var ctable = ChartTableView(contentArea, {
-				columns: settings.FigureStatisticsView.columns,
-				chart: {
-					yAxis: { min:0, max:1 },
-					colors: darkcolors
-				}
-			});
-			ctable.load(data.figures);
-			views.push(ctable);
-			return api;
-		},
-		addSemanticFieldsView:function() {
-			return addView(SemanticFieldsView);
+			return addView(FigureStatisticsView2);
 		},
 		addSemanticFieldsView2:function() {
-			addSemanticFieldsView2();
-			return api;
+			return addView(SemanticFieldsView2);
 		},
 		addAll:function() {
 			return api.addTextView()
@@ -105,10 +88,11 @@ function Drama(selector, userSettings) {
 		return api;
 	}
 
-	function load(dataOrUrl) {
+	function load(dataOrUrl, callback) {
 		if (typeof(dataOrUrl) == "string") {
 			$.getJSON(dataOrUrl, function(data) {
 				loadObject(data);
+				callback();
 			});
 		} else {
 			return loadObject(dataOrUrl);
@@ -434,63 +418,104 @@ function Drama(selector, userSettings) {
 		return api;
 	}
 
-
-
-	function addSemanticFieldsView2() {
+	function SemanticFieldsView2() {
 		var contentArea = addTab(settings.SemanticFieldsView);
-		var ctable = ChartTableView(contentArea, {
-			columns: [ {
-				title: "Figure", data: "Reference"
-			} ].concat(Object.keys(data.fields).sort().map(function(cur) {
-				return { title:cur, width:"10%", data:cur };
-			})),
-			chart: {
+		var ctable;
+		init();
+		load();
+
+		var api = {
+			load:load,
+			clear:clear
+		};
+		return api;
+
+		function init() {
+			ctable = ChartTableView(contentArea, {
+				columns: [ {
+					title: "Figure", data: "Reference"
+				} ].concat(Object.keys(data.fields).sort().map(function(cur) {
+					return { title:cur, width:"10%", data:cur };
+				})),
 				chart: {
-					polar: true,
-					type: 'line'
-				},
-				colors: darkcolors,
-				yAxis: { gridLineInterpolation: 'polygon' },
-				xAxis: { lineWidth: 0 },
-				config: {
-					hide: function(d) {
-						return d.NumberOfWords < 1000;
+					chart: {
+						polar: true,
+						type: 'line'
+					},
+					colors: darkcolors,
+					yAxis: { gridLineInterpolation: 'polygon' },
+					xAxis: { lineWidth: 0 },
+					config: {
+						hide: function(d) { return d.NumberOfWords < 1000; }
 					}
 				}
-			}
-		});
-		var mydata = data.figures.map(function(cur) {
-			var ret = Object.create(cur);
-			var sum = {};
-			for (var field of Object.keys(data.fields).sort()) {
-				sum[field] = 0;
-			}
-			if ("utt" in cur) {
-				for (var i = 0; i < cur.utt.length; i++) {
-					var currentUtterance = data.utt[cur.utt[i]];
-					if ("s" in currentUtterance) {
-						for (var speech of currentUtterance.s) {
-							if ("fields" in speech) {
-								for (var fname of speech.fields) {
-									sum[fname]++;
+			});
+		}
+
+		function load() {
+			var mydata = data.figures.filter(function(f) {
+				return f.NumberOfWords > 0;
+			}).map(function(cur) {
+				var ret = Object.create(cur);
+				var sum = {};
+				for (var field of Object.keys(data.fields).sort()) {
+					sum[field] = 0;
+				}
+				if ("utt" in cur) {
+					for (var i = 0; i < cur.utt.length; i++) {
+						var currentUtterance = data.utt[cur.utt[i]];
+						if ("s" in currentUtterance) {
+							for (var speech of currentUtterance.s) {
+								if ("fields" in speech) {
+									for (var fname of speech.fields) {
+										sum[fname]++;
+									}
 								}
 							}
 						}
 					}
 				}
-			}
-			for (field of Object.keys(data.fields).sort()) {
-				ret[field] = settings.SemanticFieldsView.boostFactor *
-					(sum[field] / data.fields[field].Length) /
-					cur[settings.SemanticFieldsView.normalizationKey];
-			}
-			return ret;
-		});
-		ctable.load(mydata);
-		views.push(ctable);
-		return ctable;
+				for (field of Object.keys(data.fields).sort()) {
+					ret[field] = settings.SemanticFieldsView.boostFactor *
+						(sum[field] / data.fields[field].Length) /
+						cur[settings.SemanticFieldsView.normalizationKey];
+				}
+				return ret;
+			});
+			ctable.load(mydata);
+		}
+
+		function clear() { ctable.clear(); }
 	}
 
+	function FigureStatisticsView2() {
+		var contentArea = addTab(settings.FigureStatisticsView);
+		var ctable;
+		init();
+		load();
+
+		var api = {
+			load:load,
+			clear:clear
+		};
+		return api;
+
+		function init() {
+			ctable = ChartTableView(contentArea, {
+				columns: settings.FigureStatisticsView.columns,
+				chart: {
+					config: {
+						hide: function(d) {
+							return d.NumberOfWords < 1000;
+						}
+					}
+				}
+			});
+		}
+
+		function load() { ctable.load(data.figures); }
+		function clear() { ctable.clear(); }
+	}
 
 	function NetworkView(targetJQ) {
 		var contentArea = addTab(settings.NetworkView);

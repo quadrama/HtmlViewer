@@ -18,16 +18,18 @@ var drama;
 
 	$(function() {
 		drama = Drama("#drama");
-		var url = "data/rksp.0.json";
+		$(docselect).change(function(event) {
+			drama.load($(docselect).val(), function() {
+				$("h1#title").text(drama.title());
+			});
+
+		});
+		var url = "data/vndf.0.json";
 		$.getJSON(url, function(data) {
 			drama.load(data).addAll();
+			$("h1#title").text(drama.title());
+			$(docselect).change();
 		})
-
-		$(docselect).change(function(event) {
-			drama.load($(docselect).val());
-		});
-
-
 	});
 </script>
 </head>
@@ -57,7 +59,7 @@ var drama;
 				<option value="data/rjh9.0.json">1767_LGE_MvBodS_rjh9.0</option>
 				<option value="data/w3zd.0.json">1767_SHP_J_w3zd.0</option>
 				<option value="data/k93g.0.json">1769_ACHv_DPodnP_k93g.0</option>
-				<option value="data/rksp.0.json" selected="selected">1772_LGE_EG_rksp.0</option>
+				<option value="data/rksp.0.json">1772_LGE_EG_rksp.0</option>
 				<option value="data/11g1d.0.json">1773_GJW_GvBmdeH_11g1d.0</option>
 				<option value="data/x8ks.0.json">1773_WCM_A_x8ks.0</option>
 				<option value="data/r135.0.json">1775_KFM_DlW_r135.0</option>
@@ -78,7 +80,7 @@ var drama;
 				<option value="data/tx4z.0.json">1787_SF_DCIvS_tx4z.0</option>
 				<option value="data/vrds.0.json">1787_SJG(J_DLiN_vrds.0</option>
 				<option value="data/twnw.0.json">1791_SJE_DZ_twnw.0</option>
-				<option value="data/vndf.0.json">1797_SW_RuJ_vndf.0</option>
+				<option value="data/vndf.0.json" selected="selected">1797_SW_RuJ_vndf.0</option>
 				<option value="data/11f78.0.json">1800_GJW_IaT_11f78.0</option>
 				<option value="data/r0px.0.json">1804_KHv_DFS_r0px.0</option>
 				<option value="data/ssrf.0.json">1813_MA_DS_ssrf.0</option>
