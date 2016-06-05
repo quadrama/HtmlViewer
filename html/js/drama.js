@@ -137,23 +137,6 @@ function Drama(selector, userSettings) {
 		};
 	}
 
-	function figureFilter(o) {
-		return function(f) {
-			var figure = f;
-			if (typeof(f) == "number") {
-				figure = data.figures[f];
-			} else if (f.hasOwnProperty("figureIndex")) {
-				figure = data.figures[f.figureIndex];
-				// console.log(figure);
-			}
-			for (var p in o) {
-				if (figure[p] < o[p])
-					return false;
-			}
-			return true;
-		};
-	}
-
 	function getFigureTypes(data, figure) {
 		var types = [];
 		var figureIndex = data.figures.indexOf(figure);

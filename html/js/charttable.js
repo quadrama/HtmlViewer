@@ -17,7 +17,8 @@ function ChartTableView(target, userSettings) {
 			},
 			yAxis: {},
 			xAxis: { lineWidth:1 },
-		}
+		},
+		active:0
 	};
 	var keys = [];
 	var settings = {};
@@ -29,7 +30,8 @@ function ChartTableView(target, userSettings) {
 
 	var api = {
 		clear:clear,
-		load:load
+		load:load,
+		add:add
 	};
 
 	return api;
@@ -109,12 +111,21 @@ function ChartTableView(target, userSettings) {
 		console.log(data);
 		dTable.rows.add(data).draw();
 		contentArea.accordion({
-			heightStyle: "content"
+			heightStyle: "content",
+			active:settings.active
 		});
 	}
 
 	function clear() {
 		chart.empty();
 		dTable.clear();
+	}
+
+	function add(row) {
+		// adding to chart
+		// chart.highcharts().series.
+
+		// add to table
+		dTable.row.add(row).draw();
 	}
 }

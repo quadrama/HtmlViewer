@@ -28,3 +28,20 @@ function merge(o1, o2) {
 		}
 	}
 }
+
+function figureFilter(o) {
+	return function(f) {
+		var figure = f;
+		if (typeof(f) == "number") {
+			figure = data.figures[f];
+		} else if (f.hasOwnProperty("figureIndex")) {
+			figure = data.figures[f.figureIndex];
+			// console.log(figure);
+		}
+		for (var p in o) {
+			if (figure[p] < o[p])
+				return false;
+		}
+		return true;
+	};
+}

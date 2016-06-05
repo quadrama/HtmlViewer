@@ -8,15 +8,23 @@
 <script src="js/highcharts.js"></script>
 <script src="js/highcharts-more.js"></script>
 <script src="js/exporting.js"></script>
-<script src="data/all-data.js"></script>
 <script src="js/jquery-ui.js"></script>
 <script src="js/d3.v3.min.js" charset="utf-8"></script>
 <script src="js/script.js"></script>
+<script src="js/util.js"></script>
+<script src="js/charttable.js"></script>
+<script src="js/dramacollection.js"></script>
 <script>
-	$(function() {
-		initAll(data);
-		refreshView(data);
-	});
+var collection;
+var dramaUrls = ["data/rksp.0.json", "data/vndf.0.json"]
+$(function() {
+	collection = DramaCollection("#collection", {});
+	for (var url of dramaUrls) {
+		$.getJSON(url, function(data) {
+			collection.add(data);
+		});
+	}
+});
 </script>
 </head>
 <body>
@@ -35,7 +43,7 @@
 </div>
 <div id="content">
 	<h1>Corpus Statistics</h1>
-	<div id="hc"></div>
+	<div id="collection"></div>
 </div>
 </body>
 </html>
