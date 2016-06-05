@@ -58,17 +58,17 @@ function Drama(selector, userSettings) {
 		addPresenceView:function() {
 			return addView(PresenceView);
 		},
-		addFigureStatisticsView2:function() {
+		addFigureStatisticsView:function() {
 			return addView(FigureStatisticsView2);
 		},
-		addSemanticFieldsView2:function() {
+		addSemanticFieldsView:function() {
 			return addView(SemanticFieldsView2);
 		},
 		addAll:function() {
 			return api.addTextView()
 				.addPresenceView()
-				.addFigureStatisticsView2()
-				.addSemanticFieldsView2()
+				.addFigureStatisticsView()
+				.addSemanticFieldsView()
 				.addNetworkView();
 		},
 		load:load
@@ -185,7 +185,6 @@ function Drama(selector, userSettings) {
 		var dpArea;
 		var textArea;
 		init();
-		load();
 
 		return {
 			load:load,
@@ -300,7 +299,6 @@ function Drama(selector, userSettings) {
 	function PresenceView(targetJQ) {
 		var contentArea = addTab(settings.PresenceView);
 		var pbColors = ["#FFF", "#DDF"];
-		load();
 
 		var api = {
 			clear:clear,
@@ -422,7 +420,6 @@ function Drama(selector, userSettings) {
 		var contentArea = addTab(settings.SemanticFieldsView);
 		var ctable;
 		init();
-		load();
 
 		var api = {
 			load:load,
@@ -492,7 +489,6 @@ function Drama(selector, userSettings) {
 		var contentArea = addTab(settings.FigureStatisticsView);
 		var ctable;
 		init();
-		load();
 
 		var api = {
 			load:load,
@@ -526,7 +522,6 @@ function Drama(selector, userSettings) {
 		var width, height;
 		var selectedColor = "#DD5";
 		init();
-		load();
 
 		return {
 			d3: {
