@@ -23,6 +23,8 @@ function ChartTableView(target, userSettings) {
 	var settings = {};
 	var wsize = 1000;
 	var currentData;
+	var dTable;
+	var chart;
 	init();
 
 	var api = {
