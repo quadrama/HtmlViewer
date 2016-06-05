@@ -117,8 +117,8 @@ function Drama(selector, userSettings) {
 
 	function init() {
 		target = $(selector);
-		target.css("height", "90vh");
 		target.css("width", "90vw");
+		target.css("min-height", "500px");
 		target.empty();
 		target.append("<ul></ul>");
 		$(selector).tabs();
@@ -126,6 +126,8 @@ function Drama(selector, userSettings) {
 			w: $(target).innerWidth(),
 			h: $(target).innerHeight()
 		};
+		if (dimensions.h === 0)
+			dimensions.h = 600;
 		settings = Object.create(defaultSettings);
 		merge(settings, userSettings);
 		console.log(settings);
@@ -162,6 +164,7 @@ function Drama(selector, userSettings) {
 				figure = data.figures[f];
 			} else if (f.hasOwnProperty("figureIndex")) {
 				figure = data.figures[f.figureIndex];
+				// console.log(figure);
 			}
 			for (var p in o) {
 				if (figure[p] < o[p])
@@ -316,7 +319,7 @@ function Drama(selector, userSettings) {
 
 	function PresenceView(targetJQ) {
 		var contentArea = addTab(settings.PresenceView);
-		var pbColors = ["#FFF", "#8CF"];
+		var pbColors = ["#FFF", "#DDF"];
 		load();
 
 		var api = {
@@ -699,6 +702,7 @@ function Drama(selector, userSettings) {
 		var svg;
 		var force;
 		var width, height;
+		var selectedColor = "#DD5";
 		init();
 		load();
 
@@ -864,10 +868,10 @@ function Drama(selector, userSettings) {
 				// add new style
 				relatedLinks.transition()
 					.duration(settings.NetworkView.animationDuration)
-					.style("stroke", "#A00");
+					.style("stroke", selectedColor);
 				thisNode.transition()
 					.duration(settings.NetworkView.animationDuration)
-					.style({"stroke": "#A00", "stroke-width": "5px"});
+					.style({"stroke": selectedColor, "stroke-width": "5px"});
 				thisNode.classed("selected", true);
 				relatedLinks.classed("selected", true);
 			}
@@ -995,12 +999,10 @@ function Drama(selector, userSettings) {
 		  var edges = [];
 		  var nodes = data.figures
 		  	.map(function (f,i) {
-		  		return {
-		  			Reference:f.Reference,
-		  			txt:f.txt,
-		  			figureWeight:f.NumberOfWords,
-		  			figureIndex:i
-		  		};
+					var o = Object.create(f);
+					o.figureWeight = f.NumberOfWords;
+					o.figureIndex = i;
+					return o;
 		  	});
 
 			function findForFigureIndex(searchFor) {
