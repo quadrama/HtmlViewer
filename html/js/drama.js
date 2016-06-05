@@ -17,7 +17,13 @@ function Drama(selector, userSettings) {
 		FigureStatisticsView: {
 			idString: "figure-statistics",
 			title: "Figure Statistics",
-			keys: ["Reference", "NumberOfWords", "NumberOfUtterances", "UtteranceLengthArithmeticMean", "UtteranceLengthStandardDeviation"]
+			columns: [
+				{ title: "Figure", data:"Reference" },
+				{ title: "Words", data:"NumberOfWords" },
+				{ title: "Utterances", data:"NumberOfUtterances" },
+				{ title: "Mean Utt. Length", data: "UtteranceLengthArithmeticMean" },
+				{ title: "Std. Dev. Utt. Length", data: "UtteranceLengthStandardDeviation"}
+			 ]
 		},
 		SemanticFieldsView: {
 			boostFactor: 1000,
@@ -54,14 +60,31 @@ function Drama(selector, userSettings) {
 		addFigureStatisticsView:function() {
 			return addView(FigureStatisticsView);
 		},
+		addFigureStatisticsView2:function() {
+			var contentArea = addTab(settings.FigureStatisticsView);
+			var ctable = ChartTableView(contentArea, {
+				columns: settings.FigureStatisticsView.columns,
+				chart: {
+					yAxis: { min:0, max:1 },
+					colors: darkcolors
+				}
+			});
+			ctable.load(data.figures);
+			views.push(ctable);
+			return api;
+		},
 		addSemanticFieldsView:function() {
 			return addView(SemanticFieldsView);
+		},
+		addSemanticFieldsView2:function() {
+			addSemanticFieldsView2();
+			return api;
 		},
 		addAll:function() {
 			return api.addTextView()
 				.addPresenceView()
-				.addFigureStatisticsView()
-				.addSemanticFieldsView()
+				.addFigureStatisticsView2()
+				.addSemanticFieldsView2()
 				.addNetworkView();
 		},
 		load:load
@@ -410,6 +433,10 @@ function Drama(selector, userSettings) {
 		}
 	}
 
+
+	/**
+	 * @deprecated
+	 */
 	function FigureStatisticsView(targetJQ) {
 		var contentArea = addTab(settings.FigureStatisticsView);
 		var chart;
@@ -500,6 +527,65 @@ function Drama(selector, userSettings) {
 		}
 	}
 
+
+
+	function addSemanticFieldsView2() {
+		var contentArea = addTab(settings.SemanticFieldsView);
+		var ctable = ChartTableView(contentArea, {
+			columns: [ {
+				title: "Figure", data: "Reference"
+			} ].concat(Object.keys(data.fields).sort().map(function(cur) {
+				return { title:cur, width:"10%", data:cur };
+			})),
+			chart: {
+				chart: {
+					polar: true,
+					type: 'line'
+				},
+				colors: darkcolors,
+				yAxis: { gridLineInterpolation: 'polygon' },
+				xAxis: { lineWidth: 0 },
+				config: {
+					hide: function(d) {
+						return d.NumberOfWords < 1000;
+					}
+				}
+			}
+		});
+		var mydata = data.figures.map(function(cur) {
+			var ret = Object.create(cur);
+			var sum = {};
+			for (var field of Object.keys(data.fields).sort()) {
+				sum[field] = 0;
+			}
+			if ("utt" in cur) {
+				for (var i = 0; i < cur.utt.length; i++) {
+					var currentUtterance = data.utt[cur.utt[i]];
+					if ("s" in currentUtterance) {
+						for (var speech of currentUtterance.s) {
+							if ("fields" in speech) {
+								for (var fname of speech.fields) {
+									sum[fname]++;
+								}
+							}
+						}
+					}
+				}
+			}
+			for (field of Object.keys(data.fields).sort()) {
+				ret[field] = settings.SemanticFieldsView.boostFactor *
+					(sum[field] / data.fields[field].Length) /
+					cur[settings.SemanticFieldsView.normalizationKey];
+			}
+			return ret;
+		});
+		ctable.load(mydata);
+		views.push(ctable);
+		return ctable;
+	}
+	/**
+	 * @deprecated
+	 */
 	function SemanticFieldsView(targetJQ) {
 		var contentArea = addTab(settings.SemanticFieldsView);
 		var chart;
@@ -733,57 +819,57 @@ function Drama(selector, userSettings) {
 
 		function dblclick(d) {
 			d3.select(d).classed("fixed", true);
-			d3.layout.force().stop();
+			force.stop();
 		}
 
-		function selectNode() {
-					var thisNode = d3.select(d);
-					var thisFigure = thisNode.datum();
-					var otherNodes = svg.selectAll("g.node")
-						.filter(function (d) {
-							return true;
-					});
-					var relatedLinks = svg.selectAll(".link")
-						.filter(function (d) {
-							if (typeof(d) == "undefined")
-								return false;
-							return d.source === thisFigure ||
-								d.target === thisFigure;
-					});
-					if (thisNode.classed("selected")) {
-						thisNode.transition()
-							.duration(settings.NetworkView.animationDuration)
-							.style({"stroke-width":"0px"});
-						relatedLinks.transition()
-							.duration(settings.NetworkView.animationDuration)
-							.style("stroke", "#AAA");
-						thisNode.classed("selected", false);
-						relatedLinks.classed("selected", false);
-					} else {
-						var selectedNodes = d3.select("g.node.selected");
-						var selectedLinks = d3.selectAll(".link.selected");
+		function selectNode(d) {
+			var thisNode = d3.select(d);
+			var thisFigure = thisNode.datum();
+			var otherNodes = svg.selectAll("g.node")
+				.filter(function (d) {
+					return true;
+			});
+			var relatedLinks = svg.selectAll(".link")
+				.filter(function (d) {
+					if (typeof(d) == "undefined")
+						return false;
+					return d.source === thisFigure ||
+						d.target === thisFigure;
+			});
+			if (thisNode.classed("selected")) {
+				thisNode.transition()
+					.duration(settings.NetworkView.animationDuration)
+					.style({"stroke-width":"0px"});
+				relatedLinks.transition()
+					.duration(settings.NetworkView.animationDuration)
+					.style("stroke", "#AAA");
+				thisNode.classed("selected", false);
+				relatedLinks.classed("selected", false);
+			} else {
+				var selectedNodes = d3.select("g.node.selected");
+				var selectedLinks = d3.selectAll(".link.selected");
 
-						// remove old style
-						selectedLinks.transition()
-							.duration(settings.NetworkView.animationDuration)
-							.style("stroke", "#AAA");
-						selectedNodes.transition()
-							.duration(settings.NetworkView.animationDuration)
-							.style({"stroke-width":"0px"});
-						selectedLinks.classed("selected", false);
-						selectedNodes.classed("selected", false);
+				// remove old style
+				selectedLinks.transition()
+					.duration(settings.NetworkView.animationDuration)
+					.style("stroke", "#AAA");
+				selectedNodes.transition()
+					.duration(settings.NetworkView.animationDuration)
+					.style({"stroke-width":"0px"});
+				selectedLinks.classed("selected", false);
+				selectedNodes.classed("selected", false);
 
-						// add new style
-						relatedLinks.transition()
-		 					.duration(settings.NetworkView.animationDuration)
-		 					.style("stroke", "#A00");
-						thisNode.transition()
-							.duration(settings.NetworkView.animationDuration)
-										.style({"stroke": "#A00", "stroke-width": "5px"});
-						thisNode.classed("selected", true);
-						relatedLinks.classed("selected", true);
-					}
-				}
+				// add new style
+				relatedLinks.transition()
+					.duration(settings.NetworkView.animationDuration)
+					.style("stroke", "#A00");
+				thisNode.transition()
+					.duration(settings.NetworkView.animationDuration)
+					.style({"stroke": "#A00", "stroke-width": "5px"});
+				thisNode.classed("selected", true);
+				relatedLinks.classed("selected", true);
+			}
+		}
 
 		function dragstart(d) {
 			d3.select(d).classed("fixed", true);
@@ -834,6 +920,7 @@ function Drama(selector, userSettings) {
 			// animate into opacity
 			linkD.transition().duration(settings.NetworkView.animationDuration)
 				.style("opacity", 1);
+
 			var nodeD = svg.selectAll(".node")
 				.data(graph.nodes, key);
 
@@ -849,13 +936,13 @@ function Drama(selector, userSettings) {
 			node.attr("class", "node")
 				.style("opacity", 0)
 				.call(force.drag)
-				.on("click", selectNode);
-
+				.on("click", function() { selectNode(this); });
 			node.append("circle")
 				.attr("r", function (d) {
 					return rscale(d.figureWeight);
 				})
-				.on("dblclick", dblclick);
+				.on("dblclick", function() { dblclick(this); });
+
 			node.append("title").text(function(d) {
 					return d.txt;
 				});
