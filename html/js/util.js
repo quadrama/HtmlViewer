@@ -18,10 +18,13 @@ function getQueryParams(qs) {
 }
 function merge(o1, o2) {
 	for (var k in o2) {
-		if (typeof(o2[k]) != "object") {
-			o1[k] = o2[k];
-		} else {
+		if (typeof(o2[k]) == "object" && ! Array.isArray(o2[k])) {
 			merge(o1[k], o2[k]);
+		} else {
+			if (typeof (o1) == "undefined")
+				o1 = o2;
+			else
+				o1[k] = o2[k];
 		}
 	}
 }
