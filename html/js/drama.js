@@ -34,7 +34,8 @@ function Drama(selector, userSettings) {
 		TextView: {
 			idString: "text",
 			title: "Text"
-		}
+		},
+		wordThreshold: 1000
 	};
 	var strongcolors = ["#AAF", "#FAA", "#AFA", "#55F", "#F55", "#5F5" ];
 	var darkcolors = ["#000", "#A00", "#0A0", "#00A", "#AA0", "#0AA", "#A0A"];
@@ -315,7 +316,7 @@ function Drama(selector, userSettings) {
 
 	function PresenceView(targetJQ) {
 		var contentArea = addTab(settings.PresenceView);
-
+		var pbColors = ["#FFF", "#8CF"];
 		load();
 
 		var api = {
@@ -345,7 +346,7 @@ function Drama(selector, userSettings) {
 				return {
 					from : parseInt(cur.begin),
 					to : parseInt(cur.end),
-					color : colors[i % 3],
+					color : pbColors[i % pbColors.length],
 					label : {
 						text : cur.head,
 						rotation : 270,
@@ -394,7 +395,7 @@ function Drama(selector, userSettings) {
 					name:currentFigure.Reference,
 					data:utterances,
 					lineWidth:3,
-					visible:(currentFigure.NumberOfWords>wordThreshold),
+					visible:(currentFigure.NumberOfWords>settings.wordThreshold),
 					turboThreshold:0
 				};
 				return r;
@@ -421,6 +422,7 @@ function Drama(selector, userSettings) {
 					title:null,
 					categories:figureNames
 				},
+				colors: darkcolors,
 				plotOptions: { series: { lineWidth : 1 } },
 				tooltip: {
 					crosshairs : true,
@@ -661,7 +663,7 @@ function Drama(selector, userSettings) {
 					data:arr,
 					pointPlacement: 'on',
 					lineWidth:2,
-					visible:(cur.NumberOfWords > wordThreshold)
+					visible:(cur.NumberOfWords > settings.wordThreshold)
 				};
 			});
 			// create chart
