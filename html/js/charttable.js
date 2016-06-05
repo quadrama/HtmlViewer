@@ -6,7 +6,8 @@ function ChartTableView(target, userSettings) {
 			title: null,
 			chart: {
 				polar: false,
-				type: "column"
+				type: "column",
+				width: contentArea.innerWidth()-100
 			},
 			colors: ["#000", "#A00", "#0A0", "#00A", "#AA0", "#0AA", "#A0A"],
 			pane: { size: "90%" },
