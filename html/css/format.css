@@ -12,6 +12,8 @@
 	z-index:10;
 	display:flex;
   justify-content:space-between;
+	height:30px;
+	margin:0;
 }
 
 #header div {
@@ -69,12 +71,12 @@ h1#title {
 #content {
 	position:relative;
 	left:200px;
+	top:50px;
 	width:calc(90vw - 200px);
 	min-height: 400px;
 	margin:0;
 	padding-left:3px;
-	margin-left:10px;
-	margin-top:30px;
+	margin:0px;
 }
 #content > * {
 	margin-left:10px;
@@ -130,12 +132,13 @@ h1#title {
 	width:200px;
 	position:fixed;
 	background-color:#EEE;
-	top:0px;
 	left:0;
 	height:100%;
-	padding:3px;
+	padding-left:3px;
+	padding-right:3px;
 	font-weight:normal;
 	font-size:small;
+	margin:0;
 }
 #settings div {
 	margin-bottom:10px;
