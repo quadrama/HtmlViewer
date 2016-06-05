@@ -126,8 +126,6 @@ function Drama(selector, userSettings) {
 			w: $(target).innerWidth(),
 			h: $(target).innerHeight()
 		};
-		if (dimensions.h === 0)
-			dimensions.h = 600;
 		settings = Object.create(defaultSettings);
 		merge(settings, userSettings);
 		console.log(settings);
