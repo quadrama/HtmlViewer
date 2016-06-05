@@ -117,13 +117,11 @@ function Drama(selector, userSettings) {
 
 	function init() {
 		target = $(selector);
-		target.css("width", "90vw");
-		target.css("min-height", "500px");
 		target.empty();
 		target.append("<ul></ul>");
 		$(selector).tabs();
 		dimensions = {
-			w: $(target).innerWidth(),
+			w: $(target).innerWidth()-45, // we have to subtract padding
 			h: $(target).innerHeight()
 		};
 		settings = Object.create(defaultSettings);
@@ -327,7 +325,6 @@ function Drama(selector, userSettings) {
 
 		return api;
 
-
 		function clear() {
 			contentArea.empty();
 			return api;
@@ -409,8 +406,8 @@ function Drama(selector, userSettings) {
 					type: 'line',
 					zoomType: 'xy',
 					spacingBottom: 230,
-					height: dimensions.h-20,
-					width: contentArea.innerWidth()-50
+					height: contentArea.innerHeight(),
+					width: dimensions.w
 				},
 				xAxis: {
 					plotBands: pb,
@@ -434,100 +431,7 @@ function Drama(selector, userSettings) {
 				series: series
 			});
 		}
-	}
-
-
-	/**
-	 * @deprecated
-	 */
-	function FigureStatisticsView(targetJQ) {
-		var contentArea = addTab(settings.FigureStatisticsView);
-		var chart;
-		var dTable;
-		var allColumns = {
-			Reference: { title: "Figure", data:"Reference" },
-			NumberOfWords: { title: "Words", data:"NumberOfWords" },
-			NumberOfUtterances: { title: "Utterances", data:"NumberOfUtterances" },
-			UtteranceLengthArithmeticMean: { title: "Mean Utt. Length", data:"UtteranceLengthArithmeticMean" },
-			UtteranceLengthMin: { title: "Min Utt. Length", data:"UtteranceLengthMin"},
-			UtteranceLengthMax: { title: "Max Utt. Length", data:"UtteranceLengthMax"},
-			UtteranceLengthStandardDeviation: { title: "Std Dev. Utt. Length", data: "UtteranceLengthStandardDeviation"},
-			TypeTokenRatio100: { title: "Type Token Ratio", data:"TypeTokenRatio100" }
-		};
-
-		var wsize = 1000;
-
-		var api = {
-			load:load,
-			clear:clear
-		};
-		init();
-		load();
-
 		return api;
-
-		function init() {
-			// create accordion
-			contentArea.append("<h3>Chart</h3>");
-			chart = $(document.createElement("div"));
-			chart.appendTo(contentArea);
-			contentArea.append("<h3>Table</h3>");
-			contentArea.append("<div><table></table></div>");
-
-			dTable = contentArea.find("table").DataTable({
-				columns: settings.FigureStatisticsView.keys.map(function(current) {
-					return allColumns[current];
-				}),
-				pageLength: 100
-			});
-		}
-
-		function clear() {
-			chart.empty();
-			dTable.clear();
-		}
-
-		function load() {
-			// for normalizing in the chart
-			// (otherwise, it gets unreadable)
-			var maxValues = {};
-			for (var key of settings.FigureStatisticsView.keys) {
-				maxValues[key] = 0;
-			}
-
-			// find out the maximal value for each category
-			var mydata = data.figures.map(function(cur) {
-				for (var si in maxValues) {
-					var v = cur[si];
-					if (cur.NumberOfWords > wsize && v > maxValues[si])
-						maxValues[si] = v;
-					}
-			});
-
-
-			// create the chart
-			chart.highcharts({
-				title: null,
-				chart: { type: "column" },
-				xAxis: { categories: settings.FigureStatisticsView.keys.slice(1).map(function (k) {
-					return allColumns[k].title;
-				}) },
-				yAxis:{ min:0, max:1 },
-				series: data.figures.map(function (cur, ind, arr) {
-					return {
-						name: cur[settings.FigureStatisticsView.keys[0]],
-						data: settings.FigureStatisticsView.keys.slice(1).map(function (k) {
-							return cur[k] / maxValues[k];
-						})
-					};
-				})
-			});
-
-			dTable.rows.add(data.figures).draw();
-			contentArea.accordion({
-				heightStyle: "content"
-			});
-		}
 	}
 
 
@@ -586,112 +490,7 @@ function Drama(selector, userSettings) {
 		views.push(ctable);
 		return ctable;
 	}
-	/**
-	 * @deprecated
-	 */
-	function SemanticFieldsView(targetJQ) {
-		var contentArea = addTab(settings.SemanticFieldsView);
-		var chart;
-		var dTable;
 
-		init();
-		load();
-		var api = {
-			load:load,
-			clear:clear
-		};
-		return api;
-
-		function init() {
-			// create accordion
-			contentArea.append("<h3>Chart</h3>");
-			chart = $(document.createElement("div"));
-			chart.appendTo(contentArea);
-			contentArea.append("<h3>Table</h3>");
-			contentArea.append("<div><table></table></div>");
-			dTable = contentArea.find("table").DataTable({
-				data: [],
-				columns: [ {
-					title: "Figure"
-				} ].concat(Object.keys(data.fields).sort().map(function(cur) {
-					return {title:cur,width:"10%"};
-				})),
-				pageLength: 100
-			});
-			contentArea.accordion({
-				heightStyle: "content"
-			});
-
-		}
-
-		function clear() {
-			chart.empty();
-			dTable.clear();
-		}
-
-		function load() {
-			// collect data
-			var series = data.figures.filter(function(cur) {
-				return true;
-			}).map(function(cur) {
-				var arr = [];
-				var sum = {};
-				for (var field of Object.keys(data.fields).sort()) {
-					sum[field] = 0;
-				}
-				if ("utt" in cur) {
-					for (var i = 0; i < cur.utt.length; i++) {
-						var currentUtterance = data.utt[cur.utt[i]];
-						if ("s" in currentUtterance) {
-							for (var speech of currentUtterance.s) {
-								if ("fields" in speech) {
-									for (var fname of speech.fields) {
-										sum[fname]++;
-									}
-								}
-							}
-						}
-					}
-				}
-				for (field of Object.keys(data.fields).sort()) {
-					arr.push(settings.SemanticFieldsView.boostFactor *
-						(sum[field] / data.fields[field].Length) /
-						cur[settings.SemanticFieldsView.normalizationKey]
-					);
-				}
-				return {
-					name:cur.Reference,
-					data:arr,
-					pointPlacement: 'on',
-					lineWidth:2,
-					visible:(cur.NumberOfWords > settings.wordThreshold)
-				};
-			});
-			// create chart
-			chart.highcharts({
-				chart: {
-					polar: true,
-					type: 'line'
-				},
-				colors: darkcolors,
-				title: { text:null },
-				pane:{ size:'90%' },
-				xAxis:{
-					categories: Object.keys(data.fields).sort(),
-					lineWidth: 0
-				},
-				yAxis:{ gridLineInterpolation: 'polygon' },
-				tooltip: { enabled:false },
-				series: series
-			});
-
-			// create table
-			var tableData = series.map(function(current) {
-				return [current.name].concat(current.data);
-			});
-			dTable.rows.add(tableData).draw();
-		}
-	}
 
 	function NetworkView(targetJQ) {
 		var contentArea = addTab(settings.NetworkView);
@@ -720,8 +519,7 @@ function Drama(selector, userSettings) {
 
 		function init() {
 			var targetDiv = contentArea;
-			width = $(contentArea).innerWidth();
-			height = $(contentArea).innerHeight(); //window.innerHeight-200;
+
 
 			// toolbar
 			var settingsPane = document.createElement("div");
@@ -762,9 +560,12 @@ function Drama(selector, userSettings) {
 				legendDiv.draggable();
 				contentArea.append(legendDiv);
 
+			width = contentArea.innerWidth();
+			height = contentArea.innerHeight();
 			svg = d3.select("div#"+settings.NetworkView.idString).append("svg")
-				.attr("height", height)
-				.attr("width", width);
+				//.attr("height", height)
+				//.attr("width", dimensions.w)
+				;
 			$(settingsPane).find("input").change(updateSettings);
 		}
 

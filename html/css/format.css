@@ -69,7 +69,8 @@ h1#title {
 #content {
 	position:relative;
 	left:200px;
-	width:calc(99% - 200px);
+	width:calc(90vw - 200px);
+	min-height: 400px;
 	margin:0;
 	padding-left:3px;
 	margin-left:10px;
@@ -86,7 +87,10 @@ h1#title {
 #text .speaker {
 	font-variant: small-caps;
 	display:inline;
-	margin-right:20px;
+}
+
+#text .speech {
+	max-width:500px;
 }
 
 #text .sceneheading {
@@ -145,12 +149,9 @@ input[type=number] {
 	min-width:600px;
 }
 
-#copresence {
-	position:relative;
-	top:0px;
-}
-
 #copresence svg {
+	width: 90%;
+	height: 90%;
 	position:absolute;
 	top:100px;
 }
