@@ -14,6 +14,7 @@ function ChartTableView(target, userSettings) {
 			config: {
 				normalize: true,
 				hide: function(d) { return false; }
+
 			},
 			yAxis: {},
 			xAxis: { lineWidth:1 },
@@ -25,7 +26,9 @@ function ChartTableView(target, userSettings) {
 	var wsize = 1000;
 	var currentData;
 	var dTable;
+	var chartElement;
 	var chart;
+	var chartSeries;
 	init();
 
 	var api = {
@@ -43,8 +46,8 @@ function ChartTableView(target, userSettings) {
 
 
 		contentArea.append("<h3>Chart</h3>");
-		chart = $(document.createElement("div"));
-		chart.appendTo(contentArea);
+		chartElement = $(document.createElement("div"));
+		chartElement.appendTo(contentArea);
 		contentArea.append("<h3>Table</h3>");
 		contentArea.append("<div><table></table></div>");
 
@@ -55,6 +58,32 @@ function ChartTableView(target, userSettings) {
 			pageLength: 100,
 			retrieve: true
 		});
+
+		// create the chart
+		var chartSeries = settings.columns.filter(function (d) { return d.type === "numeric"; });
+		var ch = {
+			title: settings.chart.title,
+			pane: settings.chart.pane,
+			colors: settings.chart.colors,
+			chart: settings.chart.chart,
+			xAxis: {
+				/*categories: settings.columns.slice(1).map(function (k) {
+					return k.title;
+				}),*/
+				lineWidth: settings.chart.xAxis.lineWidth
+			},
+			yAxis: settings.chart.yAxis,
+			series: chartSeries.map(function (k) {
+				return {
+					id: k.data,
+					name: k.title,
+					data: []
+				};
+			})
+		};
+		chartElement.highcharts(ch);
+		chart = Highcharts.charts[0];
+
 	}
 
 	function load(data) {
@@ -107,8 +136,10 @@ function ChartTableView(target, userSettings) {
 			})
 		};
 		// console.log(ch);
-		chart.highcharts(ch);
-		console.log(data);
+		chartElement.highcharts(ch);
+		chart = Highcharts.charts[0];
+
+		console.log(chart);
 		dTable.rows.add(data).draw();
 		contentArea.accordion({
 			heightStyle: "content",
@@ -117,13 +148,23 @@ function ChartTableView(target, userSettings) {
 	}
 
 	function clear() {
-		chart.empty();
+		chartElement.empty();
 		dTable.clear();
 	}
 
 	function add(row) {
+		console.log(row);
 		// adding to chart
-		// chart.highcharts().series.
+		for (var serie of chart.series) {
+			// console.log(serie);
+			var p = {
+				name:row[0],
+				x:row[settings.chart.config.sortKey],
+				y:row[serie.userOptions.id]
+			};
+			console.log(p);
+			serie.addPoint(p);
+		}
 
 		// add to table
 		dTable.row.add(row).draw();
