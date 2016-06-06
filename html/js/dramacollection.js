@@ -8,14 +8,14 @@ function DramaCollection(selector, userSettings) {
 		{ title: "Title", fun: function(d) { return d.meta.documentTitle; }, data: "title" },
 		{ title: "Author", fun: function(d) { return d.meta.authors[0].Name; }, data: "authorname" },
 		{ title: "AuthorPnd", fun: function(d) { return d.meta.authors[0].Pnd; }, data: "authorpnd" },
-		{ title: "Reference Year", fun: function(d) { return d.meta.ReferenceDate; }, data: "ReferenceYear"},
+		{ title: "Reference Year", fun: function(d) { return d.meta.ReferenceDate; }, data: "ReferenceYear" },
 		// simple lengths
-		{ title: "# Figures", fun: function(d) { return d.figures.length; }, data: "NumberOfFigures" },
-		{ title: "# Utterances", fun: function(d) { return d.utt.length; }, data: "NumberOfUtterances" },
-		{ title: "# Scenes", fun: function(d) { return d.scs.length; }, data: "NumberOfScenes" },
-		{ title: "# Acts", fun: function(d) { return d.acts.length; }, data: "NumberOfActs" },
+		{ title: "# Figures", fun: function(d) { return d.figures.length; }, data: "NumberOfFigures", type: "numeric" },
+		{ title: "# Utterances", fun: function(d) { return d.utt.length; }, data: "NumberOfUtterances", type: "numeric" },
+		{ title: "# Scenes", fun: function(d) { return d.scs.length; }, data: "NumberOfScenes", type: "numeric" },
+		{ title: "# Acts", fun: function(d) { return d.acts.length; }, data: "NumberOfActs", type: "numeric" },
 		// calculations
-		{ title: "Avg. Utterance Length", fun:extractAverageUtteranceLength, data: "AverageUtteranceLength" }
+		{ title: "Avg. Utterance Length", fun:extractAverageUtteranceLength, data: "AverageUtteranceLength", type: "numeric" }
 	];
 	var ctable;
 	var target;
@@ -36,9 +36,17 @@ function DramaCollection(selector, userSettings) {
 
 		ctable = ChartTableView(selector, {
 			columns: extractors,
-			active:1
+			active:1,
+			chart: {
+				chart: {
+					type: "line"
+				},
+				config: {
+					sortKey: "ReferenceYear"
+				}
+			}
 		});
-		ctable.load([]);
+		// ctable.load([]);
 
 	}
 
@@ -59,7 +67,7 @@ function DramaCollection(selector, userSettings) {
 	}
 
 	function extractAverageUtteranceLength(d) {
-		return "n/a";
+		return 0;
 	}
 
 
