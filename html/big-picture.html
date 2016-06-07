@@ -16,33 +16,71 @@
 <script src="js/dramacollection.js"></script>
 <script>
 var collection;
-var dramaUrls = ["data/rksp.0.json", "data/vndf.0.json"]
+var dramaUrls = ["data/11f78.0.json"
+,"data/11g1d.0.json"
+,"data/11hdv.0.json"
+,"data/gb-Wieland.json"
+,"data/k93g.0.json"
+,"data/kp19.0.json"
+,"data/krf8.0.json"
+,"data/kscn.0.json"
+,"data/msqv.0.json"
+,"data/n750.0.json"
+,"data/ndtw.0.json"
+,"data/npsg.0.json"
+,"data/qkmq.0.json"
+,"data/r0n2.0.json"
+,"data/r0px.0.json"
+,"data/r12k.0.json"
+,"data/r12v.0.json"
+,"data/r134.0.json"
+,"data/r135.0.json"
+,"data/rfxf.0.json"
+,"data/rhtz.0.json"
+,"data/rhzq.0.json"
+,"data/rjh9.0.json"
+,"data/rjmw.0.json"
+,"data/rksp.0.json"
+,"data/spd6.0.json"
+,"data/ssrf.0.json"
+,"data/t25v.0.json"
+,"data/t4rs.0.json"
+,"data/t4rw.0.json"
+,"data/t976.0.json"
+,"data/twnw.0.json"
+,"data/tx4z.0.json"
+,"data/tz39.0.json"
+,"data/v3mq.0.json"
+,"data/v3mw.0.json"
+,"data/v3n4.0.json"
+,"data/vndf.0.json"
+,"data/vrdj.0.json"
+,"data/vrds.0.json"
+,"data/w3zd.0.json"
+,"data/wf6k.0.json"
+,"data/wznr.0.json"
+,"data/x4gj.0.json"
+,"data/x4vp.0.json"
+,"data/x8fs.0.json"
+,"data/x8hc.0.json"
+,"data/x8ks.0.json"]
 $(function() {
 	collection = DramaCollection("#collection", {});
 	for (var url of dramaUrls) {
 		$.getJSON(url, function(data) {
 			collection.add(data);
+			if (collection.n() === dramaUrls.length) {
+				collection.refresh();
+			}
 		});
 	}
 });
 </script>
 </head>
 <body>
-<div id="settings">
-	<h2>Settings</h2>
-	<div>
-		<input type="checkbox" id="limit" value="limit" />Only speakers with
-		<div style="margin-left:10px;">
-			&gt; <input type="number" length="4" value="1000" id="limit-words" /> words<br/>
-			&gt; <input type="number" size="4" value="20" id="limit-utterances" /> utterances<br/>
-		</div>
-	</div>
-	<div>
-		<select id="texts" multiple="multiple" size="20"></select>
-	</div>
-</div>
-<div id="content">
-	<h1>Corpus Statistics</h1>
+<div>
+	<h1>Corpus Statistics</h1>	
+	<div class="toolbar"></div>
 	<div id="collection"></div>
 </div>
 </body>

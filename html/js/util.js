@@ -29,7 +29,7 @@ function merge(o1, o2) {
 	}
 }
 
-function figureFilter(o) {
+function figureFilter(o, data) {
 	return function(f) {
 		var figure = f;
 		if (typeof(f) == "number") {

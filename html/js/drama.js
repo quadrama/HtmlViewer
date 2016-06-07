@@ -19,10 +19,10 @@ function Drama(selector, userSettings) {
 			title: "Figure Statistics",
 			columns: [
 				{ title: "Figure", data:"Reference" },
-				{ title: "Words", data:"NumberOfWords" },
-				{ title: "Utterances", data:"NumberOfUtterances" },
-				{ title: "Mean Utt. Length", data: "UtteranceLengthArithmeticMean" },
-				{ title: "Std. Dev. Utt. Length", data: "UtteranceLengthStandardDeviation"}
+				{ title: "Words", data:"NumberOfWords", type: "numeric" },
+				{ title: "Utterances", data:"NumberOfUtterances", type: "numeric" },
+				{ title: "Mean Utt. Length", data: "UtteranceLengthArithmeticMean", type: "numeric" },
+				{ title: "Std. Dev. Utt. Length", data: "UtteranceLengthStandardDeviation", type: "numeric" }
 			 ]
 		},
 		SemanticFieldsView: {
@@ -415,7 +415,7 @@ function Drama(selector, userSettings) {
 				columns: [ {
 					title: "Figure", data: "Reference"
 				} ].concat(Object.keys(data.fields).sort().map(function(cur) {
-					return { title:cur, width:"10%", data:cur };
+					return { title:cur, width:"10%", data:cur, type:"numeric" };
 				})),
 				chart: {
 					chart: {
@@ -426,7 +426,8 @@ function Drama(selector, userSettings) {
 					yAxis: { gridLineInterpolation: 'polygon' },
 					xAxis: { lineWidth: 0 },
 					config: {
-						hide: function(d) { return d.NumberOfWords < 1000; }
+						hide: function(d) { return d.NumberOfWords < 1000; },
+						type: "rowwise"
 					}
 				}
 			});
@@ -486,7 +487,8 @@ function Drama(selector, userSettings) {
 					config: {
 						hide: function(d) {
 							return d.NumberOfWords < 1000;
-						}
+						},
+						type: "rowwise"
 					}
 				}
 			});
@@ -593,7 +595,7 @@ function Drama(selector, userSettings) {
 				figureFilterFunction = figureFilter({
 					"NumberOfUtterances":limitUtterances,
 					"NumberOfWords":limitWords
-				});
+				}, data);
 			}
 			var selectedType = "x";
 			var typeValues = [""];

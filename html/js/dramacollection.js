@@ -5,9 +5,10 @@ function DramaCollection(selector, userSettings) {
 	var extractors = [
 		// meta data
 		{ title: "Id", fun: function(d) { return d.meta.documentId; }, data: "id" },
+		{ title: "DisplayId", fun: function(d) { return d.meta.DisplayId; }, data: "DisplayId" },
 		{ title: "Title", fun: function(d) { return d.meta.documentTitle; }, data: "title" },
 		{ title: "Author", fun: function(d) { return d.meta.authors[0].Name; }, data: "authorname" },
-		{ title: "AuthorPnd", fun: function(d) { return d.meta.authors[0].Pnd; }, data: "authorpnd" },
+		// { title: "AuthorPnd", fun: function(d) { return d.meta.authors[0].Pnd; }, data: "authorpnd" },
 		{ title: "Reference Year", fun: function(d) { return d.meta.ReferenceDate; }, data: "ReferenceYear" },
 		// simple lengths
 		{ title: "# Figures", fun: function(d) { return d.figures.length; }, data: "NumberOfFigures", type: "numeric" },
@@ -19,10 +20,14 @@ function DramaCollection(selector, userSettings) {
 	];
 	var ctable;
 	var target;
+	var data = [];
+	var settings;
 
 	init();
 	var api = {
-		add:addDrama
+		add:addDrama,
+		refresh:refresh,
+		n:function() { return data.length; }
 	};
 	return api;
 
@@ -39,9 +44,13 @@ function DramaCollection(selector, userSettings) {
 			active:1,
 			chart: {
 				chart: {
-					type: "line"
+					type: "line",
+					xAxis: {
+						type: "category"
+					}
 				},
 				config: {
+					categoryKey: "DisplayId",
 					sortKey: "ReferenceYear"
 				}
 			}
@@ -50,20 +59,22 @@ function DramaCollection(selector, userSettings) {
 
 	}
 
-	function load(ListOfDramas) {
-
-	}
-
 	function addDrama(dramaObject) {
 		var row = {};
 		for (var i = 0; i < extractors.length; i++) {
 			var ex = extractors[i];
 			row[ex.data] = ex.fun(dramaObject);
-
-
 		}
-		ctable.add(row);
+		data.push(row);
 		return api;
+	}
+
+	function refresh() {
+		ctable.clear();
+		data = data.sort(function (a,b) {
+			return a.ReferenceYear - b.ReferenceYear;
+		});
+		ctable.load(data);
 	}
 
 	function extractAverageUtteranceLength(d) {
