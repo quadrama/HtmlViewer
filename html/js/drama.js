@@ -58,6 +58,9 @@ function Drama(selector, userSettings) {
 		addPresenceView:function() {
 			return addView(PresenceView);
 		},
+		addPresenceView2:function() {
+			return addView(PresenceView2);
+		},
 		addFigureStatisticsView:function() {
 			return addView(FigureStatisticsView2);
 		},
@@ -92,7 +95,7 @@ function Drama(selector, userSettings) {
 		if (typeof(dataOrUrl) == "string") {
 			$.getJSON(dataOrUrl, function(data) {
 				loadObject(data);
-				callback();
+				if (callback) callback();
 			});
 		} else {
 			return loadObject(dataOrUrl);
@@ -392,6 +395,149 @@ function Drama(selector, userSettings) {
 					headerFormat : "",
 					useHTML : true,
 					pointFormat : "<div style=\"width:200px;max-width:300px; white-space:normal\"><span style=\"color:{point.color};font-weight:bold;\">{series.name}</span>: {point.name}</div>"
+				},
+				series: series
+			});
+		}
+		return api;
+	}
+
+	function PresenceView2(targetJQ) {
+		var contentArea;
+		var pbColors = ["#FFF", "#DDF"];
+		var chartArea;
+
+		var api = {
+			clear:clear,
+			load:load,
+		};
+
+		init();
+
+		return api;
+
+		function clear() {
+			chartArea.empty();
+			return api;
+		}
+
+		function init() {
+			contentArea = addTab(settings.PresenceView);
+
+			// toolbar
+			var toolbar = $(document.createElement("div"));
+			toolbar.addClass("toolbar");
+			$(contentArea).append(toolbar);
+			toolbar.append("<div><input type=\"radio\" value=\"scene\" name=\"by\" id=\"button_presence2_by_scene\" /><label for=\"button_presence2_by_scene\">By scene</label><input type=\"radio\" value=\"act\" name=\"by\"  id=\"button_presence2_by_act\" checked=\"checked\" /><label for=\"button_presence2_by_act\">By act</label></div>");
+			toolbar.children("div").buttonset();
+			toolbar.find("input[value='scene']").button({
+				label: "By scene"
+			}).click(function (e) {
+				clear();
+				load();
+			});
+			toolbar.find("input[value='act']").button({
+				label: "By act"
+			}).click(function (e) {
+				clear();
+				load();
+			});
+
+
+			// chart
+			chartArea = $(document.createElement("div"));
+			$(contentArea).append(chartArea);
+		}
+
+		function load() {
+			var segments;
+			var byval = $(contentArea).find(".toolbar input[name='by']:checked").val();
+			if ("scs" in data && byval == "scene") {
+				segments = data.scs;
+			} else /* if ("seg1" in data["segments"]) */{
+				segments = data.acts;
+			}
+
+			// create an array of the figure index numbers (index in the original array)
+			var figures = data.figures.map(function(cur,ind) {return ind;}).sort(function (a,b) {
+				return data.figures[b].NumberOfWords - data.figures[a].NumberOfWords;
+			});
+
+			// create an array for the figure names (which will be categories later
+			// along the y axis)
+			var figureNames = [];
+
+			var seriesMap = {};
+			var simpleSeriesMap = {};
+			for (var fIndex of figures) {
+				seriesMap[fIndex.toString()] = [];
+				simpleSeriesMap[fIndex.toString()] = [];
+			}
+			for (var segment of segments) {
+				var total = segment.end - segment.begin;
+				var segmentUtterances = {};
+				var utterances = data.utt.filter(containedIn(segment));
+				for (var utterance of utterances) {
+					if (!segmentUtterances.hasOwnProperty(utterance.f.toString()))
+						segmentUtterances[utterance.f.toString()] = 0;
+					segmentUtterances[utterance.f.toString()] += (utterance.end - utterance.begin);
+				}
+				var start = 0;
+				for (var figIndex of figures) {
+					if (segmentUtterances.hasOwnProperty(figIndex.toString())) {
+						simpleSeriesMap[figIndex.toString()].push(segmentUtterances[figIndex.toString()]);
+						seriesMap[figIndex.toString()].push({
+							low: start,
+							high: ( segmentUtterances[figIndex.toString()] / total )+ start
+						});
+						start += ( segmentUtterances[figIndex.toString()] / total );
+					} else {
+						simpleSeriesMap[figIndex.toString()].push(0);
+						seriesMap[figIndex.toString()].push({low:start, high:start});
+					}
+				}
+			}
+			// console.log(simpleSeriesMap);
+
+
+			// create the series array
+			var series = figures.map(function(figure) {
+				return {
+					pointPlacement: "on",
+					name: data.figures[figure].Reference,
+					data: simpleSeriesMap[figure.toString()],
+					visible: figureFilter({NumberOfWords: 1000, NumberOfUtterances: 10}, data)(figure)
+				};
+			});
+			// initiate highcharts vis
+			$(chartArea).highcharts({
+				legend: { y:200 },
+				title: null,
+				chart: {
+					type: 'area',
+					spacingBottom: 230
+				},
+				xAxis: {
+					labels: {
+						enabled: true,
+					},
+					categories: segments.map(function (cur) {
+						return cur.head;
+					})
+				},
+				yAxis: {
+					min: 0, max:100,
+					labels: { enabled:true },
+					title:null
+				},
+				colors: darkcolors,
+				plotOptions: { area: { stacking: "percent", marker: { enabled: false }, lineWidth:0 } },
+				tooltip: {
+					shared: true,
+					crosshairs : true,
+					headerFormat : "",
+					useHTML : true,
+					pointFormat : "<div style=\"width:200px;max-width:300px; white-space:normal\"><span style=\"color:{point.color};font-weight:bold;\">{series.name}</span>: {point.y}</div>"
 				},
 				series: series
 			});
