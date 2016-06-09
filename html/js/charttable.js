@@ -14,7 +14,8 @@ function ChartTableView(target, userSettings) {
 			config: {
 				normalize: true,
 				hide: function(d) { return false; },
-				type: "columnwise"
+				type: "columnwise",
+				pointPlacement: null
 			},
 			yAxis: {},
 			xAxis: { lineWidth:1 },
@@ -121,7 +122,7 @@ function ChartTableView(target, userSettings) {
 			series = data.map(function (cur, ind, arr) {
 				return {
 					name: cur[keys[0]],
-					pointPlacement: 'on',
+					pointPlacement: settings.chart.config.pointPlacement,
 					lineWidth: 2,
 					visible: !settings.chart.config.hide(cur),
 					data: keys.slice(1).map(function (k) {
@@ -169,7 +170,7 @@ function ChartTableView(target, userSettings) {
 			yAxis: settings.chart.yAxis,
 			series: series
 		};
-		// console.log(ch);
+		console.log(ch);
 		chartElement.highcharts(ch);
 		chart = Highcharts.charts[0];
 

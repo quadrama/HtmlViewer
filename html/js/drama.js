@@ -427,7 +427,8 @@ function Drama(selector, userSettings) {
 					xAxis: { lineWidth: 0 },
 					config: {
 						hide: function(d) { return d.NumberOfWords < 1000; },
-						type: "rowwise"
+						type: "rowwise",
+						pointPlacement: "on"
 					}
 				}
 			});
