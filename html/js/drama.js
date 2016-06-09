@@ -563,14 +563,15 @@ function Drama(selector, userSettings) {
 				legendDiv.append("<p><strong>Line width</strong>: #scenes in which the fig. are co-present</p>");
 				legendDiv.append("<p>Figures are closer together if they are co-present in more scenes.</p>");
 				legendDiv.draggable();
+				legendDiv.css("position", "absolute");
 				contentArea.append(legendDiv);
+				svg = d3.select("div#"+settings.NetworkView.idString).append("svg");
+
 
 			width = contentArea.innerWidth();
 			height = contentArea.innerHeight();
-			svg = d3.select("div#"+settings.NetworkView.idString).append("svg")
 				//.attr("height", height)
 				//.attr("width", dimensions.w)
-				;
 			$(settingsPane).find("input").change(updateSettings);
 		}
 
