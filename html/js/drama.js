@@ -73,12 +73,15 @@ function Drama(selector, userSettings) {
 			return addView(SemanticFieldsView2);
 		},
 		addAll:function() {
-			return api.addTextView()
+			var r = api.addTextView()
 				.addPresenceView()
 				.addPresenceView2()
 				.addFigureStatisticsView()
 				.addSemanticFieldsView()
 				.addNetworkView();
+			$(selector).tabs({active: 0});
+			return r;
+
 		},
 		load:load
 	};
@@ -343,9 +346,7 @@ function Drama(selector, userSettings) {
 				chart: {
 					type: 'line',
 					zoomType: 'xy',
-					spacingBottom: 160,
-					height: contentArea.innerHeight(),
-					width: dimensions.w
+					spacingBottom: 160
 				},
 				xAxis: {
 					plotBands: pb,

@@ -1,0 +1,37 @@
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+		<link rel="stylesheet" href="css/jquery-ui.css">
+		<link rel="stylesheet" href="css/format.css">
+		<link rel="stylesheet" type="text/css" href="css/datatables.min.css" />
+		<script src="js/datatables.min.js"></script>
+		<script src="js/jquery-ui.js"></script>
+		<script src="js/util.js"></script>
+		<script>
+		$(function() {
+			var dTable = $("table").DataTable({
+				columns: [
+					{ title: "Id", data: "documentId" },
+					{ title: "Title", data: "documentTitle" },
+					{ title: "Date", data: "ReferenceDate" },
+					{ title: "Author", data: "Author" },
+					{ title: "Action", data: "Actions" }
+				],
+				pageLength: 100,
+				retrieve: true
+			});
+			$.getJSON("data/meta.json", function (data) {
+				for (var md of data) {
+					md.Author = md.authors[0].Name;
+					md.Actions = "<a href=\"drama.html?drama="+md.documentId+"\">Open</a>";
+					dTable.row.add(md).draw();
+				}
+			});
+		});
+		</script>
+	</head>
+	<body>
+		<h1>Corpus Overview</h1>
+		<table></table>
+	</body>
+</html>

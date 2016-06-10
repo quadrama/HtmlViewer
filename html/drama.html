@@ -20,14 +20,13 @@ var drama;
 	$(function() {
 		drama = Drama("#drama");
 		var url = "data/rksp.0.json";
+		var p = getQueryParams(document.location.search);
+		if (p.hasOwnProperty("drama"))
+			url = "data/"+p["drama"]+".json";
 		drama.load(url, function() {
 			drama.addAll();
-			$(docselect).change(function(event) {
-				drama.load($(docselect).val(), function() {
-					$("h1#title").text(drama.title());
-				});
-			});
-			$(docselect).change();
+			drama.load(url);
+			$("h1#title").append(drama.title());
 		});
 	});
 </script>
@@ -37,7 +36,7 @@ var drama;
 	<div>QuaDramA HTML Viewer</div>
 	<div><a href="mailto:nils.reiter@ims.uni-stuttgart.de">Contact</a>&nbsp;</div>
 </div>
-<div id="settings">
+<!--<div id="settings">
 	<div>
 		<h3>Drama View</h3>
 		<div>
@@ -93,8 +92,8 @@ var drama;
 			</select>
 		</div>
 	</div>
-</div>
-<div id="content">
+</div>-->
+<div id="contentx">
 	<h1 id="title"></h1>
 	<div id="drama"></div>
 </div>
