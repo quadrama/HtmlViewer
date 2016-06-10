@@ -36,8 +36,9 @@ function deepcopy(o) {
 }
 
 function merge(o1, o2) {
-
-	if (Array.isArray(o2)) {
+	if (typeof(o2) === "undefined")
+		return deepcopy(o1);
+	else if (Array.isArray(o2)) {
 		return deepcopy(o2);
 	} else if (typeof(o2) === "object") {
 		var r;
