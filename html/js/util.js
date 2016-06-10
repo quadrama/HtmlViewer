@@ -16,16 +16,42 @@ function getQueryParams(qs) {
 	}
 	return params;
 }
-function merge(o1, o2) {
-	for (var k in o2) {
-		if (typeof(o2[k]) == "object" && ! Array.isArray(o2[k])) {
-			merge(o1[k], o2[k]);
-		} else {
-			if (typeof (o1) == "undefined")
-				o1 = o2;
-			else
-				o1[k] = o2[k];
+
+function deepcopy(o) {
+	var r;
+	if (Array.isArray(o)) {
+		r = [];
+		for (var i = 0; i < o.length; i++) {
+			r[i] = deepcopy(o[i]);
 		}
+	} else if (typeof(o) === "object") {
+		r = {};
+		for (var k in o) {
+			r[k] = deepcopy(o[k]);
+		}
+	} else {
+		return o;
+	}
+	return r;
+}
+
+function merge(o1, o2) {
+
+	if (Array.isArray(o2)) {
+		return deepcopy(o2);
+	} else if (typeof(o2) === "object") {
+		var r;
+		if (typeof(o1) !== "object") {
+			r = {};
+		} else {
+			r = deepcopy(o1);
+		}
+		for (var k in o2) {
+			r[k] = merge(r[k], o2[k]);
+		}
+		return r;
+	} else {
+		return o2;
 	}
 }
 
