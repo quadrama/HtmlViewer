@@ -29,6 +29,19 @@ function merge(o1, o2) {
 	}
 }
 
+function basicFigureFilter(data) {
+	return function(f) {
+		var figure = f;
+		if (typeof(f) == "number") {
+			figure = data.figures[f];
+		} else if (f.hasOwnProperty("figureIndex")) {
+			figure = data.figures[f.figureIndex];
+			// console.log(figure);
+		}
+		return figure.NumberOfWords > 0;
+	};
+}
+
 function figureFilter(o, data) {
 	return function(f) {
 		var figure = f;
@@ -44,4 +57,39 @@ function figureFilter(o, data) {
 		}
 		return true;
 	};
+}
+
+function sortAnnotations(a,b) {
+	return parseInt(a.begin) - parseInt(b.begin);
+}
+
+function containedIn(b) {
+	return function(a) {
+		return parseInt(a.begin) >= parseInt(b.begin) && parseInt(a.end) <= parseInt(b.end);
+	};
+}
+
+function getFigureTypes(data, figure) {
+	var types = [];
+	var figureIndex = data.figures.indexOf(figure);
+	for (var ftype in data.ftypes) {
+		for (var fvalue in data.ftypes[ftype]) {
+			if (data.ftypes[ftype][fvalue].includes(figureIndex)) {
+				types.push({
+					ftype: ftype,
+					fvalue: fvalue
+				});
+			}
+		}
+	}
+
+	return types;
+}
+
+function getFigureTypeValue(data, figureIndex, ftype) {
+	for (var fvalue in data.ftypes[ftype]) {
+		if (data.ftypes[ftype][fvalue].includes(figureIndex))
+			return fvalue;
+	}
+	return "";
 }

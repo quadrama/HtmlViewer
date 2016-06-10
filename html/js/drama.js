@@ -38,7 +38,7 @@ function Drama(selector, userSettings) {
 		wordThreshold: 1000
 	};
 	var strongcolors = ["#AAF", "#FAA", "#AFA", "#55F", "#F55", "#5F5" ];
-	var darkcolors = ["#000", "#A00", "#0A0", "#00A", "#AA0", "#0AA", "#A0A"];
+	var darkcolors = ["#000", "#A00", "#0A0", "#00A", "#AA0", "#0AA", "#A0A", "#550", "#055", "#505"];
 	var target;
 	var data;
 	var titleString;
@@ -128,41 +128,6 @@ function Drama(selector, userSettings) {
 		$(selector).tabs("refresh");
 		$(selector).tabs({active:views.length-1});
 		return api;
-	}
-
-	function sortAnnotations(a,b) {
-		return parseInt(a.begin) - parseInt(b.begin);
-	}
-
-	function containedIn(b) {
-		return function(a) {
-			return parseInt(a.begin) >= parseInt(b.begin) && parseInt(a.end) <= parseInt(b.end);
-		};
-	}
-
-	function getFigureTypes(data, figure) {
-		var types = [];
-		var figureIndex = data.figures.indexOf(figure);
-		for (var ftype in data.ftypes) {
-			for (var fvalue in data.ftypes[ftype]) {
-				if (data.ftypes[ftype][fvalue].includes(figureIndex)) {
-					types.push({
-						ftype: ftype,
-						fvalue: fvalue
-					});
-				}
-			}
-		}
-
-		return types;
-	}
-
-	function getFigureTypeValue(data, figureIndex, ftype) {
-		for (var fvalue in data.ftypes[ftype]) {
-			if (data.ftypes[ftype][fvalue].includes(figureIndex))
-				return fvalue;
-		}
-		return "";
 	}
 
 	function TextView(targetJQ) {
@@ -331,7 +296,7 @@ function Drama(selector, userSettings) {
 			var figureNames = [];
 
 			// create the series array
-			var series = figures.sort(function(a,b) {
+			var series = figures.filter(basicFigureFilter(data)).sort(function(a,b) {
 				return data.figures[a][settings.PresenceView.sortKey] - data.figures[b][settings.PresenceView.sortKey];
 			}).map(function(currentFigureIndex, index, arr) {
 				var currentFigure = data.figures[currentFigureIndex];
@@ -368,12 +333,12 @@ function Drama(selector, userSettings) {
 			});
 			// initiate highcharts vis
 			contentArea.highcharts({
-				legend: { y:200 },
+				legend: { y:130 },
 				title: null,
 				chart: {
 					type: 'line',
 					zoomType: 'xy',
-					spacingBottom: 230,
+					spacingBottom: 160,
 					height: contentArea.innerHeight(),
 					width: dimensions.w
 				},
@@ -383,7 +348,6 @@ function Drama(selector, userSettings) {
 					labels: { enabled: false }
 				},
 				yAxis: {
-					max: figures.length-1,
 					labels: { enabled:true },
 					title:null,
 					categories:figureNames
@@ -511,11 +475,9 @@ function Drama(selector, userSettings) {
 			});
 			// initiate highcharts vis
 			$(chartArea).highcharts({
-				legend: { y:200 },
 				title: null,
 				chart: {
 					type: 'area',
-					spacingBottom: 230
 				},
 				xAxis: {
 					labels: {
