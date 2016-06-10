@@ -35,8 +35,7 @@ function DramaCollection(selector, userSettings) {
 		target = $(selector);
 		target.empty();
 
-		settings = Object.create(defaultSettings);
-		merge(settings, userSettings);
+		settings = merge(defaultSettings, userSettings);
 		console.log(settings);
 
 		ctable = ChartTableView(selector, {

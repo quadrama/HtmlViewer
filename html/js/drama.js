@@ -111,8 +111,7 @@ function Drama(selector, userSettings) {
 			w: $(target).innerWidth()-45, // we have to subtract padding
 			h: $(target).innerHeight()
 		};
-		settings = Object.create(defaultSettings);
-		merge(settings, userSettings);
+		settings = merge(defaultSettings, userSettings);
 		console.log(settings);
 	}
 

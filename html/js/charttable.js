@@ -42,13 +42,12 @@ function ChartTableView(target, userSettings) {
 	return api;
 
 	function set(o) {
-		merge(settings, o);
+		settings = merge(defaultSettings, userSettings);
 	}
 
 	function init() {
 
-		settings = Object.create(defaultSettings);
-		merge(settings, userSettings);
+		settings = merge(defaultSettings, userSettings);
 
 
 		contentArea.append("<h3>Chart</h3>");
