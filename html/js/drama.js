@@ -14,6 +14,11 @@ function Drama(selector, userSettings) {
 			idString: "presence",
 			title: "Figure Presence Chart"
 		},
+		PresenceView2: {
+			sortKey: "NumberOfWords",
+			idString: "presence2",
+			title: "Figure Presence Chart 2"
+		},
 		FigureStatisticsView: {
 			idString: "figure-statistics",
 			title: "Figure Statistics",
@@ -70,6 +75,7 @@ function Drama(selector, userSettings) {
 		addAll:function() {
 			return api.addTextView()
 				.addPresenceView()
+				.addPresenceView2()
 				.addFigureStatisticsView()
 				.addSemanticFieldsView()
 				.addNetworkView();
@@ -367,7 +373,6 @@ function Drama(selector, userSettings) {
 
 	function PresenceView2(targetJQ) {
 		var contentArea;
-		var pbColors = ["#FFF", "#DDF"];
 		var chartArea;
 
 		var api = {
@@ -385,7 +390,7 @@ function Drama(selector, userSettings) {
 		}
 
 		function init() {
-			contentArea = addTab(settings.PresenceView);
+			contentArea = addTab(settings.PresenceView2);
 
 			// toolbar
 			var toolbar = $(document.createElement("div"));
