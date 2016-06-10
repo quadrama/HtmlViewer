@@ -115,7 +115,9 @@ function Drama(selector, userSettings) {
 		target = $(selector);
 		target.empty();
 		target.append("<ul></ul>");
-		$(selector).tabs();
+		$(selector).tabs({
+			activate:tabschange
+		});
 		dimensions = {
 			w: $(target).innerWidth()-45, // we have to subtract padding
 			h: $(target).innerHeight()
@@ -138,6 +140,16 @@ function Drama(selector, userSettings) {
 		return api;
 	}
 
+	function tabschange(event, ui) {
+		var newId = $(ui.newPanel).attr("id");
+		for (var view of views) {
+			if (view.meta.idString === newId && view.update) {
+				view.update();
+			}
+		}
+
+	}
+
 	function TextView(targetJQ) {
 		var contentArea = addTab(settings.TextView);
 		var tocArea;
@@ -147,7 +159,11 @@ function Drama(selector, userSettings) {
 
 		return {
 			load:load,
-			clear:clear
+			clear:clear,
+			update:update,
+			meta:function() {
+				return {settings: settings.TextView};
+			}
 		};
 
 		function init() {
@@ -253,6 +269,8 @@ function Drama(selector, userSettings) {
 				textArea.append(segment);
 			}
 		}
+
+		function update() {}
 	}
 
 	function PresenceView(targetJQ) {
@@ -261,7 +279,11 @@ function Drama(selector, userSettings) {
 
 		var api = {
 			clear:clear,
-			load:load
+			load:load,
+			update:update,
+			meta:function() {
+				return {settings: settings.PresenceView};
+			}
 		};
 
 		return api;
@@ -269,6 +291,9 @@ function Drama(selector, userSettings) {
 		function clear() {
 			contentArea.empty();
 			return api;
+		}
+		function update() {
+			contentArea.highcharts().reflow();
 		}
 
 		function load() {
@@ -375,15 +400,21 @@ function Drama(selector, userSettings) {
 	function PresenceView2(targetJQ) {
 		var contentArea;
 		var chartArea;
+		var chart;
 
 		var api = {
 			clear:clear,
 			load:load,
+			update:update,
+			meta:function() {
+				return {settings: settings.PresenceView2};
+			}
 		};
 
 		init();
 
 		return api;
+		function update() {}
 
 		function clear() {
 			chartArea.empty();
@@ -479,7 +510,7 @@ function Drama(selector, userSettings) {
 				};
 			});
 			// initiate highcharts vis
-			$(chartArea).highcharts({
+			chart = $(chartArea).highcharts({
 				title: null,
 				chart: {
 					type: 'area',
@@ -508,8 +539,8 @@ function Drama(selector, userSettings) {
 				},
 				series: series
 			});
+			return api;
 		}
-		return api;
 	}
 
 	function SemanticFieldsView2() {
@@ -519,7 +550,10 @@ function Drama(selector, userSettings) {
 
 		var api = {
 			load:load,
-			clear:clear
+			clear:clear,
+			meta:function() {
+				return {settings: settings.SemanticFieldsView2};
+			}
 		};
 		return api;
 
@@ -590,7 +624,10 @@ function Drama(selector, userSettings) {
 
 		var api = {
 			load:load,
-			clear:clear
+			clear:clear,
+			meta:function() {
+				return {settings: settings.FigureStatisticsView};
+			}
 		};
 		return api;
 
@@ -633,7 +670,10 @@ function Drama(selector, userSettings) {
 			},
 			redraw:draw,
 			load:load,
-			clear:clear
+			clear:clear,
+			meta:function() {
+				return {settings: settings.NetworkView};
+			}
 		};
 
 		function init() {
