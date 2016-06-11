@@ -119,7 +119,7 @@ function Drama(selector, userSettings) {
 			activate:tabschange
 		});
 		dimensions = {
-			w: $(target).innerWidth()-45, // we have to subtract padding
+			w: $(target).innerWidth() - 45, // we have to subtract padding
 			h: $(target).innerHeight()
 		};
 		settings = merge(defaultSettings, userSettings);
@@ -704,8 +704,8 @@ function Drama(selector, userSettings) {
 			$(settingsPane).addClass("toolbar");
 
 			var limit = $(document.createElement("fieldset"));
-			limit.append("<input type=\"checkbox\" class=\"limit-enable\" checked=\"checked\">");
-			limit.append("Show figures with at least <br/>");
+			limit.append("<input type=\"checkbox\" class=\"limit-enable\" checked=\"checked\" id=\"limit-enable\">");
+			limit.append("Show figures with at least<br/>");
 			limit.append("<input type=\"number\" class=\"limit-words\" value=\"1000\">");
 			limit.append("words and ");
 			limit.append("<input type=\"number\" class=\"limit-utterances\" value=\"10\">");
@@ -713,18 +713,29 @@ function Drama(selector, userSettings) {
 
 			var fieldSet = $(document.createElement("fieldset"));
 			fieldSet.addClass("typecolor");
-			fieldSet.append("<input type=\"checkbox\" class=\"color-enable\">");
-			fieldSet.append("Color nodes by ");
-			fieldSet.append("<br/>");
+			fieldSet.append("Node coloring");
 
+			var typeCategories = $(document.createElement("div"));
 			var i = 0;
 			for (var ftype in data.ftypes) {
 				if (ftype != "All") {
-					fieldSet.append("<input type=\"radio\" name=\"figureColor\" value=\""+ftype+"\"> " + ftype);
+					typeCategories.append("<input type=\"checkbox\" name=\"figureColor\" value=\""+ftype+"\" id=\"color-by-"+ftype+"\">");
+					typeCategories.append("<label for=\"color-by-"+ftype+"\">"+ftype+"</label>");
 				}
 			}
+			typeCategories.children("input:checkbox").button({}).click(function() {
+				console.log(typeCategories.children("input:checkbox").not(this));
+				typeCategories.children("input:checkbox").not(this).prop("checked", false);
+				typeCategories.children("input:checkbox").button("refresh");
+				updateSettings();
+			});
+			typeCategories.buttonset();
+			typeCategories.appendTo(fieldSet);
+
 			$(settingsPane).append(limit);
 			$(settingsPane).append(fieldSet);
+
+
 
 			contentArea.append(settingsPane);
 
@@ -743,9 +754,7 @@ function Drama(selector, userSettings) {
 
 			width = contentArea.innerWidth();
 			height = contentArea.innerHeight();
-				//.attr("height", height)
-				//.attr("width", dimensions.w)
-			$(settingsPane).find("input").change(updateSettings);
+			$(settingsPane).children("fieldset:first").children("input").change(updateSettings);
 		}
 
 		function load() {
@@ -773,12 +782,9 @@ function Drama(selector, userSettings) {
 			}
 			var selectedType = "x";
 			var typeValues = [""];
-			if ($(cssId+" fieldset.typecolor input.color-enable:checked").length > 0) {
-				selectedType = $(cssId+" input[name='figureColor']:checked").val();
-				if (typeof data.ftypes[selectedType] != "undefined")
-					typeValues = typeValues.concat(Object.keys(data.ftypes[selectedType]));
-
-			}
+			selectedType = $(cssId+" input[name='figureColor']:checked").val();
+			if (typeof data.ftypes[selectedType] != "undefined")
+				typeValues = typeValues.concat(Object.keys(data.ftypes[selectedType]));
 
 			var nodes = baseGraph.nodes.filter(figureFilterFunction);
 			var links = baseGraph.edges.filter(function (a) { return figureFilterFunction(a.source) && figureFilterFunction(a.target); });
