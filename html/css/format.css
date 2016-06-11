@@ -28,7 +28,7 @@
 
 #header+div {
 	position:absolute;
-	top:40px;
+	top:60px;
 }
 
 h1#title {
@@ -148,8 +148,10 @@ input[type=number] {
 }
 
 .view {
-	min-height:400px;
-	min-width:600px;
+	min-height: 400px;
+	min-width: 600px;
+	max-width: 90vw;
+	max-height: 90vh;
 }
 
 #copresence svg {

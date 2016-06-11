@@ -9,7 +9,7 @@ function ChartTableView(target, userSettings) {
 				type: "column",
 			},
 			colors: ["#000", "#A00", "#0A0", "#00A", "#AA0", "#0AA", "#A0A"],
-			pane: { size: "90%" },
+			//pane: { size: "90%" },
 			config: {
 				normalize: true,
 				hide: function(d) { return false; },
@@ -53,6 +53,7 @@ function ChartTableView(target, userSettings) {
 		contentArea.append("<h3>Chart</h3>");
 		chartElement = $(document.createElement("div"));
 		chartElement.appendTo(contentArea);
+		chartElement.css("padding", 0);
 		contentArea.append("<h3>Table</h3>");
 		contentArea.append("<div><table></table></div>");
 
@@ -86,7 +87,10 @@ function ChartTableView(target, userSettings) {
 			heightStyle: "content",
 			active: settings.active,
 			activate: function(event, ui) {
-				if (chart) chart.reflow();
+				if (chart) {
+					// chart.setSize(target.innerWidth()-70, target.innerHeight());
+					chart.reflow();
+				}
 			}
 		});
 
@@ -186,6 +190,7 @@ function ChartTableView(target, userSettings) {
 	}
 
 	function update() {
-		chart.reflow();
+		//chart.setSize(chartElement.innerWidth(), chartElement.innerHeight());
+		 chart.reflow();
 	}
 }

@@ -113,6 +113,7 @@ function Drama(selector, userSettings) {
 	function init() {
 		target = $(selector);
 		target.empty();
+		target.css("width", "95%");
 		target.append("<ul></ul>");
 		$(selector).tabs({
 			activate:tabschange
@@ -144,6 +145,7 @@ function Drama(selector, userSettings) {
 		for (var view of views) {
 			if (view.meta && view.meta().settings.idString === newId && view.update) {
 				view.update();
+				console.log($(ui.newPanel).innerWidth());
 			}
 		}
 
@@ -161,7 +163,7 @@ function Drama(selector, userSettings) {
 			clear:clear,
 			update:update,
 			meta:function() {
-				return {settings: settings.TextView};
+				return { settings: settings.TextView };
 			}
 		};
 
@@ -573,6 +575,7 @@ function Drama(selector, userSettings) {
 				})),
 				chart: {
 					chart: {
+						width: contentArea.innerWidth(),
 						polar: true,
 						type: 'line'
 					},
@@ -644,9 +647,13 @@ function Drama(selector, userSettings) {
 		}
 
 		function init() {
+			contentArea.css("width", "90%");
 			ctable = ChartTableView(contentArea, {
 				columns: settings.FigureStatisticsView.columns,
 				chart: {
+					chart: {
+						width: contentArea.innerWidth(),
+					},
 					config: {
 						hide: function(d) {
 							return d.NumberOfWords < 1000;
