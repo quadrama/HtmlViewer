@@ -173,6 +173,7 @@ function Drama(selector, userSettings) {
 
 			// create header structure
 			var textHeader = document.createElement("div");
+			$(textHeader).append("<a name=\"toc\" />");
 			$(textHeader).addClass("toccontainer");
 			$(textHeader).append("<p>Table of Contents</p>");
 			$(textHeader).append("<ul class=\"toc\"></ul>");
@@ -232,11 +233,10 @@ function Drama(selector, userSettings) {
 				var actToc = document.createElement("ul");
 				if ("head" in act) {
 					$("ul.toc").append("<li><a href=\"#"+anchor+"\">"+act.head+"</a></li>");
-					$(segment).append("<div class=\"actheading\"><a name=\"#"+anchor+"\">"+act.head+"</a></div>");
-					actIndex++;
+					$(segment).append("<div class=\"actheading\"><a name=\""+anchor+"\">"+act.head+"</a> (<a href=\"#toc\">top</a>)</div>");
 				} else {
 					$("ul.toc").append("<li><a href=\"#"+anchor+"\">"+actIndex+". Act</a></li>");
-					$(segment).append("<div class=\"actheading\"><a name=\"#"+anchor+"\">"+(actIndex++)+". Act</a></div>");
+					$(segment).append("<div class=\"actheading\"><a name=\""+anchor+"\">"+(actIndex)+". Act</a></div>");
 				}
 
 				var sceneIndex = 1;
@@ -269,6 +269,7 @@ function Drama(selector, userSettings) {
 					$("#text ul.toc").append(actToc);
 				}
 				textArea.append(segment);
+				actIndex++;
 			}
 		}
 
