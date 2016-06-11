@@ -156,6 +156,7 @@ function Drama(selector, userSettings) {
 		var tocArea;
 		var dpArea;
 		var textArea;
+		var colorIndex = 0;
 		init();
 
 		return {
