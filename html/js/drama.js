@@ -236,7 +236,7 @@ function Drama(selector, userSettings) {
 					$(segment).append("<div class=\"actheading\"><a name=\""+anchor+"\">"+act.head+"</a> (<a href=\"#toc\">top</a>)</div>");
 				} else {
 					$("ul.toc").append("<li><a href=\"#"+anchor+"\">"+actIndex+". Act</a></li>");
-					$(segment).append("<div class=\"actheading\"><a name=\""+anchor+"\">"+(actIndex)+". Act</a></div>");
+					$(segment).append("<div class=\"actheading\"><a name=\""+anchor+"\">"+(actIndex)+". Act</a> (<a href=\"#toc\">top</a>)</div>");
 				}
 
 				var sceneIndex = 1;
@@ -246,11 +246,11 @@ function Drama(selector, userSettings) {
 					anchor = "act"+actIndex+"_scene"+sceneIndex;
 					if ("head" in scene) {
 						$(actToc).append("<li><a href=\"#"+anchor+"\">"+scene.head+"</a></li>");
-						$(sceneElement).append("<div class=\"sceneheading\"><a name=\""+anchor+"\">"+scene.head+"</a></div>");
+						$(sceneElement).append("<div class=\"sceneheading\"><a name=\""+anchor+"\">"+scene.head+"</a> (<a href=\"#toc\">top</a>)</div>");
 						sceneIndex++;
 					} else {
 						$(actToc).append("<li><a href=\"#"+anchor+"\">"+sceneIndex+". Scene</a></li>");
-						$(sceneElement).append("<div class=\"sceneheading\"><a name=\""+anchor+"\">"+(sceneIndex++)+". Scene</a></div>");
+						$(sceneElement).append("<div class=\"sceneheading\"><a name=\""+anchor+"\">"+(sceneIndex++)+". Scene</a> (<a href=\"#toc\">top</a>)</div>");
 					}
 					for (var u of data.utt.filter(containedIn(scene))) {
 						figure = data.figures[u.f];
