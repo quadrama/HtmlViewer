@@ -81,7 +81,6 @@ function Drama(selector, userSettings) {
 				.addNetworkView();
 			$(selector).tabs({active: 0});
 			return r;
-
 		},
 		load:load
 	};
@@ -143,7 +142,7 @@ function Drama(selector, userSettings) {
 	function tabschange(event, ui) {
 		var newId = $(ui.newPanel).attr("id");
 		for (var view of views) {
-			if (view.meta.idString === newId && view.update) {
+			if (view.meta && view.meta().settings.idString === newId && view.update) {
 				view.update();
 			}
 		}
@@ -276,6 +275,7 @@ function Drama(selector, userSettings) {
 	function PresenceView(targetJQ) {
 		var contentArea = addTab(settings.PresenceView);
 		var pbColors = ["#FFF", "#DDF"];
+		var chart;
 
 		var api = {
 			clear:clear,
@@ -293,7 +293,7 @@ function Drama(selector, userSettings) {
 			return api;
 		}
 		function update() {
-			contentArea.highcharts().reflow();
+			if (chart) chart.reflow();
 		}
 
 		function load() {
@@ -365,7 +365,7 @@ function Drama(selector, userSettings) {
 				return r;
 			});
 			// initiate highcharts vis
-			contentArea.highcharts({
+			chart = contentArea.highcharts({
 				legend: { y:130 },
 				title: null,
 				chart: {
@@ -392,7 +392,7 @@ function Drama(selector, userSettings) {
 					pointFormat : "<div style=\"width:200px;max-width:300px; white-space:normal\"><span style=\"color:{point.color};font-weight:bold;\">{series.name}</span>: {point.name}</div>"
 				},
 				series: series
-			});
+			}).highcharts();
 		}
 		return api;
 	}
@@ -414,7 +414,9 @@ function Drama(selector, userSettings) {
 		init();
 
 		return api;
-		function update() {}
+		function update() {
+			if (chart) chart.reflow();
+		}
 
 		function clear() {
 			chartArea.empty();
@@ -510,7 +512,7 @@ function Drama(selector, userSettings) {
 				};
 			});
 			// initiate highcharts vis
-			chart = $(chartArea).highcharts({
+			chart = chartArea.highcharts({
 				title: null,
 				chart: {
 					type: 'area',
@@ -538,7 +540,7 @@ function Drama(selector, userSettings) {
 					pointFormat : "<div style=\"width:200px;max-width:300px; white-space:normal\"><span style=\"color:{point.color};font-weight:bold;\">{series.name}</span>: {point.y}</div>"
 				},
 				series: series
-			});
+			}).highcharts();
 			return api;
 		}
 	}
@@ -551,11 +553,16 @@ function Drama(selector, userSettings) {
 		var api = {
 			load:load,
 			clear:clear,
+			update:update,
 			meta:function() {
-				return {settings: settings.SemanticFieldsView2};
+				return {settings: settings.SemanticFieldsView};
 			}
 		};
 		return api;
+
+		function update() {
+			ctable.update();
+		}
 
 		function init() {
 			ctable = ChartTableView(contentArea, {
@@ -625,11 +632,16 @@ function Drama(selector, userSettings) {
 		var api = {
 			load:load,
 			clear:clear,
+			update:update,
 			meta:function() {
 				return {settings: settings.FigureStatisticsView};
 			}
 		};
 		return api;
+
+		function update() {
+			ctable.update();
+		}
 
 		function init() {
 			ctable = ChartTableView(contentArea, {

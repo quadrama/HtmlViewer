@@ -7,7 +7,6 @@ function ChartTableView(target, userSettings) {
 			chart: {
 				polar: false,
 				type: "column",
-				width: contentArea.innerWidth()-100
 			},
 			colors: ["#000", "#A00", "#0A0", "#00A", "#AA0", "#0AA", "#A0A"],
 			pane: { size: "90%" },
@@ -36,6 +35,7 @@ function ChartTableView(target, userSettings) {
 		clear:clear,
 		load:load,
 		refresh:refresh,
+		update:update,
 		set:set
 	};
 
@@ -81,17 +81,19 @@ function ChartTableView(target, userSettings) {
 				};
 			})
 		};
-		chartElement.highcharts(ch);
-		chart = Highcharts.charts[0];
+		chart = chartElement.highcharts(ch).highcharts();
 		contentArea.accordion({
 			heightStyle: "content",
-			active:settings.active
+			active: settings.active,
+			activate: function(event, ui) {
+				if (chart) chart.reflow();
+			}
 		});
 
 	}
 
 	function load(data) {
-	 	console.log(data);
+	 	// console.log(data);
 		currentData = data;
 
 		// for normalizing in the chart
@@ -169,11 +171,8 @@ function ChartTableView(target, userSettings) {
 			yAxis: settings.chart.yAxis,
 			series: series
 		};
-		console.log(ch);
-		chartElement.highcharts(ch);
-		chart = Highcharts.charts[0];
-
-		// console.log(chart);
+		// console.log(ch);
+		chart = chartElement.highcharts(ch).highcharts();
 	}
 
 	function clear() {
@@ -184,5 +183,9 @@ function ChartTableView(target, userSettings) {
 	function refresh() {
 		clear();
 		load(currentData);
+	}
+
+	function update() {
+		chart.reflow();
 	}
 }
