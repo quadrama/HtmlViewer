@@ -31,6 +31,8 @@ describe("Testing object merge", function() {
 		expect(merge({ key1: "bla", key2: 3 },
 			{ key1: { key3: "x" } } )
 		).toEqual({ key1: { key3: "x" }, key2: 3 });
+
+		expect(merge({key1: null}, {})).toEqual({key1: null});
 	});
 
 

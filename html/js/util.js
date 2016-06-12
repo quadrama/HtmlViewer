@@ -24,6 +24,8 @@ function deepcopy(o) {
 		for (var i = 0; i < o.length; i++) {
 			r[i] = deepcopy(o[i]);
 		}
+	} else if (o === null) {
+		r = null;
 	} else if (typeof(o) === "object") {
 		r = {};
 		for (var k in o) {
