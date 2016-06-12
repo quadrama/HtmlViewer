@@ -79,7 +79,8 @@ function Drama(selector, userSettings) {
 				.addFigureStatisticsView()
 				.addSemanticFieldsView()
 				.addNetworkView();
-			$(selector).tabs({active: 0});
+			// $(selector).tabs({active: 0});
+			// $(selector).enhanceWithin();
 			return r;
 		},
 		load:load
@@ -114,10 +115,10 @@ function Drama(selector, userSettings) {
 		target = $(selector);
 		target.empty();
 		target.css("width", "95%");
-		target.append("<ul></ul>");
-		$(selector).tabs({
+		target.append("<ul  data-role=\"navbar\"></ul>");
+		/*$(selector).tabs({
 			activate:tabschange
-		});
+		});*/
 		dimensions = {
 			w: $(target).innerWidth() - 45, // we have to subtract padding
 			h: $(target).innerHeight()
@@ -127,16 +128,20 @@ function Drama(selector, userSettings) {
 	}
 
 	function addTab(o) {
-		$(selector).children("ul").append("<li><a href=\"#"+o.idString+"\">"+o.title+"</a></li>");
-		var div = $("<div id=\""+o.idString+"\" class=\"view\"></div>");
+		$("<li><a href=\"#"+o.idString+"\">"+o.title+"</a></li>")
+			.appendTo($(selector).find("ul"))
+			.enhanceWithin();
+		var div = $("<div id=\""+o.idString+"\" class=\"view\" role=\"tabpanel\"></div>");
 		div.appendTo($(selector));
+		// $(selector).find("ul").enhanceWithin();
 		return div;
 	}
 
 	function addView(view) {
 		views.push(view(target));
-		$(selector).tabs("refresh");
-		$(selector).tabs({active:views.length-1});
+		// $(selector).tabs("refresh");
+		// $(selector).enhanceWithin();
+		//$(selector).tabs({active:views.length-1});
 		return api;
 	}
 
@@ -717,20 +722,23 @@ function Drama(selector, userSettings) {
 			fieldSet.addClass("typecolor");
 			fieldSet.append("Node coloring");
 
-			var typeCategories = $(document.createElement("div"));
+			var typeCategories = $(document.createElement("fieldset"));
+			typeCategories.attr("data-role", "controlgroup");
+			typeCategories.attr("data-type", "horizontal");
+			typeCategories.attr("data-mini", "true");
 			var i = 0;
 			for (var ftype in data.ftypes) {
 				if (ftype != "All") {
-					typeCategories.append("<input type=\"checkbox\" name=\"figureColor\" value=\""+ftype+"\" id=\"color-by-"+ftype+"\">");
-					typeCategories.append("<label for=\"color-by-"+ftype+"\">"+ftype+"</label>");
+					typeCategories.append("<input type=\"checkbox\" name=\"figureColor\" value=\""+ftype+"\" id=\"color-by-"+ftype+"\" />");
+					// typeCategories.append("<label for=\"color-by-"+ftype+"\">"+ftype+"</label>");
 				}
 			}
-			typeCategories.children("input:checkbox").button({}).click(function() {
+			typeCategories.children("input:checkbox").click(function() {
 				typeCategories.children("input:checkbox").not(this).prop("checked", false);
-				typeCategories.children("input:checkbox").button("refresh");
+				// typeCategories.children("input:checkbox").button("refresh");
 				updateSettings();
 			});
-			typeCategories.buttonset();
+			// typeCategories.buttonset();
 			typeCategories.appendTo(fieldSet);
 
 			$(settingsPane).append(limit);
@@ -747,7 +755,7 @@ function Drama(selector, userSettings) {
 				legendDiv.append("<p><strong>Node size</strong>: #words (overall)</p>");
 				legendDiv.append("<p><strong>Line width</strong>: #scenes in which the fig. are co-present</p>");
 				legendDiv.append("<p>Figures are closer together if they are co-present in more scenes.</p>");
-				legendDiv.draggable();
+				// legendDiv.draggable();
 				legendDiv.css("position", "absolute");
 				contentArea.append(legendDiv);
 				svg = d3.select("div#"+settings.NetworkView.idString).append("svg");
