@@ -27,6 +27,7 @@ var drama;
 			drama.addAll();
 			drama.load(url);
 			$("h1#title").append(drama.title());
+			document.title = drama.title();
 		});
 	});
 </script>
