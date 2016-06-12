@@ -3,7 +3,7 @@ function ChartTableView(target, userSettings) {
 	var defaultSettings = {
 		columns: [],
 		chart: {
-			title: null,
+			title: {text: null},
 			chart: {
 				polar: false,
 				type: "column",
@@ -82,6 +82,7 @@ function ChartTableView(target, userSettings) {
 				};
 			})
 		};
+		console.log(ch);
 		chart = chartElement.highcharts(ch).highcharts();
 		contentArea.accordion({
 			heightStyle: "content",
