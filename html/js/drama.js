@@ -145,7 +145,6 @@ function Drama(selector, userSettings) {
 		for (var view of views) {
 			if (view.meta && view.meta().settings.idString === newId && view.update) {
 				view.update();
-				console.log($(ui.newPanel).innerWidth());
 			}
 		}
 
@@ -588,7 +587,7 @@ function Drama(selector, userSettings) {
 						hide: function(d) { return d.NumberOfWords < 1000; },
 						type: "rowwise",
 						pointPlacement: "on"
-					}
+					},
 				}
 			});
 		}
@@ -676,6 +675,7 @@ function Drama(selector, userSettings) {
 		var currentGraph = {};
 		var svg;
 		var force;
+		var force_finished = false;
 		var width, height;
 		var selectedColor = "#DD5";
 		init();
@@ -726,7 +726,6 @@ function Drama(selector, userSettings) {
 				}
 			}
 			typeCategories.children("input:checkbox").button({}).click(function() {
-				console.log(typeCategories.children("input:checkbox").not(this));
 				typeCategories.children("input:checkbox").not(this).prop("checked", false);
 				typeCategories.children("input:checkbox").button("refresh");
 				updateSettings();
@@ -812,6 +811,7 @@ function Drama(selector, userSettings) {
 		function dblclick(d) {
 			d3.select(d).classed("fixed", true);
 			force.stop();
+			force_finished = true;
 		}
 
 		function selectNode(d) {
@@ -863,9 +863,6 @@ function Drama(selector, userSettings) {
 			}
 		}
 
-		function dragstart(d) {
-			d3.select(d).classed("fixed", true);
-		}
 
 		function draw() {
 			var graph = currentGraph;
@@ -928,12 +925,13 @@ function Drama(selector, userSettings) {
 			node.attr("class", "node")
 				.style("opacity", 0)
 				.call(force.drag)
-				.on("click", function() { selectNode(this); });
+				//.on("click", function() { selectNode(this); });
+				;
 			node.append("circle")
 				.attr("r", function (d) {
 					return rscale(d.figureWeight);
-				})
-				.on("dblclick", function() { dblclick(this); });
+				});
+				//.on("dblclick", function() { dblclick(this); });
 
 			node.append("title").text(function(d) {
 					return d.txt;
@@ -1027,7 +1025,9 @@ function Drama(selector, userSettings) {
 				})
 				.linkStrength(0.5)
 				.friction(0.2);
-				force.drag().on("dragstart", dragstart);
+			force.drag().on("dragstart", function(d) {
+				d.fixed = true;
+			});
 
 		  force.on("tick", function() {
 		    svg.selectAll(".link").attr("x1", function(d) {
@@ -1039,10 +1039,18 @@ function Drama(selector, userSettings) {
 		    }).attr("y2", function(d) {
 		      return d.target.y;
 		    });
+
+
 		    svg.selectAll(".node").attr("transform", function(d) {
 		      return "translate(" + d.x + "," + d.y + ")";
 		    });
 		  });
+			force.on("start", function() {
+				// console.log("Starting force");
+			});
+			force.on("end", function() {
+				// console.log("Ending force");
+			});
 			return force;
 		}
 	}
