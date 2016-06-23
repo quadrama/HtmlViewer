@@ -23,7 +23,7 @@
 			$.getJSON("data/meta.json", function (data) {
 				for (var md of data) {
 					md.Author = md.authors[0].Name;
-					md.Actions = "<a href=\"drama.html?drama="+md.documentId+"\">Open</a>";
+					md.Actions = "<a href=\"drama.html?drama="+md.documentId+"\" target=\"_blank\">Open</a>";
 					dTable.row.add(md).draw();
 				}
 			});
@@ -31,7 +31,10 @@
 		</script>
 	</head>
 	<body>
-		<h1>Corpus Overview</h1>
+		<div id="header">
+			<div>QuaDramA HTML Viewer</div>
+			<div><a href="mailto:nils.reiter@ims.uni-stuttgart.de">Contact</a>&nbsp;</div>
+		</div>
 		<table></table>
 	</body>
 </html>

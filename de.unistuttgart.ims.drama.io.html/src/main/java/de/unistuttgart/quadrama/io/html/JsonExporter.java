@@ -18,6 +18,7 @@ import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.tcas.Annotation;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Token;
@@ -52,6 +53,7 @@ public class JsonExporter extends AbstractDramaConsumer {
 	static boolean includeType = false;
 
 	List<JSONObject> collectedObjects = new LinkedList<JSONObject>();
+	JSONArray metaJson = new JSONArray();
 
 	@Override
 	public void process(JCas aJCas) throws AnalysisEngineProcessException {
@@ -157,6 +159,7 @@ public class JsonExporter extends AbstractDramaConsumer {
 
 		// assembly
 		json.put("meta", md);
+		metaJson.put(md);
 		Writer osw = null;
 		if (collectionFilename != null)
 			collectedObjects.add(json);
@@ -214,6 +217,18 @@ public class JsonExporter extends AbstractDramaConsumer {
 
 	@Override
 	public void collectionProcessComplete() throws AnalysisEngineProcessException {
+		Writer osw = null;
+		try {
+			osw = new FileWriter(new File(outputDirectory, "meta.json"));
+			osw.write(metaJson.toString());
+			osw.flush();
+			osw.close();
+		} catch (Exception e) {
+
+		} finally {
+			IOUtils.closeQuietly(osw);
+		}
+
 		if (collectionFilename == null)
 			return;
 		FileWriter fw = null;

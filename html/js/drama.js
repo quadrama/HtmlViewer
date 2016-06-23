@@ -31,7 +31,7 @@ function Drama(selector, userSettings) {
 			 ]
 		},
 		SemanticFieldsView: {
-			boostFactor: 1000,
+			boostFactor: 100,
 			normalizationKey: "NumberOfWords",
 			idString: "fields",
 			title: "Figures and Semantic Fields"
@@ -563,7 +563,7 @@ function Drama(selector, userSettings) {
 			clear:clear,
 			update:update,
 			meta:function() {
-				return {settings: settings.SemanticFieldsView};
+				return { settings: settings.SemanticFieldsView };
 			}
 		};
 		return api;
@@ -591,7 +591,8 @@ function Drama(selector, userSettings) {
 					config: {
 						hide: function(d) { return d.NumberOfWords < 1000; },
 						type: "rowwise",
-						pointPlacement: "on"
+						pointPlacement: "on",
+						normalize: false
 					},
 				}
 			});
@@ -622,8 +623,8 @@ function Drama(selector, userSettings) {
 				}
 				for (field of Object.keys(data.fields).sort()) {
 					ret[field] = settings.SemanticFieldsView.boostFactor *
-						(sum[field] / data.fields[field].Length) /
-						cur[settings.SemanticFieldsView.normalizationKey];
+						((sum[field] / data.fields[field].Length) /
+						cur[settings.SemanticFieldsView.normalizationKey]);
 				}
 				return ret;
 			});
