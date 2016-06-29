@@ -28,7 +28,7 @@ $(function() {
 	if (p.hasOwnProperty("drama"))
 		url = "data/"+p["drama"]+".json";
 	drama.load(url, function() {
-		drama.addTextView().addPresenceView().addPresenceView2().addFigureStatisticsView().addSemanticFieldsView();
+		drama.addTextView().addPresenceView().addPresenceView2().addFigureStatisticsView().addSemanticFieldsView().addNetworkView();
 		drama.load(url);
 	});
 });
@@ -43,6 +43,7 @@ $(function() {
 				<li><a href="#presence2">Presence View 2</a></li>
 				<li><a href="#figure-statistics">Figure Statistics</a></li>
 				<li><a href="#fields">Semantic Fields</a></li>
+				<li><a href="#copresence">Copresence Network</a></li>
 			</ul>
 		</div>
 	</div>
@@ -122,6 +123,42 @@ $(function() {
 					<tbody></tbody>
 				</table>
 			</div>
+		</div>
+	</div>
+
+	<div data-role="page" id="copresence">
+		<div data-role="panel" id="copresencepanel">
+			<div data-role="collapsible" data-collapsed="false" data-mini="true">
+				<h1>Figure Limit</h1>
+				<div>
+				<fieldset data-role="controlgroup" data-mini="true">
+					<input type="checkbox" data-mini="true" checked="checked" id="limit-enable" />
+					<label for="limit-enable">Show figures with at least</label>
+				</fieldset>
+				<fieldset>
+					<label for="limit-words">Words: </label>
+					<input type="range" id="limit-words" value="1000" min="0" max="10000" data-highlight="true" />
+				</fieldset>
+				<fieldset>
+					<label for="limit-utterances">Utterances: </label>
+					<input type="range" id="limit-utterances" value="10" min="0" max="1000" data-highlight="true" />
+				</fieldset>
+				</div>
+			</div>
+			<div data-role="collapsible" data-collapsed="false" data-mini="true">
+				<h1>Node Coloring</h1>
+				<div>
+					<fieldset class="coloring" data-role="controlgroup" data-mini="true">
+
+					</fieldset>
+				</div>
+			</div>
+		</div>
+		<div data-role="header">
+			<a href="#copresencepanel">Settings</a><h1>&nbsp;</h1>
+		</div>
+		<div role="main">
+			<svg height="100" width="100"></svg>
 		</div>
 	</div>
 </body>

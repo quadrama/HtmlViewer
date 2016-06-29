@@ -124,13 +124,13 @@ function Drama(selector, userSettings) {
 		        var href = $( this ).prop("href");
 		        if ( href.indexOf(current, href.length - current.length) !== -1 ) {
 		            $( this ).addClass( "ui-btn-active" );
-								views[index].update();
+								if (views[index].update) views[index].update();
 		        }
 		    });
 		});
 
 		dimensions = {
-			w: $(target).innerWidth() - 45, // we have to subtract padding
+			w: $(target).innerWidth(), // we have to subtract padding
 			h: $(target).innerHeight()
 		};
 		settings = merge(defaultSettings, userSettings);
@@ -642,7 +642,7 @@ function Drama(selector, userSettings) {
 	}
 
 	function NetworkView(targetJQ) {
-		var contentArea = addTab(settings.NetworkView);
+		var contentArea = $("#"+settings.NetworkView.copresence); //addTab(settings.NetworkView);
 		var baseGraph = {};
 		var currentGraph = {};
 		var svg;
@@ -672,48 +672,23 @@ function Drama(selector, userSettings) {
 		function init() {
 			var targetDiv = contentArea;
 
-
 			// toolbar
-			var settingsPane = document.createElement("div");
-			$(settingsPane).addClass("toolbar");
 
-			var limit = $(document.createElement("fieldset"));
-			limit.append("<input type=\"checkbox\" class=\"limit-enable\" checked=\"checked\" id=\"limit-enable\">");
-			limit.append("Show figures with at least<br/>");
-			limit.append("<input type=\"number\" class=\"limit-words\" value=\"1000\">");
-			limit.append("words and ");
-			limit.append("<input type=\"number\" class=\"limit-utterances\" value=\"10\">");
-			limit.append("utterances.");
-
-			var fieldSet = $(document.createElement("fieldset"));
-			fieldSet.addClass("typecolor");
-			fieldSet.append("Node coloring");
-
-			var typeCategories = $(document.createElement("fieldset"));
-			typeCategories.attr("data-role", "controlgroup");
-			typeCategories.attr("data-type", "horizontal");
-			typeCategories.attr("data-mini", "true");
+			var typeCategories = $("#copresencepanel fieldset.coloring");
 			var i = 0;
 			for (var ftype in data.ftypes) {
 				if (ftype != "All") {
 					typeCategories.append("<input type=\"checkbox\" name=\"figureColor\" value=\""+ftype+"\" id=\"color-by-"+ftype+"\" />");
-					// typeCategories.append("<label for=\"color-by-"+ftype+"\">"+ftype+"</label>");
+					typeCategories.append("<label for=\"color-by-"+ftype+"\">"+ftype+"</label>");
 				}
 			}
-			typeCategories.children("input:checkbox").click(function() {
-				typeCategories.children("input:checkbox").not(this).prop("checked", false);
-				// typeCategories.children("input:checkbox").button("refresh");
+			typeCategories.find("input:checkbox").click(function() {
+				typeCategories.find("input:checkbox").not(this).prop("checked", false);
+				typeCategories.find("input:checkbox").checkboxradio( "refresh" );
 				updateSettings();
 			});
-			// typeCategories.buttonset();
-			typeCategories.appendTo(fieldSet);
 
-			$(settingsPane).append(limit);
-			$(settingsPane).append(fieldSet);
-
-
-
-			contentArea.append(settingsPane);
+			$("#copresencepanel").enhanceWithin();
 
 			var legendDiv = $(document.createElement("div"));
 				legendDiv.addClass("legend");
@@ -724,13 +699,14 @@ function Drama(selector, userSettings) {
 				legendDiv.append("<p>Figures are closer together if they are co-present in more scenes.</p>");
 				// legendDiv.draggable();
 				legendDiv.css("position", "absolute");
-				contentArea.append(legendDiv);
-				svg = d3.select("div#"+settings.NetworkView.idString).append("svg");
-
+			// contentArea.append(legendDiv);
+			svg = d3.select("div#"+settings.NetworkView.idString+" svg");
 
 			width = contentArea.innerWidth();
 			height = contentArea.innerHeight();
-			$(settingsPane).children("fieldset:first").children("input").change(updateSettings);
+			svg.attr("width", width).attr("height", height);
+
+			 // $("#copresencepanel").find("input").change(updateSettings);
 		}
 
 		function load() {
