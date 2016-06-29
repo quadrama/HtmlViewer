@@ -3,11 +3,11 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <link rel="stylesheet" href="css/jquery.mobile-1.4.5.css">
-<link rel="stylesheet" href="css/format.css">
+<link rel="stylesheet" href="css/formatx.css">
 <link rel="stylesheet" type="text/css" href="css/datatables.min.css" />
+<script src="js/datatables.min.js"></script>
 <script src="js/jquery-1.11.3.min.js"></script>
 <script src="js/jquery.mobile-1.4.5.min.js"></script>
-<script src="js/datatables.min.js"></script>
 <script src="js/highcharts.js"></script>
 <script src="js/highcharts-more.js"></script>
 <script src="js/exporting.js"></script>
@@ -18,34 +18,77 @@
 <script src="js/drama.js"></script>
 <!--<script src="js/jquery-ui.js"></script>-->
 <script>
-var drama;
-
-	$(function() {
-		drama = Drama("#drama");
-		var url = "data/rksp.0.json";
-		var p = getQueryParams(document.location.search);
-		if (p.hasOwnProperty("drama"))
-			url = "data/"+p["drama"]+".json";
-		drama.load(url, function() {
-			drama.addNetworkView().addPresenceView();
-			drama.load(url, function() {
-				// $("#drama").enhanceWithin();
-				$.mobile.enhanceWithin($("#drama"));
-			});
-			$("h1#title").append(drama.title());
-			document.title = drama.title();
-		});
+$(function() {
+	var drama;
+	$( "[data-role='header']" ).toolbar();
+	$( "[data-role='header']" ).enhanceWithin();
+	drama = Drama("#drama");
+	var url = "data/rksp.0.json";
+	var p = getQueryParams(document.location.search);
+	if (p.hasOwnProperty("drama"))
+		url = "data/"+p["drama"]+".json";
+	drama.load(url, function() {
+		drama.addTextView().addPresenceView().addPresenceView2();
+		drama.load(url);
 	});
+});
 </script>
 </head>
-<body class="ui-mobile-viewport">
-<div id="header" data-role="header" data-position="fixed">
-	<div>QuaDramA HTML Viewer</div>
-	<div><a href="mailto:nils.reiter@ims.uni-stuttgart.de">Contact</a>&nbsp;</div>
-</div>
-<div style="width:100%;padding:0;margin:0;" data-role="page" role="main" class="ui-content" >
-	<h1 id="title"></h1>
-	<div id="drama" data-role="tabs"></div>
-</div>
+<body>
+	<div data-role="header" data-theme="a">
+		<div data-role="navbar">
+			<ul>
+				<li><a href="#textview">Text View</a></li>
+				<li><a href="#presence">Presence View</a></li>
+				<li><a href="#presence2">Presence View 2</a></li>
+			</ul>
+		</div>
+	</div>
+
+	<div data-role="page" id="textview">
+		<div id="textviewpanel" data-role="panel" data-position="left" data-display="push">
+			<div data-role="collapsible-set" data-inset="false">
+				<div data-role="collapsible" data-mini="true" data-inline="true">
+					<h3>Table of Contents</h3>
+					<div><ul class="toc" data-role="listview"></ul></div>
+				</div>
+				<div data-role="collapsible" data-mini="true">
+					<h3>Dramatis Personae</h3>
+					<div><ul class="dramatispersonae" data-role="listview"></ul></div>
+				</div>
+			</div>
+		</div>
+		<div data-role="header">
+			<a href="#textviewpanel">TOC / DP</a>
+			<h1>Text View</h1>
+		</div>
+		<div role="main" class="ui-content">
+			<div id="text"></div>
+		</div>
+	</div>
+	<div data-role="page" id="presence">
+		<div role="main" class="ui-content">
+			<div></div>
+		</div>
+	</div>
+
+	<div data-role="page" id="presence2">
+
+		<div data-role="header" style="text-align: center; ">
+			<fieldset data-role="controlgroup" data-type="horizontal">
+				<input data-mini="true" type="radio" value="scene" name="by" id="button_presence2_by_scene" />
+				<label for="button_presence2_by_scene">By scene</label>
+
+				<input data-mini="true"type="radio" value="act" name="by"  id="button_presence2_by_act" checked="checked" />
+				<label for="button_presence2_by_act">By act</label>
+			</fieldset>
+
+		</div>
+
+
+		<div role="main" class="ui-content">
+			<div></div>
+		</div>
+	</div>
 </body>
 </html>

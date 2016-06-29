@@ -75,10 +75,11 @@ function Drama(selector, userSettings) {
 		addAll:function() {
 			var r = api.addTextView()
 				.addPresenceView()
-				.addPresenceView2()
-				.addFigureStatisticsView()
-				.addSemanticFieldsView()
-				.addNetworkView();
+			// 	.addPresenceView2()
+				//.addFigureStatisticsView()
+				//.addSemanticFieldsView()
+				//.addNetworkView();
+				;
 			// $(selector).tabs({active: 0});
 			// $(selector).enhanceWithin();
 			return r;
@@ -113,27 +114,35 @@ function Drama(selector, userSettings) {
 
 	function init() {
 		target = $(selector);
-		target.empty();
-		target.css("width", "95%");
-		target.append("<ul  data-role=\"navbar\"></ul>");
-		/*$(selector).tabs({
-			activate:tabschange
-		});*/
+
+		$(document).on( "pagecontainerchange", function() {
+		    var current = $( ".ui-page-active" ).prop("id");
+		    // Remove active class from nav buttons
+		    $( "[data-role='navbar'] a.ui-btn-active" ).removeClass( "ui-btn-active" );
+		    // Add active class to current nav button
+		    $( "[data-role='navbar'] a" ).each(function(index, obj) {
+		        var href = $( this ).prop("href");
+		        if ( href.indexOf(current, href.length - current.length) !== -1 ) {
+		            $( this ).addClass( "ui-btn-active" );
+								views[index].update();
+		        }
+		    });
+		});
+
 		dimensions = {
 			w: $(target).innerWidth() - 45, // we have to subtract padding
 			h: $(target).innerHeight()
 		};
 		settings = merge(defaultSettings, userSettings);
 		console.log(settings);
+
 	}
 
 	function addTab(o) {
 		$("<li><a href=\"#"+o.idString+"\">"+o.title+"</a></li>")
-			.appendTo($(selector).find("ul"))
-			.enhanceWithin();
-		var div = $("<div id=\""+o.idString+"\" class=\"view\" role=\"tabpanel\"></div>");
-		div.appendTo($(selector));
-		// $(selector).find("ul").enhanceWithin();
+			.appendTo($(selector).find("ul"));
+		var div = $("<div id=\""+o.idString+"\"></div>");
+		div.appendTo($(selector));// .enhanceWithin();
 		return div;
 	}
 
@@ -143,16 +152,6 @@ function Drama(selector, userSettings) {
 		// $(selector).enhanceWithin();
 		//$(selector).tabs({active:views.length-1});
 		return api;
-	}
-
-	function tabschange(event, ui) {
-		var newId = $(ui.newPanel).attr("id");
-		for (var view of views) {
-			if (view.meta && view.meta().settings.idString === newId && view.update) {
-				view.update();
-			}
-		}
-
 	}
 
 	function TextView(targetJQ) {
@@ -173,37 +172,12 @@ function Drama(selector, userSettings) {
 		};
 
 		function init() {
-
-
-			// create header structure
-			var textHeader = document.createElement("div");
-			$(textHeader).append("<a name=\"toc\" />");
-			$(textHeader).addClass("toccontainer");
-			$(textHeader).append("<p>Table of Contents</p>");
-			$(textHeader).append("<ul class=\"toc\"></ul>");
-			$(textHeader).append("<p>Dramatis Personae</p>");
-			$(textHeader).append("<ul class=\"dramatispersonae\"></ul>");
-
-			tocArea = $(textHeader).children("ul.toc");
-			dpArea = $(textHeader).children("ul.dramatispersonae");
-			$("#text").append(textHeader);
-
-
-			textArea = $(document.createElement("div"));
-			textArea.appendTo("#text");
-			$(".toccontainer").accordion({
-				header:"p",
-				heightStyle:"content",
-				collapsible:true,
-				active:false
-			});
-
 		}
 
 		function clear() {
-			tocArea.empty();
-			dpArea.empty();
-			textArea.empty();
+			if (tocArea) tocArea.empty();
+			if (dpArea) dpArea.empty();
+			if (textArea) textArea.empty();
 		}
 
 		function load() {
@@ -214,7 +188,7 @@ function Drama(selector, userSettings) {
 				figure = data.figures[fIndex];
 				var figureLi = document.createElement("li");
 				$(figureLi).addClass("f"+fIndex);
-				$(figureLi).append("<input type=\"checkbox\" value=\"f"+fIndex+"\"/>");
+				$(figureLi).append("<input type=\"checkbox\" data-mini=\"true\" data-role=\"flipswitch\" value=\"f"+fIndex+"\"/>");
 				$(figureLi).append(figure.Reference);
 				$("ul.dramatispersonae").append(figureLi);
 			}
@@ -235,12 +209,13 @@ function Drama(selector, userSettings) {
 				segment = document.createElement("div");
 				var anchor = "act"+actIndex;
 				var actToc = document.createElement("ul");
+				$(actToc).attr("data-role", "");
 				if ("head" in act) {
-					$("ul.toc").append("<li><a href=\"#"+anchor+"\">"+act.head+"</a></li>");
-					$(segment).append("<div class=\"actheading\"><a name=\""+anchor+"\">"+act.head+"</a> (<a href=\"#toc\">top</a>)</div>");
+					$("ul.toc").append("<li><a  data-ajax=\"false\" href=\"#"+anchor+"\">"+act.head+"</a></li>");
+					$(segment).append("<div class=\"actheading\"><a name=\""+anchor+"\">"+act.head+"</a> (<a data-ajax=\"false\" href=\"#act1\">top</a>)</div>");
 				} else {
-					$("ul.toc").append("<li><a href=\"#"+anchor+"\">"+actIndex+". Act</a></li>");
-					$(segment).append("<div class=\"actheading\"><a name=\""+anchor+"\">"+(actIndex)+". Act</a> (<a href=\"#toc\">top</a>)</div>");
+					$("ul.toc").append("<li><a  data-ajax=\"false\" href=\"#"+anchor+"\">"+actIndex+". Act</a></li>");
+					$(segment).append("<div class=\"actheading\"><a name=\""+anchor+"\">"+(actIndex)+". Act</a> (<a data-ajax=\"false\" href=\"#act1\">top</a>)</div>");
 				}
 
 				var sceneIndex = 1;
@@ -249,12 +224,12 @@ function Drama(selector, userSettings) {
 					var sceneElement = document.createElement("div");
 					anchor = "act"+actIndex+"_scene"+sceneIndex;
 					if ("head" in scene) {
-						$(actToc).append("<li><a href=\"#"+anchor+"\">"+scene.head+"</a></li>");
-						$(sceneElement).append("<div class=\"sceneheading\"><a name=\""+anchor+"\">"+scene.head+"</a> (<a href=\"#toc\">top</a>)</div>");
+						$(actToc).append("<li><a href=\"#"+anchor+"\" data-ajax=\"false\">"+scene.head+"</a></li>");
+						$(sceneElement).append("<div class=\"sceneheading\"><a name=\""+anchor+"\">"+scene.head+"</a> (<a data-ajax=\"false\" href=\"#act1\">top</a>)</div>");
 						sceneIndex++;
 					} else {
-						$(actToc).append("<li><a href=\"#"+anchor+"\">"+sceneIndex+". Scene</a></li>");
-						$(sceneElement).append("<div class=\"sceneheading\"><a name=\""+anchor+"\">"+(sceneIndex++)+". Scene</a> (<a href=\"#toc\">top</a>)</div>");
+						$(actToc).append("<li><a href=\"#"+anchor+"\" data-ajax=\"false\">"+sceneIndex+". Scene</a></li>");
+						$(sceneElement).append("<div class=\"sceneheading\"><a name=\""+anchor+"\">"+(sceneIndex++)+". Scene</a> (<a data-ajax=\"false\" href=\"#act1\">top</a>)</div>");
 					}
 					for (var u of data.utt.filter(containedIn(scene))) {
 						figure = data.figures[u.f];
@@ -270,18 +245,22 @@ function Drama(selector, userSettings) {
 						$(sceneElement).append(utteranceElement);
 					}
 					$(segment).append(sceneElement);
-					$("#text ul.toc").append(actToc);
+					$("#textviewpanel ul.toc").append(actToc);
 				}
-				textArea.append(segment);
+				$("#textviewpanel").enhanceWithin();
+				$("#text").append(segment);
 				actIndex++;
 			}
 		}
 
-		function update() {}
+		function update() {
+			$("#tllink").text("TOC/DP");
+			$("#tllink").attr("href", "#textviewpanel");
+		}
 	}
 
 	function PresenceView(targetJQ) {
-		var contentArea = addTab(settings.PresenceView);
+		var contentArea = $("#presence div[role='main'] div");
 		var pbColors = ["#FFF", "#DDF"];
 		var chart;
 
@@ -406,7 +385,7 @@ function Drama(selector, userSettings) {
 	}
 
 	function PresenceView2(targetJQ) {
-		var contentArea;
+		var contentArea = $("#presence2 div[role='main'] div");
 		var chartArea;
 		var chart;
 
@@ -423,6 +402,7 @@ function Drama(selector, userSettings) {
 
 		return api;
 		function update() {
+
 			if (chart) chart.reflow();
 		}
 
@@ -432,23 +412,18 @@ function Drama(selector, userSettings) {
 		}
 
 		function init() {
-			contentArea = addTab(settings.PresenceView2);
 
 			// toolbar
-			var toolbar = $(document.createElement("div"));
-			toolbar.addClass("toolbar");
-			$(contentArea).append(toolbar);
-			toolbar.append("<div><input type=\"radio\" value=\"scene\" name=\"by\" id=\"button_presence2_by_scene\" /><label for=\"button_presence2_by_scene\">By scene</label><input type=\"radio\" value=\"act\" name=\"by\"  id=\"button_presence2_by_act\" checked=\"checked\" /><label for=\"button_presence2_by_act\">By act</label></div>");
-			toolbar.children("div").buttonset();
-			toolbar.find("input[value='scene']").button({
-				label: "By scene"
-			}).click(function (e) {
+			//var toolbar = $(document.createElement("div"));
+			//toolbar.attr("data-role", "header");
+			//$(contentArea).append(toolbar);
+			//toolbar.append("<fieldset data-role=\"controlgroup\" data-type=\"horizontal\"><input data-mini=\"true\" type=\"radio\" value=\"scene\" name=\"by\" id=\"button_presence2_by_scene\" /><label for=\"button_presence2_by_scene\">By scene</label><input data-mini=\"true\"type=\"radio\" value=\"act\" name=\"by\"  id=\"button_presence2_by_act\" checked=\"checked\" /><label for=\"button_presence2_by_act\">By act</label></fieldset>");
+			// toolbar.children("div").buttonset();
+			$("#presence2 input[value='scene']").click(function (e) {
 				clear();
 				load();
 			});
-			toolbar.find("input[value='act']").button({
-				label: "By act"
-			}).click(function (e) {
+			$("#presence2 input[value='act']").click(function (e) {
 				clear();
 				load();
 			});
@@ -461,7 +436,7 @@ function Drama(selector, userSettings) {
 
 		function load() {
 			var segments;
-			var byval = $(contentArea).find(".toolbar input[name='by']:checked").val();
+			var byval = $("#presence2 input[name='by']:checked").val();
 			if ("scs" in data && byval == "scene") {
 				segments = data.scs;
 			} else /* if ("seg1" in data["segments"]) */{

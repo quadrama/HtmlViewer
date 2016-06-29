@@ -50,12 +50,8 @@ function ChartTableView(target, userSettings) {
 		settings = merge(defaultSettings, userSettings);
 
 
-		contentArea.append("<h3>Chart</h3>");
-		chartElement = $(document.createElement("div"));
-		chartElement.appendTo(contentArea);
-		chartElement.css("padding", 0);
-		contentArea.append("<h3>Table</h3>");
-		contentArea.append("<div><table></table></div>");
+		contentArea.append("<div data-role=\"collapsible\"><h3>Chart</h3><div></div></div>");
+		contentArea.append("<div data-role=\"collapsible\"><h3>Table</h3><div><table data-role=\"table\"></table></div></div>");
 
 		keys = settings.columns.map(function(cur) {return cur.data;});
 
@@ -84,16 +80,7 @@ function ChartTableView(target, userSettings) {
 		};
 		console.log(ch);
 		chart = chartElement.highcharts(ch).highcharts();
-		contentArea.accordion({
-			heightStyle: "content",
-			active: settings.active,
-			activate: function(event, ui) {
-				if (chart) {
-					// chart.setSize(target.innerWidth()-70, target.innerHeight());
-					chart.reflow();
-				}
-			}
-		});
+		
 
 	}
 
