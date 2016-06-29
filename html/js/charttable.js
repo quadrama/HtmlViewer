@@ -49,17 +49,17 @@ function ChartTableView(target, userSettings) {
 
 		settings = merge(defaultSettings, userSettings);
 
-
-		contentArea.append("<div data-role=\"collapsible\"><h3>Chart</h3><div></div></div>");
-		contentArea.append("<div data-role=\"collapsible\"><h3>Table</h3><div><table data-role=\"table\"></table></div></div>");
-
 		keys = settings.columns.map(function(cur) {return cur.data;});
 
-		dTable = contentArea.find("table").DataTable({
-			columns: settings.columns,
-			pageLength: 100,
-			retrieve: true
+		dTable = contentArea.find("table");
+		chartElement = contentArea.find(".chart");
+		// create header row
+		var row = document.createElement("tr");
+		settings.columns.forEach(function (col, index2, array2) {
+			$(row).append("<th>"+col.title+"</th>");
+
 		});
+		dTable.children("thead").append(row);
 
 		// create the chart
 		var chartSeries = settings.columns.filter(function (d) { return d.type === "numeric"; });
@@ -80,8 +80,8 @@ function ChartTableView(target, userSettings) {
 		};
 		console.log(ch);
 		chart = chartElement.highcharts(ch).highcharts();
-		
 
+		contentArea.enhanceWithin();
 	}
 
 	function load(data) {
@@ -105,7 +105,18 @@ function ChartTableView(target, userSettings) {
 					}
 			});
 
-		dTable.rows.add(data).draw();
+		// fill table
+		data.forEach(function (current, index, array) {
+			var row = document.createElement("tr");
+			settings.columns.forEach(function (col, index2, array2) {
+				var cell = document.createElement("td");
+				$(cell).text(current[col.data]);
+				$(row).append(cell);
+			});
+			dTable.children("tbody").append(row);
+		});
+		dTable.table( "rebuild" );
+
 		// create the chart
 		var series;
 		var categories;
@@ -169,7 +180,7 @@ function ChartTableView(target, userSettings) {
 
 	function clear() {
 		chartElement.empty();
-		dTable.clear();
+		// dTable.clear();
 	}
 
 	function refresh() {

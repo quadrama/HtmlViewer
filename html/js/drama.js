@@ -254,8 +254,6 @@ function Drama(selector, userSettings) {
 		}
 
 		function update() {
-			$("#tllink").text("TOC/DP");
-			$("#tllink").attr("href", "#textviewpanel");
 		}
 	}
 
@@ -413,12 +411,6 @@ function Drama(selector, userSettings) {
 
 		function init() {
 
-			// toolbar
-			//var toolbar = $(document.createElement("div"));
-			//toolbar.attr("data-role", "header");
-			//$(contentArea).append(toolbar);
-			//toolbar.append("<fieldset data-role=\"controlgroup\" data-type=\"horizontal\"><input data-mini=\"true\" type=\"radio\" value=\"scene\" name=\"by\" id=\"button_presence2_by_scene\" /><label for=\"button_presence2_by_scene\">By scene</label><input data-mini=\"true\"type=\"radio\" value=\"act\" name=\"by\"  id=\"button_presence2_by_act\" checked=\"checked\" /><label for=\"button_presence2_by_act\">By act</label></fieldset>");
-			// toolbar.children("div").buttonset();
 			$("#presence2 input[value='scene']").click(function (e) {
 				clear();
 				load();
@@ -427,7 +419,6 @@ function Drama(selector, userSettings) {
 				clear();
 				load();
 			});
-
 
 			// chart
 			chartArea = $(document.createElement("div"));
@@ -529,7 +520,7 @@ function Drama(selector, userSettings) {
 	}
 
 	function SemanticFieldsView2() {
-		var contentArea = addTab(settings.SemanticFieldsView);
+		var contentArea = $("#fields");
 		var ctable;
 		init();
 
@@ -610,7 +601,7 @@ function Drama(selector, userSettings) {
 	}
 
 	function FigureStatisticsView2() {
-		var contentArea = addTab(settings.FigureStatisticsView);
+		var contentArea = $("#figure-statistics");
 		var ctable;
 		init();
 
@@ -629,7 +620,7 @@ function Drama(selector, userSettings) {
 		}
 
 		function init() {
-			contentArea.css("width", "90%");
+			// contentArea.css("width", "90%");
 			ctable = ChartTableView(contentArea, {
 				columns: settings.FigureStatisticsView.columns,
 				chart: {

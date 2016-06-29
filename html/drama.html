@@ -28,7 +28,7 @@ $(function() {
 	if (p.hasOwnProperty("drama"))
 		url = "data/"+p["drama"]+".json";
 	drama.load(url, function() {
-		drama.addTextView().addPresenceView().addPresenceView2();
+		drama.addTextView().addPresenceView().addPresenceView2().addFigureStatisticsView().addSemanticFieldsView();
 		drama.load(url);
 	});
 });
@@ -41,6 +41,8 @@ $(function() {
 				<li><a href="#textview">Text View</a></li>
 				<li><a href="#presence">Presence View</a></li>
 				<li><a href="#presence2">Presence View 2</a></li>
+				<li><a href="#figure-statistics">Figure Statistics</a></li>
+				<li><a href="#fields">Semantic Fields</a></li>
 			</ul>
 		</div>
 	</div>
@@ -88,6 +90,38 @@ $(function() {
 
 		<div role="main" class="ui-content">
 			<div></div>
+		</div>
+	</div>
+
+	<div data-role="page" id="figure-statistics">
+		<div data-role="collapsible" data-collapsed="false">
+			<h3>Chart</h3>
+			<div class="chart"></div>
+		</div>
+		<div data-role="collapsible">
+			<h3>Table</h3>
+			<div>
+				<table data-role="table">
+					<thead></thead>
+					<tbody></tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<div data-role="page" id="fields">
+		<div data-role="collapsible" data-collapsed="false">
+			<h3>Chart</h3>
+			<div class="chart"></div>
+		</div>
+		<div data-role="collapsible">
+			<h3>Table</h3>
+			<div>
+				<table data-role="table">
+					<thead></thead>
+					<tbody></tbody>
+				</table>
+			</div>
 		</div>
 	</div>
 </body>
