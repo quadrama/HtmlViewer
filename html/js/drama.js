@@ -130,8 +130,8 @@ function Drama(selector, userSettings) {
 		});
 
 		dimensions = {
-			w: $(target).innerWidth(), // we have to subtract padding
-			h: $(target).innerHeight()
+			w: $(target).width(), // we have to subtract padding
+			h: $(target).height()
 		};
 		settings = merge(defaultSettings, userSettings);
 		console.log(settings);
@@ -661,6 +661,7 @@ function Drama(selector, userSettings) {
 				current: currentGraph,
 				base: baseGraph
 			},
+			update:draw,
 			redraw:draw,
 			load:load,
 			clear:clear,
@@ -700,13 +701,15 @@ function Drama(selector, userSettings) {
 				// legendDiv.draggable();
 				legendDiv.css("position", "absolute");
 			// contentArea.append(legendDiv);
-			svg = d3.select("div#"+settings.NetworkView.idString+" svg");
 
-			width = contentArea.innerWidth();
-			height = contentArea.innerHeight();
+
+			svg = d3.select("#"+settings.NetworkView.idString+" svg");
+			width = $(window).width();
+			height = $("#"+settings.NetworkView.idString+" div[role='main']").innerHeight()-200;
 			svg.attr("width", width).attr("height", height);
 
-			 // $("#copresencepanel").find("input").change(updateSettings);
+
+			$("#copresencepanel").find("input").change(updateSettings);
 		}
 
 		function load() {
@@ -721,11 +724,11 @@ function Drama(selector, userSettings) {
 			force.stop();
 
 			var figureFilterFunction;
-			if ($(cssId+" .limit-enable:checked()").length === 0)
+			if ($(cssId+" #limit-enable:checked()").length === 0)
 				figureFilterFunction = function(a) { return true; };
 			else {
-				var limitWords = parseInt($(cssId + " .limit-words").val());
-				var limitUtterances = parseInt($(cssId+" .limit-utterances").val());
+				var limitWords = parseInt($(cssId + " #limit-words").val());
+				var limitUtterances = parseInt($(cssId+" #limit-utterances").val());
 
 				figureFilterFunction = figureFilter({
 					"NumberOfUtterances":limitUtterances,
@@ -816,6 +819,10 @@ function Drama(selector, userSettings) {
 
 
 		function draw() {
+			width = $(window).innerWidth();
+			height = $("#"+settings.NetworkView.idString+" div[role='main']").innerHeight();
+			svg.attr("width", width).attr("height", height);
+			force.size([width, height]);
 			var graph = currentGraph;
 
 			var key = function (d) {
@@ -849,6 +856,7 @@ function Drama(selector, userSettings) {
 			var link = linkD.enter()
 				.insert("line", ".node")
 				.attr("class", "link")
+				.style("stroke", "#AAA")
 				.style("opacity", 0)
 				.style("stroke-width", function (d) {
 					return wscale(d.value);
@@ -874,6 +882,7 @@ function Drama(selector, userSettings) {
 				.append("g");
 
 			node.attr("class", "node")
+				.style("stroke", "none")
 				.style("opacity", 0)
 				.call(force.drag)
 				//.on("click", function() { selectNode(this); });
