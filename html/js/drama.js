@@ -6,7 +6,7 @@ function Drama(selector, userSettings) {
 			 * Duration (in milliseconds) of all animations in the network
 			 */
 			animationDuration: 500,
-			idString:"copresence",
+			idString:"copresence-network",
 			title:"Copresence Network"
 		},
 		PresenceView: {
@@ -42,8 +42,9 @@ function Drama(selector, userSettings) {
 		},
 		wordThreshold: 1000
 	};
-	var strongcolors = ["#AAF", "#FAA", "#AFA", "#55F", "#F55", "#5F5" ];
-	var darkcolors = ["#000", "#A00", "#0A0", "#00A", "#AA0", "#0AA", "#A0A", "#550", "#055", "#505"];
+	var rcolors = palette('tol-rainbow', 10).map(function (current) {return "#"+current;});
+	var strongcolors = rcolors;
+	var darkcolors = rcolors;
 	var target;
 	var data;
 	var titleString;
@@ -368,7 +369,7 @@ function Drama(selector, userSettings) {
 					title:null,
 					categories:figureNames
 				},
-				colors: darkcolors,
+				colors: rcolors,
 				plotOptions: { series: { lineWidth : 1 } },
 				tooltip: {
 					crosshairs : true,
@@ -715,7 +716,7 @@ function Drama(selector, userSettings) {
 		function load() {
 			clear();
 			baseGraph = getGraphData();
-			force = initForce([width, height], baseGraph);
+			force = initForce([width-50, height-50], baseGraph);
 			updateSettings();
 		}
 
@@ -822,7 +823,7 @@ function Drama(selector, userSettings) {
 			width = $(window).innerWidth();
 			height = $("#"+settings.NetworkView.idString+" div[role='main']").innerHeight();
 			svg.attr("width", width).attr("height", height);
-			force.size([width, height]);
+			force.size([width-50, height-50]);
 			var graph = currentGraph;
 
 			var key = function (d) {
@@ -883,6 +884,7 @@ function Drama(selector, userSettings) {
 
 			node.attr("class", "node")
 				.style("stroke", "none")
+				.style("fill", "black")
 				.style("opacity", 0)
 				.call(force.drag)
 				//.on("click", function() { selectNode(this); });
@@ -906,9 +908,12 @@ function Drama(selector, userSettings) {
 				});
 
 			// recolor the nodes
+			console.log(graph);
 			nodeD
 				.transition().duration(settings.NetworkView.animationDuration)
 				.style("fill", function (d) {
+					if (graph.categories.length <= 1)
+						return "black";
 					return darkcolors[graph.categories.indexOf(d.type) % darkcolors.length];
 				})
 				.style("opacity", 1);
