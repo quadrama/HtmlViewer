@@ -1,102 +1,166 @@
-<html>
+<html class="ui-mobile">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-<link rel="stylesheet" href="css/jquery-ui.css">
-<link rel="stylesheet" href="css/format.css">
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="stylesheet" href="css/jquery.mobile-1.4.5.css">
+<link rel="stylesheet" href="css/formatx.css">
 <link rel="stylesheet" type="text/css" href="css/datatables.min.css" />
 <script src="js/datatables.min.js"></script>
+<script src="js/jquery-1.11.3.min.js"></script>
+<script src="js/jquery.mobile-1.4.5.min.js"></script>
 <script src="js/highcharts.js"></script>
 <script src="js/highcharts-more.js"></script>
 <script src="js/exporting.js"></script>
 <script src="js/data.js"></script>
-<script src="js/jquery-ui.js"></script>
 <script src="js/d3.v3.min.js" charset="utf-8"></script>
 <script src="js/util.js"></script>
 <script src="js/charttable.js"></script>
 <script src="js/drama.js"></script>
+<script src="js/palette.js"></script>
+<!--<script src="js/jquery-ui.js"></script>-->
 <script>
-var drama;
-
-	$(function() {
-		drama = Drama("#drama");
-		var url = "data/rksp.0.json";
-		var p = getQueryParams(document.location.search);
-		if (p.hasOwnProperty("drama"))
-			url = "data/"+p["drama"]+".json";
-		drama.load(url, function() {
-			drama.addAll();
-			drama.load(url);
-			$("h1#title").append(drama.title());
-			document.title = drama.title();
-		});
+$(function() {
+	var drama;
+	$( "[data-role='header']" ).toolbar();
+	$( "[data-role='header']" ).enhanceWithin();
+	drama = Drama("#drama");
+	var url = "data/rksp.0.json";
+	var p = getQueryParams(document.location.search);
+	if (p.hasOwnProperty("drama"))
+		url = "data/"+p["drama"]+".json";
+	drama.load(url, function() {
+		drama.addAll();
+		drama.load(url);
 	});
+});
 </script>
 </head>
 <body>
-<div id="header">
-	<div>QuaDramA HTML Viewer</div>
-	<div><a href="mailto:nils.reiter@ims.uni-stuttgart.de">Contact</a>&nbsp;</div>
-</div>
-<!--<div id="settings">
-	<div>
-		<h3>Drama View</h3>
-		<div>
-			<select id="docselect">
-				<option value="data/t4rw.0.json">1725_PJP_PoDuH_t4rw.0</option>
-				<option value="data/t4rs.0.json">1726_PJP_OoDwBdL_t4rs.0</option>
-				<option value="data/v3mq.0.json">1746_SJE_C_v3mq.0</option>
-				<option value="data/n750.0.json">1747_GCF_DzS_n750.0</option>
-				<option value="data/v3mw.0.json">1747_SJE_DsS_v3mw.0</option>
-				<option value="data/v3n4.0.json">1748_SJE_DTdgF_v3n4.0</option>
-				<option value="data/rjmw.0.json">1755_LGE_MSS_rjmw.0</option>
-				<option value="data/t25v.0.json">1756_PJGB_LW_t25v.0</option>
-				<option value="data/x8fs.0.json">1758_WCM_LJG_x8fs.0</option>
-				<option value="data/x8hc.0.json">1760_WCM_KvP_x8hc.0</option>
-				<option value="data/ndtw.0.json">1762_GS_EuA_ndtw.0</option>
-				<option value="data/gb-Wieland.json">1766_SW_RuJ_gb-Wieland</option>
-				<option value="data/x4gj.0.json">1766_WCF_AuT_x4gj.0</option>
-				<option value="data/rjh9.0.json">1767_LGE_MvBodS_rjh9.0</option>
-				<option value="data/w3zd.0.json">1767_SHP_J_w3zd.0</option>
-				<option value="data/k93g.0.json">1769_ACHv_DPodnP_k93g.0</option>
-				<option value="data/rksp.0.json"  selected="selected">1772_LGE_EG_rksp.0</option>
-				<option value="data/11g1d.0.json">1773_GJW_GvBmdeH_11g1d.0</option>
-				<option value="data/x8ks.0.json">1773_WCM_A_x8ks.0</option>
-				<option value="data/r135.0.json">1775_KFM_DlW_r135.0</option>
-				<option value="data/spd6.0.json">1775_MF(M_GuG_spd6.0</option>
-				<option value="data/wznr.0.json">1775_WHL_DRndT_wznr.0</option>
-				<option value="data/11hdv.0.json">1776_GJW_S_11hdv.0</option>
-				<option value="data/kp19.0.json">1776_BJJ_OGVdE_kp19.0</option>
-				<option value="data/r12v.0.json">1776_KFM_DZ_r12v.0</option>
-				<option value="data/r134.0.json">1776_KFM_DnA_r134.0</option>
-				<option value="data/rfxf.0.json">1776_LJA_JvT_rfxf.0</option>
-				<option value="data/r12k.0.json">1777_KFM_SuD_r12k.0</option>
-				<option value="data/rhzq.0.json">1778_LJMR_DHoVdP_rhzq.0</option>
-				<option value="data/wf6k.0.json">1780_TJAv_AB_wf6k.0</option>
-				<option value="data/krf8.0.json">1781_BCF_BuC_krf8.0</option>
-				<option value="data/tz39.0.json">1784_SF_KuL_tz39.0</option>
-				<option value="data/qkmq.0.json">1785_IAW_DJ_qkmq.0</option>
-				<option value="data/vrdj.0.json">1786_SJG(J_DuA_vrdj.0</option>
-				<option value="data/tx4z.0.json">1787_SF_DCIvS_tx4z.0</option>
-				<option value="data/vrds.0.json">1787_SJG(J_DLiN_vrds.0</option>
-				<option value="data/twnw.0.json">1791_SJE_DZ_twnw.0</option>
-				<option value="data/vndf.0.json">1797_SW_RuJ_vndf.0</option>
-				<option value="data/11f78.0.json">1800_GJW_IaT_11f78.0</option>
-				<option value="data/r0px.0.json">1804_KHv_DFS_r0px.0</option>
-				<option value="data/ssrf.0.json">1813_MA_DS_ssrf.0</option>
-				<option value="data/x4vp.0.json">1821_WJv_WidB_x4vp.0</option>
-				<option value="data/t976.0.json">1826_RF_DMadFoDBaM_t976.0</option>
-				<option value="data/npsg.0.json">1831_GF_DMudLW_npsg.0</option>
-				<option value="data/msqv.0.json">1849_EJv_DF_msqv.0</option>
-				<option value="data/rhtz.0.json">1863_LJMR_DS_rhtz.0</option>
-				<option value="data/r0n2.0.json">1876_KHv_P_r0n2.0</option>
-				<option value="data/kscn.0.json">1895_BG_LuL_kscn.0</option>
-			</select>
+	<div data-role="header" data-theme="a">
+		<div data-role="navbar">
+			<ul>
+				<li><a href="#textview">Text View</a></li>
+				<li><a href="#presence">Presence View</a></li>
+				<li><a href="#presence2">Presence View 2</a></li>
+				<li><a href="#figure-statistics">Figure Statistics</a></li>
+				<li><a href="#fields">Semantic Fields</a></li>
+				<li><a href="#copresence-network">Copresence Network</a></li>
+			</ul>
 		</div>
 	</div>
-</div>-->
-<div style="width:100%;padding:0;margin:0;">
-	<h1 id="title"></h1>
-	<div id="drama"></div>
-</div>
+
+	<div data-role="page" id="textview">
+		<div id="textviewpanel" data-role="panel" data-position="left" data-display="push">
+			<div data-role="collapsible-set" data-inset="false">
+				<div data-role="collapsible" data-mini="true" data-inline="true">
+					<h3>Table of Contents</h3>
+					<div><ul class="toc" data-role="listview"></ul></div>
+				</div>
+				<div data-role="collapsible" data-mini="true">
+					<h3>Dramatis Personae</h3>
+					<div><ul class="dramatispersonae" data-role="listview"></ul></div>
+				</div>
+			</div>
+		</div>
+		<div data-role="header">
+			<a href="#textviewpanel">TOC / DP</a>
+			<h1>Text View</h1>
+		</div>
+		<div role="main" class="ui-content">
+			<div id="text"></div>
+		</div>
+	</div>
+	<div data-role="page" id="presence">
+		<div role="main" class="ui-content">
+			<div></div>
+		</div>
+	</div>
+
+	<div data-role="page" id="presence2">
+
+		<div data-role="header" style="text-align: center; ">
+			<fieldset data-role="controlgroup" data-type="horizontal">
+				<input data-mini="true" type="radio" value="scene" name="by" id="button_presence2_by_scene" />
+				<label for="button_presence2_by_scene">By scene</label>
+
+				<input data-mini="true"type="radio" value="act" name="by"  id="button_presence2_by_act" checked="checked" />
+				<label for="button_presence2_by_act">By act</label>
+			</fieldset>
+
+		</div>
+
+
+		<div role="main" class="ui-content">
+			<div></div>
+		</div>
+	</div>
+
+	<div data-role="page" id="figure-statistics">
+		<div data-role="collapsible" data-collapsed="false">
+			<h3>Chart</h3>
+			<div class="chart"></div>
+		</div>
+		<div data-role="collapsible">
+			<h3>Table</h3>
+			<div>
+				<table data-role="table">
+					<thead></thead>
+					<tbody></tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<div data-role="page" id="fields">
+		<div data-role="collapsible" data-collapsed="false">
+			<h3>Chart</h3>
+			<div class="chart"></div>
+		</div>
+		<div data-role="collapsible">
+			<h3>Table</h3>
+			<div>
+				<table data-role="table">
+					<thead></thead>
+					<tbody></tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<div data-role="page" id="copresence-network">
+		<div data-role="panel" id="copresencepanel">
+			<div data-role="collapsible" data-collapsed="false" data-mini="true">
+				<h1>Figure Limit</h1>
+				<div>
+				<fieldset data-role="controlgroup" data-mini="true">
+					<input type="checkbox" data-mini="true" checked="checked" id="limit-enable" />
+					<label for="limit-enable">Show figures with at least</label>
+				</fieldset>
+				<fieldset>
+					<label for="limit-words">Words: </label>
+					<input type="range" id="limit-words" value="1000" min="0" max="10000" data-highlight="true" />
+				</fieldset>
+				<fieldset>
+					<label for="limit-utterances">Utterances: </label>
+					<input type="range" id="limit-utterances" value="10" min="0" max="1000" data-highlight="true" />
+				</fieldset>
+				</div>
+			</div>
+			<div data-role="collapsible" data-collapsed="false" data-mini="true">
+				<h1>Node Coloring</h1>
+				<div>
+					<fieldset class="coloring" data-role="controlgroup" data-mini="true">
+
+					</fieldset>
+				</div>
+			</div>
+		</div>
+		<div data-role="header">
+			<a href="#copresencepanel">Settings</a><h1>&nbsp;</h1>
+		</div>
+		<div role="main" class="ui-content" style="height:80%">
+			<svg style="background-color:white;"></svg>
+		</div>
+	</div>
 </body>
 </html>

@@ -6,7 +6,7 @@ function Drama(selector, userSettings) {
 			 * Duration (in milliseconds) of all animations in the network
 			 */
 			animationDuration: 500,
-			idString:"copresence",
+			idString:"copresence-network",
 			title:"Copresence Network"
 		},
 		PresenceView: {
@@ -42,8 +42,9 @@ function Drama(selector, userSettings) {
 		},
 		wordThreshold: 1000
 	};
-	var strongcolors = ["#AAF", "#FAA", "#AFA", "#55F", "#F55", "#5F5" ];
-	var darkcolors = ["#000", "#A00", "#0A0", "#00A", "#AA0", "#0AA", "#A0A", "#550", "#055", "#505"];
+	var rcolors = palette('tol-rainbow', 10).map(function (current) {return "#"+current;});
+	var strongcolors = rcolors;
+	var darkcolors = rcolors;
 	var target;
 	var data;
 	var titleString;
@@ -75,11 +76,13 @@ function Drama(selector, userSettings) {
 		addAll:function() {
 			var r = api.addTextView()
 				.addPresenceView()
-				.addPresenceView2()
-				.addFigureStatisticsView()
-				.addSemanticFieldsView()
-				.addNetworkView();
-			$(selector).tabs({active: 0});
+			// 	.addPresenceView2()
+				//.addFigureStatisticsView()
+				//.addSemanticFieldsView()
+				//.addNetworkView();
+				;
+			// $(selector).tabs({active: 0});
+			// $(selector).enhanceWithin();
 			return r;
 		},
 		load:load
@@ -112,42 +115,44 @@ function Drama(selector, userSettings) {
 
 	function init() {
 		target = $(selector);
-		target.empty();
-		target.css("width", "95%");
-		target.append("<ul></ul>");
-		$(selector).tabs({
-			activate:tabschange
+
+		$(document).on( "pagecontainerchange", function() {
+		    var current = $( ".ui-page-active" ).prop("id");
+		    // Remove active class from nav buttons
+		    $( "[data-role='navbar'] a.ui-btn-active" ).removeClass( "ui-btn-active" );
+		    // Add active class to current nav button
+		    $( "[data-role='navbar'] a" ).each(function(index, obj) {
+		        var href = $( this ).prop("href");
+		        if ( href.indexOf(current, href.length - current.length) !== -1 ) {
+		            $( this ).addClass( "ui-btn-active" );
+								if (views[index].update) views[index].update();
+		        }
+		    });
 		});
+
 		dimensions = {
-			w: $(target).innerWidth() - 45, // we have to subtract padding
-			h: $(target).innerHeight()
+			w: $(target).width(), // we have to subtract padding
+			h: $(target).height()
 		};
 		settings = merge(defaultSettings, userSettings);
 		console.log(settings);
+
 	}
 
 	function addTab(o) {
-		$(selector).children("ul").append("<li><a href=\"#"+o.idString+"\">"+o.title+"</a></li>");
-		var div = $("<div id=\""+o.idString+"\" class=\"view\"></div>");
-		div.appendTo($(selector));
+		$("<li><a href=\"#"+o.idString+"\">"+o.title+"</a></li>")
+			.appendTo($(selector).find("ul"));
+		var div = $("<div id=\""+o.idString+"\"></div>");
+		div.appendTo($(selector));// .enhanceWithin();
 		return div;
 	}
 
 	function addView(view) {
 		views.push(view(target));
-		$(selector).tabs("refresh");
-		$(selector).tabs({active:views.length-1});
+		// $(selector).tabs("refresh");
+		// $(selector).enhanceWithin();
+		//$(selector).tabs({active:views.length-1});
 		return api;
-	}
-
-	function tabschange(event, ui) {
-		var newId = $(ui.newPanel).attr("id");
-		for (var view of views) {
-			if (view.meta && view.meta().settings.idString === newId && view.update) {
-				view.update();
-			}
-		}
-
 	}
 
 	function TextView(targetJQ) {
@@ -168,37 +173,12 @@ function Drama(selector, userSettings) {
 		};
 
 		function init() {
-
-
-			// create header structure
-			var textHeader = document.createElement("div");
-			$(textHeader).append("<a name=\"toc\" />");
-			$(textHeader).addClass("toccontainer");
-			$(textHeader).append("<p>Table of Contents</p>");
-			$(textHeader).append("<ul class=\"toc\"></ul>");
-			$(textHeader).append("<p>Dramatis Personae</p>");
-			$(textHeader).append("<ul class=\"dramatispersonae\"></ul>");
-
-			tocArea = $(textHeader).children("ul.toc");
-			dpArea = $(textHeader).children("ul.dramatispersonae");
-			$("#text").append(textHeader);
-
-
-			textArea = $(document.createElement("div"));
-			textArea.appendTo("#text");
-			$(".toccontainer").accordion({
-				header:"p",
-				heightStyle:"content",
-				collapsible:true,
-				active:false
-			});
-
 		}
 
 		function clear() {
-			tocArea.empty();
-			dpArea.empty();
-			textArea.empty();
+			if (tocArea) tocArea.empty();
+			if (dpArea) dpArea.empty();
+			if (textArea) textArea.empty();
 		}
 
 		function load() {
@@ -209,7 +189,7 @@ function Drama(selector, userSettings) {
 				figure = data.figures[fIndex];
 				var figureLi = document.createElement("li");
 				$(figureLi).addClass("f"+fIndex);
-				$(figureLi).append("<input type=\"checkbox\" value=\"f"+fIndex+"\"/>");
+				$(figureLi).append("<input type=\"checkbox\" data-mini=\"true\" data-role=\"flipswitch\" value=\"f"+fIndex+"\"/>");
 				$(figureLi).append(figure.Reference);
 				$("ul.dramatispersonae").append(figureLi);
 			}
@@ -230,12 +210,13 @@ function Drama(selector, userSettings) {
 				segment = document.createElement("div");
 				var anchor = "act"+actIndex;
 				var actToc = document.createElement("ul");
+				$(actToc).attr("data-role", "");
 				if ("head" in act) {
-					$("ul.toc").append("<li><a href=\"#"+anchor+"\">"+act.head+"</a></li>");
-					$(segment).append("<div class=\"actheading\"><a name=\""+anchor+"\">"+act.head+"</a> (<a href=\"#toc\">top</a>)</div>");
+					$("ul.toc").append("<li><a  data-ajax=\"false\" href=\"#"+anchor+"\">"+act.head+"</a></li>");
+					$(segment).append("<div class=\"actheading\"><a name=\""+anchor+"\">"+act.head+"</a> (<a data-ajax=\"false\" href=\"#act1\">top</a>)</div>");
 				} else {
-					$("ul.toc").append("<li><a href=\"#"+anchor+"\">"+actIndex+". Act</a></li>");
-					$(segment).append("<div class=\"actheading\"><a name=\""+anchor+"\">"+(actIndex)+". Act</a> (<a href=\"#toc\">top</a>)</div>");
+					$("ul.toc").append("<li><a  data-ajax=\"false\" href=\"#"+anchor+"\">"+actIndex+". Act</a></li>");
+					$(segment).append("<div class=\"actheading\"><a name=\""+anchor+"\">"+(actIndex)+". Act</a> (<a data-ajax=\"false\" href=\"#act1\">top</a>)</div>");
 				}
 
 				var sceneIndex = 1;
@@ -244,12 +225,12 @@ function Drama(selector, userSettings) {
 					var sceneElement = document.createElement("div");
 					anchor = "act"+actIndex+"_scene"+sceneIndex;
 					if ("head" in scene) {
-						$(actToc).append("<li><a href=\"#"+anchor+"\">"+scene.head+"</a></li>");
-						$(sceneElement).append("<div class=\"sceneheading\"><a name=\""+anchor+"\">"+scene.head+"</a> (<a href=\"#toc\">top</a>)</div>");
+						$(actToc).append("<li><a href=\"#"+anchor+"\" data-ajax=\"false\">"+scene.head+"</a></li>");
+						$(sceneElement).append("<div class=\"sceneheading\"><a name=\""+anchor+"\">"+scene.head+"</a> (<a data-ajax=\"false\" href=\"#act1\">top</a>)</div>");
 						sceneIndex++;
 					} else {
-						$(actToc).append("<li><a href=\"#"+anchor+"\">"+sceneIndex+". Scene</a></li>");
-						$(sceneElement).append("<div class=\"sceneheading\"><a name=\""+anchor+"\">"+(sceneIndex++)+". Scene</a> (<a href=\"#toc\">top</a>)</div>");
+						$(actToc).append("<li><a href=\"#"+anchor+"\" data-ajax=\"false\">"+sceneIndex+". Scene</a></li>");
+						$(sceneElement).append("<div class=\"sceneheading\"><a name=\""+anchor+"\">"+(sceneIndex++)+". Scene</a> (<a data-ajax=\"false\" href=\"#act1\">top</a>)</div>");
 					}
 					for (var u of data.utt.filter(containedIn(scene))) {
 						figure = data.figures[u.f];
@@ -265,18 +246,20 @@ function Drama(selector, userSettings) {
 						$(sceneElement).append(utteranceElement);
 					}
 					$(segment).append(sceneElement);
-					$("#text ul.toc").append(actToc);
+					$("#textviewpanel ul.toc").append(actToc);
 				}
-				textArea.append(segment);
+				$("#textviewpanel").enhanceWithin();
+				$("#text").append(segment);
 				actIndex++;
 			}
 		}
 
-		function update() {}
+		function update() {
+		}
 	}
 
 	function PresenceView(targetJQ) {
-		var contentArea = addTab(settings.PresenceView);
+		var contentArea = $("#presence div[role='main'] div");
 		var pbColors = ["#FFF", "#DDF"];
 		var chart;
 
@@ -333,7 +316,7 @@ function Drama(selector, userSettings) {
 
 			// create the series array
 			var series = figures.filter(basicFigureFilter(data)).sort(function(a,b) {
-				return data.figures[a][settings.PresenceView.sortKey] - data.figures[b][settings.PresenceView.sortKey];
+				return data.figures[b][settings.PresenceView.sortKey] - data.figures[a][settings.PresenceView.sortKey];
 			}).map(function(currentFigureIndex, index, arr) {
 				var currentFigure = data.figures[currentFigureIndex];
 				figureNames.push(currentFigure.Reference);
@@ -386,7 +369,7 @@ function Drama(selector, userSettings) {
 					title:null,
 					categories:figureNames
 				},
-				colors: darkcolors,
+				colors: rcolors,
 				plotOptions: { series: { lineWidth : 1 } },
 				tooltip: {
 					crosshairs : true,
@@ -401,7 +384,7 @@ function Drama(selector, userSettings) {
 	}
 
 	function PresenceView2(targetJQ) {
-		var contentArea;
+		var contentArea = $("#presence2 div[role='main'] div");
 		var chartArea;
 		var chart;
 
@@ -418,6 +401,7 @@ function Drama(selector, userSettings) {
 
 		return api;
 		function update() {
+
 			if (chart) chart.reflow();
 		}
 
@@ -427,27 +411,15 @@ function Drama(selector, userSettings) {
 		}
 
 		function init() {
-			contentArea = addTab(settings.PresenceView2);
 
-			// toolbar
-			var toolbar = $(document.createElement("div"));
-			toolbar.addClass("toolbar");
-			$(contentArea).append(toolbar);
-			toolbar.append("<div><input type=\"radio\" value=\"scene\" name=\"by\" id=\"button_presence2_by_scene\" /><label for=\"button_presence2_by_scene\">By scene</label><input type=\"radio\" value=\"act\" name=\"by\"  id=\"button_presence2_by_act\" checked=\"checked\" /><label for=\"button_presence2_by_act\">By act</label></div>");
-			toolbar.children("div").buttonset();
-			toolbar.find("input[value='scene']").button({
-				label: "By scene"
-			}).click(function (e) {
+			$("#presence2 input[value='scene']").click(function (e) {
 				clear();
 				load();
 			});
-			toolbar.find("input[value='act']").button({
-				label: "By act"
-			}).click(function (e) {
+			$("#presence2 input[value='act']").click(function (e) {
 				clear();
 				load();
 			});
-
 
 			// chart
 			chartArea = $(document.createElement("div"));
@@ -456,7 +428,7 @@ function Drama(selector, userSettings) {
 
 		function load() {
 			var segments;
-			var byval = $(contentArea).find(".toolbar input[name='by']:checked").val();
+			var byval = $("#presence2 input[name='by']:checked").val();
 			if ("scs" in data && byval == "scene") {
 				segments = data.scs;
 			} else /* if ("seg1" in data["segments"]) */{
@@ -549,7 +521,7 @@ function Drama(selector, userSettings) {
 	}
 
 	function SemanticFieldsView2() {
-		var contentArea = addTab(settings.SemanticFieldsView);
+		var contentArea = $("#fields");
 		var ctable;
 		init();
 
@@ -580,7 +552,7 @@ function Drama(selector, userSettings) {
 						polar: true,
 						type: 'line'
 					},
-					colors: darkcolors,
+					colors: rcolors,
 					yAxis: { gridLineInterpolation: 'polygon' },
 					xAxis: { lineWidth: 0 },
 					config: {
@@ -630,7 +602,7 @@ function Drama(selector, userSettings) {
 	}
 
 	function FigureStatisticsView2() {
-		var contentArea = addTab(settings.FigureStatisticsView);
+		var contentArea = $("#figure-statistics");
 		var ctable;
 		init();
 
@@ -649,10 +621,11 @@ function Drama(selector, userSettings) {
 		}
 
 		function init() {
-			contentArea.css("width", "90%");
+			// contentArea.css("width", "90%");
 			ctable = ChartTableView(contentArea, {
 				columns: settings.FigureStatisticsView.columns,
 				chart: {
+					colors: rcolors,
 					chart: {
 						width: contentArea.innerWidth(),
 					},
@@ -671,7 +644,7 @@ function Drama(selector, userSettings) {
 	}
 
 	function NetworkView(targetJQ) {
-		var contentArea = addTab(settings.NetworkView);
+		var contentArea = $("#"+settings.NetworkView.copresence); //addTab(settings.NetworkView);
 		var baseGraph = {};
 		var currentGraph = {};
 		var svg;
@@ -690,6 +663,7 @@ function Drama(selector, userSettings) {
 				current: currentGraph,
 				base: baseGraph
 			},
+			update:draw,
 			redraw:draw,
 			load:load,
 			clear:clear,
@@ -701,45 +675,23 @@ function Drama(selector, userSettings) {
 		function init() {
 			var targetDiv = contentArea;
 
-
 			// toolbar
-			var settingsPane = document.createElement("div");
-			$(settingsPane).addClass("toolbar");
 
-			var limit = $(document.createElement("fieldset"));
-			limit.append("<input type=\"checkbox\" class=\"limit-enable\" checked=\"checked\" id=\"limit-enable\">");
-			limit.append("Show figures with at least<br/>");
-			limit.append("<input type=\"number\" class=\"limit-words\" value=\"1000\">");
-			limit.append("words and ");
-			limit.append("<input type=\"number\" class=\"limit-utterances\" value=\"10\">");
-			limit.append("utterances.");
-
-			var fieldSet = $(document.createElement("fieldset"));
-			fieldSet.addClass("typecolor");
-			fieldSet.append("Node coloring");
-
-			var typeCategories = $(document.createElement("div"));
+			var typeCategories = $("#copresencepanel fieldset.coloring");
 			var i = 0;
 			for (var ftype in data.ftypes) {
 				if (ftype != "All") {
-					typeCategories.append("<input type=\"checkbox\" name=\"figureColor\" value=\""+ftype+"\" id=\"color-by-"+ftype+"\">");
+					typeCategories.append("<input type=\"checkbox\" name=\"figureColor\" value=\""+ftype+"\" id=\"color-by-"+ftype+"\" />");
 					typeCategories.append("<label for=\"color-by-"+ftype+"\">"+ftype+"</label>");
 				}
 			}
-			typeCategories.children("input:checkbox").button({}).click(function() {
-				typeCategories.children("input:checkbox").not(this).prop("checked", false);
-				typeCategories.children("input:checkbox").button("refresh");
+			typeCategories.find("input:checkbox").click(function() {
+				typeCategories.find("input:checkbox").not(this).prop("checked", false);
+				typeCategories.find("input:checkbox").checkboxradio( "refresh" );
 				updateSettings();
 			});
-			typeCategories.buttonset();
-			typeCategories.appendTo(fieldSet);
 
-			$(settingsPane).append(limit);
-			$(settingsPane).append(fieldSet);
-
-
-
-			contentArea.append(settingsPane);
+			$("#copresencepanel").enhanceWithin();
 
 			var legendDiv = $(document.createElement("div"));
 				legendDiv.addClass("legend");
@@ -748,21 +700,24 @@ function Drama(selector, userSettings) {
 				legendDiv.append("<p><strong>Node size</strong>: #words (overall)</p>");
 				legendDiv.append("<p><strong>Line width</strong>: #scenes in which the fig. are co-present</p>");
 				legendDiv.append("<p>Figures are closer together if they are co-present in more scenes.</p>");
-				legendDiv.draggable();
+				// legendDiv.draggable();
 				legendDiv.css("position", "absolute");
-				contentArea.append(legendDiv);
-				svg = d3.select("div#"+settings.NetworkView.idString).append("svg");
+			// contentArea.append(legendDiv);
 
 
-			width = contentArea.innerWidth();
-			height = contentArea.innerHeight();
-			$(settingsPane).children("fieldset:first").children("input").change(updateSettings);
+			svg = d3.select("#"+settings.NetworkView.idString+" svg");
+			width = $(window).width();
+			height = $("#"+settings.NetworkView.idString+" div[role='main']").innerHeight()-200;
+			svg.attr("width", width).attr("height", height);
+
+
+			$("#copresencepanel").find("input").change(updateSettings);
 		}
 
 		function load() {
 			clear();
 			baseGraph = getGraphData();
-			force = initForce([width, height], baseGraph);
+			force = initForce([width-50, height-50], baseGraph);
 			updateSettings();
 		}
 
@@ -771,11 +726,11 @@ function Drama(selector, userSettings) {
 			force.stop();
 
 			var figureFilterFunction;
-			if ($(cssId+" .limit-enable:checked()").length === 0)
+			if ($(cssId+" #limit-enable:checked()").length === 0)
 				figureFilterFunction = function(a) { return true; };
 			else {
-				var limitWords = parseInt($(cssId + " .limit-words").val());
-				var limitUtterances = parseInt($(cssId+" .limit-utterances").val());
+				var limitWords = parseInt($(cssId + " #limit-words").val());
+				var limitUtterances = parseInt($(cssId+" #limit-utterances").val());
 
 				figureFilterFunction = figureFilter({
 					"NumberOfUtterances":limitUtterances,
@@ -866,6 +821,10 @@ function Drama(selector, userSettings) {
 
 
 		function draw() {
+			width = $(window).innerWidth();
+			height = $("#"+settings.NetworkView.idString+" div[role='main']").innerHeight();
+			svg.attr("width", width).attr("height", height);
+			force.size([width-50, height-50]);
 			var graph = currentGraph;
 
 			var key = function (d) {
@@ -899,6 +858,7 @@ function Drama(selector, userSettings) {
 			var link = linkD.enter()
 				.insert("line", ".node")
 				.attr("class", "link")
+				.style("stroke", "#AAA")
 				.style("opacity", 0)
 				.style("stroke-width", function (d) {
 					return wscale(d.value);
@@ -924,6 +884,8 @@ function Drama(selector, userSettings) {
 				.append("g");
 
 			node.attr("class", "node")
+				.style("stroke", "none")
+				.style("fill", "black")
 				.style("opacity", 0)
 				.call(force.drag)
 				//.on("click", function() { selectNode(this); });
@@ -947,9 +909,12 @@ function Drama(selector, userSettings) {
 				});
 
 			// recolor the nodes
+			console.log(graph);
 			nodeD
 				.transition().duration(settings.NetworkView.animationDuration)
 				.style("fill", function (d) {
+					if (graph.categories.length <= 1)
+						return "black";
 					return darkcolors[graph.categories.indexOf(d.type) % darkcolors.length];
 				})
 				.style("opacity", 1);
