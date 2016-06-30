@@ -29,7 +29,7 @@ $(function() {
 	if (p.hasOwnProperty("drama"))
 		url = "data/"+p["drama"]+".json";
 	drama.load(url, function() {
-		drama.addTextView().addPresenceView().addPresenceView2().addFigureStatisticsView().addSemanticFieldsView().addNetworkView();
+		drama.addAll();
 		drama.load(url);
 	});
 });

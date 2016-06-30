@@ -316,7 +316,7 @@ function Drama(selector, userSettings) {
 
 			// create the series array
 			var series = figures.filter(basicFigureFilter(data)).sort(function(a,b) {
-				return data.figures[a][settings.PresenceView.sortKey] - data.figures[b][settings.PresenceView.sortKey];
+				return data.figures[b][settings.PresenceView.sortKey] - data.figures[a][settings.PresenceView.sortKey];
 			}).map(function(currentFigureIndex, index, arr) {
 				var currentFigure = data.figures[currentFigureIndex];
 				figureNames.push(currentFigure.Reference);
@@ -552,7 +552,7 @@ function Drama(selector, userSettings) {
 						polar: true,
 						type: 'line'
 					},
-					colors: darkcolors,
+					colors: rcolors,
 					yAxis: { gridLineInterpolation: 'polygon' },
 					xAxis: { lineWidth: 0 },
 					config: {
@@ -625,6 +625,7 @@ function Drama(selector, userSettings) {
 			ctable = ChartTableView(contentArea, {
 				columns: settings.FigureStatisticsView.columns,
 				chart: {
+					colors: rcolors,
 					chart: {
 						width: contentArea.innerWidth(),
 					},
