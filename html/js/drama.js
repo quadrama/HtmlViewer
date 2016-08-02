@@ -106,7 +106,7 @@ function Drama(selector, userSettings) {
 		if (typeof(dataOrUrl) == "string") {
 
 			if (dataOrUrl.startsWith("http")) {
-				$.ajax(decodeURIComponent(dataOrUrl), {
+				$.ajax(dataOrUrl, {
 					dataType: "jsonp",
 					success: function(data) {
 						loadObject(data);
