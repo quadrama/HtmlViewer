@@ -57,6 +57,42 @@ public class JsonExporter extends AbstractDramaConsumer {
 
 	@Override
 	public void process(JCas aJCas) throws AnalysisEngineProcessException {
+
+		JSONObject json = new JSONObject();
+		JSONObject md = convert(JCasUtil.selectSingle(aJCas, Drama.class), false);
+
+		for (Author author : JCasUtil.select(aJCas, Author.class))
+			md.append("authors", convert(author, false));
+		for (Translator translator : JCasUtil.select(aJCas, Translator.class))
+			md.append("translators", convert(translator, false));
+		md.put("DisplayId", DramaUtil.getDisplayId(aJCas));
+
+		// assembly
+		json = this.convertJCas(aJCas);
+		metaJson.put(md);
+		Writer osw = null;
+		if (collectionFilename != null)
+			collectedObjects.add(json);
+		try {
+			osw = this.getWriter(aJCas, (javascriptVariableName != null ? ".js" : ".json"));// new
+																							// OutputStreamWriter(os);
+			if (javascriptVariableName != null) {
+				osw.write("var ");
+				osw.write(javascriptVariableName);
+				osw.write(" = ");
+			}
+			osw.write(json.toString());
+			osw.flush();
+			osw.close();
+		} catch (IOException e) {
+			throw new AnalysisEngineProcessException(e);
+		} finally {
+			IOUtils.closeQuietly(osw);
+		}
+
+	}
+
+	public JSONObject convertJCas(JCas aJCas) {
 		Map<Figure, Counter<Pair<String, String>>> freq = new HashMap<Figure, Counter<Pair<String, String>>>();
 		List<Figure> figureList = new ArrayList<Figure>();
 		Map<Figure, JSONObject> figureObjects = new HashMap<Figure, JSONObject>();
@@ -159,27 +195,7 @@ public class JsonExporter extends AbstractDramaConsumer {
 
 		// assembly
 		json.put("meta", md);
-		metaJson.put(md);
-		Writer osw = null;
-		if (collectionFilename != null)
-			collectedObjects.add(json);
-		try {
-			osw = this.getWriter(aJCas, (javascriptVariableName != null ? ".js" : ".json"));// new
-																							// OutputStreamWriter(os);
-			if (javascriptVariableName != null) {
-				osw.write("var ");
-				osw.write(javascriptVariableName);
-				osw.write(" = ");
-			}
-			osw.write(json.toString());
-			osw.flush();
-			osw.close();
-		} catch (IOException e) {
-			throw new AnalysisEngineProcessException(e);
-		} finally {
-			IOUtils.closeQuietly(osw);
-		}
-
+		return json;
 	}
 
 	public static <T extends Annotation> JSONObject convert(T annotation, boolean includeText) {
