@@ -80,7 +80,7 @@ function Drama(selector, userSettings) {
 				.addFigureStatisticsView()
 				.addSemanticFieldsView()
 				.addNetworkView();
-				
+
 			// $(selector).tabs({active: 0});
 			// $(selector).enhanceWithin();
 			return r;
@@ -104,8 +104,9 @@ function Drama(selector, userSettings) {
 
 	function load(dataOrUrl, callback) {
 		if (typeof(dataOrUrl) == "string") {
+
 			if (dataOrUrl.startsWith("http")) {
-				$.ajax(dataOrUrl, {
+				$.ajax(decodeURIComponent(dataOrUrl), {
 					dataType: "jsonp",
 					success: function(data) {
 						loadObject(data);
