@@ -148,7 +148,7 @@ public class JsonExporter extends AbstractDramaConsumer {
 
 		// utterances
 		for (Utterance utterance : JCasUtil.select(aJCas, Utterance.class)) {
-			Figure f = DramaUtil.getFigure(utterance);
+			Figure f = DramaUtil.getFirstFigure(utterance);
 			if (f == null)
 				continue;
 			int figureIndex = figureList.indexOf(f);
