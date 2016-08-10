@@ -4,10 +4,10 @@
 	<artifactId>de.unistuttgart.ims.drama.ui.json</artifactId>
 	<name>de.unistuttgart.ims.drama.ui.json</name>
 	<groupId>de.unistuttgart.ims</groupId>
-	<version>0.1</version>
+	<version>1.0</version>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<dramanlp.version>0.2</dramanlp.version>
+		<dramanlp.version>0.3.0</dramanlp.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -52,7 +52,7 @@
 			<version>2.8.1</version>
 		</dependency>
 		<dependency>
-			<groupId>de.unistuttgart.ims.drama</groupId>
+			<groupId>de.unistuttgart.ims</groupId>
 			<artifactId>de.unistuttgart.ims.drama.util</artifactId>
 			<version>${dramanlp.version}</version>
 		</dependency>

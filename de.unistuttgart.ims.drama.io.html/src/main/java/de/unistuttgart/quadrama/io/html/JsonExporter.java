@@ -98,14 +98,7 @@ public class JsonExporter extends AbstractDramaConsumer {
 		Map<Figure, JSONObject> figureObjects = new HashMap<Figure, JSONObject>();
 
 		JSONObject json = new JSONObject();
-		JSONObject md = convert(JCasUtil.selectSingle(aJCas, Drama.class), false);
-
-		for (Author author : JCasUtil.select(aJCas, Author.class))
-			md.append("authors", convert(author, false));
-		for (Translator translator : JCasUtil.select(aJCas, Translator.class))
-			md.append("translators", convert(translator, false));
-		md.put("DisplayId", DramaUtil.getDisplayId(aJCas));
-
+		JSONObject md = getMetadata(aJCas);
 		JSONObject figureTypes = new JSONObject();
 
 		// figures
@@ -155,7 +148,7 @@ public class JsonExporter extends AbstractDramaConsumer {
 
 		// utterances
 		for (Utterance utterance : JCasUtil.select(aJCas, Utterance.class)) {
-			Figure f = DramaUtil.getFigure(utterance);
+			Figure f = DramaUtil.getFirstFigure(utterance);
 			if (f == null)
 				continue;
 			int figureIndex = figureList.indexOf(f);
@@ -274,5 +267,16 @@ public class JsonExporter extends AbstractDramaConsumer {
 		if (s.startsWith("A"))
 			return s.substring(0, 3);
 		return s.substring(0, 2);
+	}
+
+	public static JSONObject getMetadata(JCas aJCas) {
+		JSONObject md = convert(JCasUtil.selectSingle(aJCas, Drama.class), false);
+
+		for (Author author : JCasUtil.select(aJCas, Author.class))
+			md.append("authors", convert(author, false));
+		for (Translator translator : JCasUtil.select(aJCas, Translator.class))
+			md.append("translators", convert(translator, false));
+		md.put("DisplayId", DramaUtil.getDisplayId(aJCas));
+		return md;
 	}
 }

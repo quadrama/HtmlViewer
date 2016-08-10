@@ -3,7 +3,6 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <link rel="stylesheet" href="css/jquery.mobile-1.4.5.css">
-<link rel="stylesheet" href="css/formatx.css">
 <link rel="stylesheet" type="text/css" href="css/datatables.min.css" />
 <script src="js/datatables.min.js"></script>
 <script src="js/jquery-1.11.3.min.js"></script>
@@ -26,8 +25,12 @@ $(function() {
 	drama = Drama("#drama");
 	var url = "data/rksp.0.json";
 	var p = getQueryParams(document.location.search);
-	if (p.hasOwnProperty("drama"))
-		url = "data/"+p["drama"]+".json";
+	if (p.hasOwnProperty("drama")) {
+		if (p.drama.startsWith("http"))
+			url = decodeURIComponent(p["drama"]);
+		else
+			url = "data/"+p["drama"]+".json";
+	}
 	drama.load(url, function() {
 		drama.addAll();
 		drama.load(url);

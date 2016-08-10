@@ -76,11 +76,11 @@ function Drama(selector, userSettings) {
 		addAll:function() {
 			var r = api.addTextView()
 				.addPresenceView()
-			// 	.addPresenceView2()
-				//.addFigureStatisticsView()
-				//.addSemanticFieldsView()
-				//.addNetworkView();
-				;
+				.addPresenceView2()
+				.addFigureStatisticsView()
+				.addSemanticFieldsView()
+				.addNetworkView();
+
 			// $(selector).tabs({active: 0});
 			// $(selector).enhanceWithin();
 			return r;
@@ -104,10 +104,21 @@ function Drama(selector, userSettings) {
 
 	function load(dataOrUrl, callback) {
 		if (typeof(dataOrUrl) == "string") {
-			$.getJSON(dataOrUrl, function(data) {
-				loadObject(data);
-				if (callback) callback();
-			});
+
+			if (dataOrUrl.startsWith("http")) {
+				$.ajax(dataOrUrl, {
+					dataType: "jsonp",
+					success: function(data) {
+						loadObject(data);
+						if (callback) callback();
+					}
+				});
+			} else {
+				$.getJSON(dataOrUrl, function(data) {
+					loadObject(data);
+					if (callback) callback();
+				});
+			}
 		} else {
 			return loadObject(dataOrUrl);
 		}
