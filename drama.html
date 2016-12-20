@@ -1,0 +1,169 @@
+<html class="ui-mobile">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="stylesheet" href="css/jquery.mobile-1.4.5.css">
+<link rel="stylesheet" type="text/css" href="css/datatables.min.css" />
+<script src="js/datatables.min.js"></script>
+<script src="js/jquery-1.11.3.min.js"></script>
+<script src="js/jquery.mobile-1.4.5.min.js"></script>
+<script src="js/highcharts.js"></script>
+<script src="js/highcharts-more.js"></script>
+<script src="js/exporting.js"></script>
+<script src="js/data.js"></script>
+<script src="js/d3.v3.min.js" charset="utf-8"></script>
+<script src="js/util.js"></script>
+<script src="js/charttable.js"></script>
+<script src="js/drama.js"></script>
+<script src="js/palette.js"></script>
+<!--<script src="js/jquery-ui.js"></script>-->
+<script>
+$(function() {
+	var drama;
+	$( "[data-role='header']" ).toolbar();
+	$( "[data-role='header']" ).enhanceWithin();
+	drama = Drama("#drama");
+	var url = "data/rksp.0.json";
+	var p = getQueryParams(document.location.search);
+	if (p.hasOwnProperty("drama")) {
+		if (p.drama.startsWith("http"))
+			url = decodeURIComponent(p["drama"]);
+		else
+			url = "data/"+p["drama"]+".json";
+	}
+	drama.load(url, function() {
+		drama.addAll();
+		drama.load(url);
+	});
+});
+</script>
+</head>
+<body>
+	<div data-role="header" data-theme="a">
+		<div data-role="navbar">
+			<ul>
+				<li><a href="#textview">Text View</a></li>
+				<li><a href="#presence">Presence View</a></li>
+				<li><a href="#presence2">Presence View 2</a></li>
+				<li><a href="#figure-statistics">Figure Statistics</a></li>
+				<li><a href="#fields">Semantic Fields</a></li>
+				<li><a href="#copresence-network">Copresence Network</a></li>
+			</ul>
+		</div>
+	</div>
+
+	<div data-role="page" id="textview">
+		<div id="textviewpanel" data-role="panel" data-position="left" data-display="push">
+			<div data-role="collapsible-set" data-inset="false">
+				<div data-role="collapsible" data-mini="true" data-inline="true">
+					<h3>Table of Contents</h3>
+					<div><ul class="toc" data-role="listview"></ul></div>
+				</div>
+				<div data-role="collapsible" data-mini="true">
+					<h3>Dramatis Personae</h3>
+					<div><ul class="dramatispersonae" data-role="listview"></ul></div>
+				</div>
+			</div>
+		</div>
+		<div data-role="header">
+			<a href="#textviewpanel">TOC / DP</a>
+			<h1>Text View</h1>
+		</div>
+		<div role="main" class="ui-content">
+			<div id="text"></div>
+		</div>
+	</div>
+	<div data-role="page" id="presence">
+		<div role="main" class="ui-content">
+			<div></div>
+		</div>
+	</div>
+
+	<div data-role="page" id="presence2">
+
+		<div data-role="header" style="text-align: center; ">
+			<fieldset data-role="controlgroup" data-type="horizontal">
+				<input data-mini="true" type="radio" value="scene" name="by" id="button_presence2_by_scene" />
+				<label for="button_presence2_by_scene">By scene</label>
+
+				<input data-mini="true"type="radio" value="act" name="by"  id="button_presence2_by_act" checked="checked" />
+				<label for="button_presence2_by_act">By act</label>
+			</fieldset>
+
+		</div>
+
+
+		<div role="main" class="ui-content">
+			<div></div>
+		</div>
+	</div>
+
+	<div data-role="page" id="figure-statistics">
+		<div data-role="collapsible" data-collapsed="false">
+			<h3>Chart</h3>
+			<div class="chart"></div>
+		</div>
+		<div data-role="collapsible">
+			<h3>Table</h3>
+			<div>
+				<table data-role="table">
+					<thead></thead>
+					<tbody></tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<div data-role="page" id="fields">
+		<div data-role="collapsible" data-collapsed="false">
+			<h3>Chart</h3>
+			<div class="chart"></div>
+		</div>
+		<div data-role="collapsible">
+			<h3>Table</h3>
+			<div>
+				<table data-role="table">
+					<thead></thead>
+					<tbody></tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<div data-role="page" id="copresence-network">
+		<div data-role="panel" id="copresencepanel">
+			<div data-role="collapsible" data-collapsed="false" data-mini="true">
+				<h1>Figure Limit</h1>
+				<div>
+				<fieldset data-role="controlgroup" data-mini="true">
+					<input type="checkbox" data-mini="true" checked="checked" id="limit-enable" />
+					<label for="limit-enable">Show figures with at least</label>
+				</fieldset>
+				<fieldset>
+					<label for="limit-words">Words: </label>
+					<input type="range" id="limit-words" value="1000" min="0" max="10000" data-highlight="true" />
+				</fieldset>
+				<fieldset>
+					<label for="limit-utterances">Utterances: </label>
+					<input type="range" id="limit-utterances" value="10" min="0" max="1000" data-highlight="true" />
+				</fieldset>
+				</div>
+			</div>
+			<div data-role="collapsible" data-collapsed="false" data-mini="true">
+				<h1>Node Coloring</h1>
+				<div>
+					<fieldset class="coloring" data-role="controlgroup" data-mini="true">
+
+					</fieldset>
+				</div>
+			</div>
+		</div>
+		<div data-role="header">
+			<a href="#copresencepanel">Settings</a><h1>&nbsp;</h1>
+		</div>
+		<div role="main" class="ui-content" style="height:80%">
+			<svg style="background-color:white;"></svg>
+		</div>
+	</div>
+</body>
+</html>

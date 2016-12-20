@@ -1,0 +1,87 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="stylesheet" href="css/jquery-ui.css">
+<link rel="stylesheet" href="css/format.css">
+<link rel="stylesheet" type="text/css" href="css/datatables.min.css" />
+<script src="js/datatables.min.js"></script>
+<script src="js/highcharts.js"></script>
+<script src="js/highcharts-more.js"></script>
+<script src="js/exporting.js"></script>
+<script src="js/jquery-ui.js"></script>
+<script src="js/d3.v3.min.js" charset="utf-8"></script>
+<script src="js/script.js"></script>
+<script src="js/util.js"></script>
+<script src="js/charttable.js"></script>
+<script src="js/dramacollection.js"></script>
+<script>
+var collection;
+var dramaUrls = ["data/11f78.0.json"
+,"data/11g1d.0.json"
+,"data/11hdv.0.json"
+,"data/gb-Wieland.json"
+,"data/k93g.0.json"
+,"data/kp19.0.json"
+,"data/krf8.0.json"
+,"data/kscn.0.json"
+,"data/msqv.0.json"
+,"data/n750.0.json"
+,"data/ndtw.0.json"
+,"data/npsg.0.json"
+,"data/qkmq.0.json"
+,"data/r0n2.0.json"
+,"data/r0px.0.json"
+,"data/r12k.0.json"
+,"data/r12v.0.json"
+,"data/r134.0.json"
+,"data/r135.0.json"
+,"data/rfxf.0.json"
+,"data/rhtz.0.json"
+,"data/rhzq.0.json"
+,"data/rjh9.0.json"
+,"data/rjmw.0.json"
+,"data/rksp.0.json"
+,"data/spd6.0.json"
+,"data/ssrf.0.json"
+,"data/t25v.0.json"
+,"data/t4rs.0.json"
+,"data/t4rw.0.json"
+,"data/t976.0.json"
+,"data/twnw.0.json"
+,"data/tx4z.0.json"
+,"data/tz39.0.json"
+,"data/v3mq.0.json"
+,"data/v3mw.0.json"
+,"data/v3n4.0.json"
+,"data/vndf.0.json"
+,"data/vrdj.0.json"
+,"data/vrds.0.json"
+,"data/w3zd.0.json"
+,"data/wf6k.0.json"
+,"data/wznr.0.json"
+,"data/x4gj.0.json"
+,"data/x4vp.0.json"
+,"data/x8fs.0.json"
+,"data/x8hc.0.json"
+,"data/x8ks.0.json"]
+$(function() {
+	collection = DramaCollection("#collection", {});
+	for (var url of dramaUrls) {
+		$.getJSON(url, function(data) {
+			collection.add(data);
+			if (collection.n() === dramaUrls.length) {
+				collection.refresh();
+			}
+		});
+	}
+});
+</script>
+</head>
+<body>
+<div>
+	<h1>Corpus Statistics</h1>	
+	<div class="toolbar"></div>
+	<div id="collection"></div>
+</div>
+</body>
+</html>

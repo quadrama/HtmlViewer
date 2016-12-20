@@ -1,0 +1,193 @@
+* {
+	font-family:sans-serif;
+}
+
+#header {
+	position:fixed;
+	top:0px;
+	left:0px;
+	padding:10px;
+	background-color:#CCC;
+	width:100%;
+	z-index:10;
+	display:flex;
+  justify-content:space-between;
+	height:30px;
+	margin:0;
+}
+
+#header div {
+	margin-left:10px;
+	margin-right:10px;
+}
+
+#header div:last-child {
+	marign-right:30px;
+	font-size: small;
+}
+
+#header+div {
+	position:absolute;
+	top:60px;
+}
+
+h1#title {
+	font-size:large;
+}
+
+.hc {
+	width:93%;
+	margin:0;
+}
+
+#dramaselect {
+	position:fixed;
+	height:50px;
+	padding:0;
+	margin:0;
+}
+
+#dramaselect ul {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+}
+
+#dramaselect ul li {
+	 display: inline;
+}
+
+#dramaselect ul li a {
+    color: #000;
+    padding: 8px 0 8px 16px;
+    text-decoration: none;
+}
+
+#dramaselect li a:hover {
+    background-color: #555;
+    color: white;
+}
+
+#content {
+	position:relative;
+	left:200px;
+	top:50px;
+	width:calc(90vw - 200px);
+	min-height: 400px;
+	margin:0;
+	padding-left:3px;
+	margin:0px;
+}
+#content > * {
+	margin-left:10px;
+}
+
+#text .utterance {
+	margin-bottom:10px;
+}
+
+#text .speaker {
+	font-variant: small-caps;
+	display:inline;
+}
+
+#text .speech {
+	max-width:500px;
+}
+
+#text .sceneheading {
+	font-weight:bold;
+}
+#text .actheading {
+	font-weight:bold;
+	font-size:large;
+}
+
+#text .toccontainer{
+	margin-bottom:20px;
+}
+
+.highlight {
+	background-color:yellow;
+}
+
+
+.toolbar {
+	width:100%;
+	background-color:#EEE;
+	padding:5px;
+	margin:0px;
+	border-radius: 5px;
+	font-size:small;
+}
+
+.toolbar fieldset {
+	display:inline-block;
+	border:thin solid #DDD;
+	height:40px;
+	vertical-align: middle;
+}
+
+#settings {
+	width:200px;
+	position:fixed;
+	background-color:#EEE;
+	left:0;
+	height:100%;
+	padding-left:3px;
+	padding-right:3px;
+	font-weight:normal;
+	font-size:small;
+	margin:0;
+}
+#settings div {
+	margin-bottom:10px;
+}
+input[type=number] {
+	width:4em;
+}
+
+.view {
+	min-height: 400px;
+	min-width: 600px;
+	max-width: 90vw;
+	max-height: 90vh;
+}
+
+#copresence svg {
+	width: 90%;
+	height: 90%;
+}
+
+#copresence .figureLabel {
+	font-weight:lighter;
+	color:#222;
+	font-family: sans-serif;
+	fill:#000;
+}
+
+#copresence .link {
+	stroke:#AAA;
+}
+
+#copresence .node {
+	stroke:none;
+}
+
+#copresence .legend {
+	position:absolute;
+	z-index:10;
+	border-color: #999;
+	border-width: 1px;
+	border-radius: 2;
+	border-style: solid;
+	background-color:white;
+	width:100px;
+	padding:10px;
+	font-size:small;
+}
+
+#copresence .legend h1 {
+	font-size:small;
+	margin:0px;
+}

@@ -1,0 +1,95 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="stylesheet" href="css/jquery-ui.css">
+<link rel="stylesheet" href="css/format.css">
+<link rel="stylesheet" type="text/css" href="datatables.min.css" />
+<style>
+.link {
+	stroke: #000;
+	stroke-width: 1.5px;
+}
+
+.node {
+	cursor: move;
+	fill: #ccc;
+	stroke: #000;
+	stroke-width: 1.5px;
+}
+
+.node text {
+	font: 10pt sans-serif;
+	color: #000;
+	fill: #000;
+}
+
+.node.fixed {
+	fill: #f00;
+}
+</style>
+<script src="js/datatables.min.js"></script>
+<script src="js/highcharts.js"></script>
+<script src="js/highcharts-more.js"></script>
+<script src="js/exporting.js"></script>
+<script src="data/all-data.js"></script>
+<script src="js/jquery-ui.js"></script>
+<script src="js/d3.v3.min.js" charset="utf-8"></script>
+<script src="js/util.js"></script>
+<script src="js/drama.js"></script>
+<script src="js/script.js"></script>
+<script>
+	$(function() {
++		init(data);
+	});
+</script>
+</head>
+<body>
+<div id="settings">
+<div>
+	<h3>Drama View</h3>
+	<div><select id="docselect"></select></div>
+</div>
+<hr/>
+<div>
+	<h3>Corpus View</h3>
+	Select words to display:<br/>
+	<div>
+		<input type="checkbox" id="words_most_frequent" checked="checked" />Most frequent lemma+pos
+		<div style="margin-left:10px;">
+			<input type="checkbox" id="words_mf_nouns" checked="checked">include Nouns (NN)<br/>
+			<input type="checkbox" id="words_mf_verbs" checked="checked">include Verbs (VV)<br/>
+			<input type="checkbox" id="words_mf_adjectives" checked="checked">include Adjectives (ADJ)<br/>
+			<input type="checkbox" id="words_mf_everything">include Everything<br/>
+			Include <input id="maxlemma" type="number" value="2" size="2" style="width:3em;" /> lemmas per text
+		</div>
+	</div>
+	<div>
+		<input type="checkbox" id="words_entered" checked="checked">These lemma+pos (lowercase):<br/>
+		<textarea id="words" cols="20" rows="3">liebe.NN
+leidenschaft.NN
+lieben.VV</textarea>
+	</div>
+	<div id="wordfield">
+		<p>Word fields</p>
+
+	</div>
+	<div>
+		Figure type<br/>
+		<select id="figuretype"></select>
+	</div>
+</div>
+	<div><input type="checkbox" id="everythingHidden" value="1" checked="checked">Everything hidden</div>
+	<div><a href="javascript:draw()">Update</a></div>
+</div>
+
+</div>
+<div id="content">
+	<h1 id="title"></h1>
+	<div id="tabs">
+		<ul></ul>
+	</div>
+</div>
+
+
+</body>
+</html>

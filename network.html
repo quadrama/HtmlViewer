@@ -1,0 +1,42 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="stylesheet" href="css/jquery-ui.css">
+<link rel="stylesheet" href="css/format.css">
+<link rel="stylesheet" type="text/css" href="css/datatables.min.css" />
+<script src="js/datatables.min.js"></script>
+<script src="js/highcharts.js"></script>
+<script src="js/highcharts-more.js"></script>
+<script src="js/exporting.js"></script>
+<script src="js/jquery-ui.js"></script>
+<script src="js/d3.v3.min.js" charset="utf-8"></script>
+<script src="js/util.js"></script>
+<script src="js/script.js"></script>
+<script src="js/drama.js"></script>
+<script>
+	var drama;
+	$(function() {
+		drama = Drama("#drama");
+		var url = "data/rksp.0.json";
+		drama.load(url, function() {
+			drama.addPresenceView2();
+			drama.load(url, function() {});
+		});
+	});
+</script>
+</head>
+<body>
+<div id="header">
+	<div>QuaDramA HTML Viewer</div>
+	<div><a href="javascript:drama.load('data/vndf.0.json')">vndf.0</a> | <a href="javascript:drama.load('data/rksp.0.json')">rksp.0</a></div>
+	<div><a href="mailto:nils.reiter@ims.uni-stuttgart.de">Contact</a>&nbsp;</div>
+</div>
+<div>
+<h1 id="title"></h1>
+<div id="drama">
+	<ul></ul>
+</div>
+</div>
+
+</body>
+</html>
