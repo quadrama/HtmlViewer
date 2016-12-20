@@ -26,6 +26,7 @@ import de.unistuttgart.ims.commons.Counter;
 import de.unistuttgart.ims.drama.api.Act;
 import de.unistuttgart.ims.drama.api.ActHeading;
 import de.unistuttgart.ims.drama.api.Author;
+import de.unistuttgart.ims.drama.api.Date;
 import de.unistuttgart.ims.drama.api.Drama;
 import de.unistuttgart.ims.drama.api.Field;
 import de.unistuttgart.ims.drama.api.Figure;
@@ -66,6 +67,13 @@ public class JsonExporter extends AbstractDramaConsumer {
 		for (Translator translator : JCasUtil.select(aJCas, Translator.class))
 			md.append("translators", convert(translator, false));
 		md.put("DisplayId", DramaUtil.getDisplayId(aJCas));
+		int minYear = 2000;
+		for (Date date : JCasUtil.select(aJCas, Date.class)) {
+			if (date.getYear() < minYear)
+				minYear = date.getYear();
+		}
+
+		md.put("ReferenceDate", minYear);
 
 		// assembly
 		json = this.convertJCas(aJCas);
