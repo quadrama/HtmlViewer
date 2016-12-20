@@ -40,8 +40,7 @@ function Drama(selector, userSettings) {
 			idString: "text",
 			title: "Text"
 		},
-		wordThreshold: 1000,
-		utteranceThreshold:10
+		wordThreshold: 1000
 	};
 	var rcolors = palette('tol-rainbow', 10).map(function (current) {return "#"+current;});
 	var strongcolors = rcolors;
@@ -295,7 +294,6 @@ function Drama(selector, userSettings) {
 		}
 
 		function load() {
-			console.log(data);
 			// create plot bands
 			var segments;
 			if ("scs" in data) {
@@ -358,12 +356,11 @@ function Drama(selector, userSettings) {
 					name:currentFigure.Reference,
 					data:utterances,
 					lineWidth:3,
-					visible:(currentFigure.utt.length>settings.utteranceThreshold),
+					visible:(currentFigure.NumberOfWords>settings.wordThreshold),
 					turboThreshold:0
 				};
 				return r;
 			});
-			console.log(series);
 			// initiate highcharts vis
 			chart = contentArea.highcharts({
 				legend: { y:130 },

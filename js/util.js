@@ -60,16 +60,14 @@ function merge(o1, o2) {
 
 function basicFigureFilter(data) {
 	return function(f) {
-		// console.log(f);
 		var figure = f;
 		if (typeof(f) == "number") {
 			figure = data.figures[f];
 		} else if (f.hasOwnProperty("figureIndex")) {
 			figure = data.figures[f.figureIndex];
+			// console.log(figure);
 		}
-		if (figure.hasOwnProperty("utt"))
-			return figure.utt.length > 0;
-		else return false;
+		return figure.NumberOfWords > 0;
 	};
 }
 
